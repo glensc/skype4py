@@ -1,3 +1,11 @@
+'''
+Copyright (c) 2007, Arkadiusz Wahlig
+
+All rights reserved.
+
+Distributed under the BSD License, see the
+accompanying LICENSE file for more information.
+'''
 
 class ISettings(object):
     def __init__(self, Skype):

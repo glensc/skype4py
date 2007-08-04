@@ -1,5 +1,13 @@
-# Define low level Skype interface implemented using dbus module.
+'''
+Low level Skype (for Linux) interface implemented using dbus module.
 
+Copyright (c) 2007, Arkadiusz Wahlig
+
+All rights reserved.
+
+Distributed under the BSD License, see the
+accompanying LICENSE file for more information.
+'''
 
 import threading
 import time

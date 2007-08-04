@@ -1,6 +1,15 @@
-# Define low level Skype interface implemented using Windows messaging.
-# Uses direct WinAPI calls through ctypes module.
+'''
+Low level Skype (for Windows) interface implemented
+using Windows messaging. Uses direct WinAPI calls
+through ctypes module.
 
+Copyright (c) 2007, Arkadiusz Wahlig
+
+All rights reserved.
+
+Distributed under the BSD License, see the
+accompanying LICENSE file for more information.
+'''
 
 import threading
 import time
