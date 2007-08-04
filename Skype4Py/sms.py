@@ -11,6 +11,7 @@ from utils import *
 from enums import *
 
 
+# TODO
 # For future use?
 class ISmsChunk(object):
     def __init__(self, Id, Message):
@@ -56,6 +57,7 @@ class ISmsMessage(Cached):
     Targets = property(lambda self: map(lambda x: ISmsTarget(x, self), esplit(self._Property('TARGET_NUMBERS'), ', ')))
     TargetNumbers = property(lambda self: self._Property('TARGET_NUMBERS'),
                              lambda self, value: self._Property('TARGET_NUMBERS', value))
+    # TODO
     # Chunks? For future use?
     Chunks = property(lambda self: [])
 

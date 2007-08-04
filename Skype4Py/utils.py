@@ -100,10 +100,14 @@ def EventHandling(events):
 
         def _CallEventHandler(self, name, *args, **kwargs):
             for h in self._EventHandlers.get(name, {}).values():
-                threading.Thread(name=name, target=h, args=args, kwargs=kwargs).start()
+                t = threading.Thread(name=name, target=h, args=args, kwargs=kwargs)
+                t.setDaemon(False)
+                t.start()
             for h in self._Events.values():
                 if hasattr(h, name):
-                    threading.Thread(name=name, target=getattr(h, name), args=args, kwargs=kwargs).start()
+                    t = threading.Thread(name=name, target=getattr(h, name), args=args, kwargs=kwargs)
+                    t.setDaemon(False)
+                    t.start()
 
         def _GetEventHandler(self, name):
             try:

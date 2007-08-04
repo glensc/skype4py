@@ -13,8 +13,6 @@ from enums import *
 from errors import *
 
 
-__all__ = []
-
 Skype = ISkype
 CallChannelManager = ICallChannelManager
 

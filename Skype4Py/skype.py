@@ -109,7 +109,7 @@ class ISkype(ISkypeEventHandling):
                     o = IUser(ObjectId, self)
                     if PropName == 'ONLINESTATUS':
                         self._CallEventHandler('OnlineStatus', o, TOnlineStatus(Value))
-                    elif PropName == 'MOOD_TEXT':
+                    elif PropName == 'MOOD_TEXT' or PropName == 'RICH_MOOD_TEXT':
                         self._CallEventHandler('UserMood', o, Value)
                 if ObjectType == 'CALL':
                     o = ICall(ObjectId, self)
@@ -166,6 +166,10 @@ class ISkype(ISkypeEventHandling):
                     self._CacheDict[str(ObjectType), unicode(ObjectId), str(PropName)] = Value
                 if ObjectType == 'MUTE':
                     self._CallEventHandler('Mute', Value == 'TRUE')
+                elif ObjectType == 'CONNSTATUS':
+                    self._CallEventHandler('ConnectionStatus', TConnectionStatus(Value))
+                elif ObjectType == 'USERSTATUS':
+                    self._CallEventHandler('UserStatus', TUserStatus(Value))
             elif a == 'CALLHISTORYCHANGED':
                 self._CallEventHandler('CallHistory')
             elif a == 'IMHISTORYCHANGED':
@@ -186,10 +190,6 @@ class ISkype(ISkypeEventHandling):
                 ObjectId, PropName, Value = chop(b, 2)
                 if PropName == 'CLICKED':
                     self._CallEventHandler('PluginMenuItemClicked', IPluginMenuItem(ObjectId, self))
-            elif a == 'CONNSTATUS':
-                self._CallEventHandler('ConnectionStatus', TConnectionStatus(b))
-            elif a == 'USERSTATUS':
-                self._CallEventHandler('UserStatus', TUserStatus(b))
             elif a == 'WALLPAPER':
                 self._CallEventHandler('WallpaperChanged', b)
         elif mode == 'rece':
@@ -290,8 +290,8 @@ class ISkype(ISkypeEventHandling):
         return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join(map(lambda x: x.Handle, pMembers))), 2)[1], self)
 
     def SendVoicemail(self, Username):
-        # [out, retval] IVoicemail **pVoicemail
-        pass
+        # TODO
+        raise ISkypeError(0, 'Not implemented')
 
     def ClearChatHistory(self):
         self._DoCommand('CLEAR CHARHISTORY')
@@ -411,8 +411,11 @@ class ISkype(ISkypeEventHandling):
         return o
 
     def Greeting(self, Username=''):
-        # TODO
-        pass
+        for v in self.Voicemails:
+            if Username and v.PartnerHandle != Username:
+                continue
+            if v.Type in [TVoicemailType.DefaultGreeting, TVoicemailType.CustomGreeting]:
+                return v
 
     def Command(self, Id, command, Reply='', Block=False, Timeout=30000):
         return ICommand(Id, command, Reply, Block, Timeout)
@@ -445,6 +448,7 @@ class ISkype(ISkypeEventHandling):
                 confs.append(IConference(cid, self))
         return confs
 
+    # Custom
     def ResetIdleTimer(self):
         self._DoCommand('RESETIDLETIMER')
 
@@ -499,3 +503,6 @@ class ISkype(ISkypeEventHandling):
     MissedSmss = property(lambda self: map(lambda x: ISmsMessage(x, self), self._Search('MISSEDSMSS')))
     FileTransfers = property(lambda self: map(lambda x: IFileTransfer(x, self), self._Search('FILETRANSFERS')))
     ActiveFileTransfers = property(lambda self: map(lambda x: IFileTransfer(x, self), self._Search('ACTIVEFILETRANSFERS')))
+
+    # Custom
+    FocusedContact = property(lambda self: chop(self.Variable('CONTACTS_FOCUSED'), 2)[-1])

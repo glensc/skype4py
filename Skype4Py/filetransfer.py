@@ -33,6 +33,8 @@ class IFileTransfer(Cached):
     FinishTime = property(lambda self: float(self._Property('FINISHTIME')))
     FilePath = property(lambda self: self._Property('FILEPATH'))
     FileName = property(lambda self: os.path.split(self._Property('FILEPATH'))[1])
-    FileSize = property(lambda self: long(self._Property('FILESIZE')))
     BytesPerSecond = property(lambda self: int(self._Property('BYTESPERSECOND')))
     BytesTransferred = property(lambda self: long(self._Property('BYTESTRANSFERRED')))
+
+    # Custom
+    FileSize = property(lambda self: long(self._Property('FILESIZE')))

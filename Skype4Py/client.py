@@ -9,6 +9,7 @@ accompanying LICENSE file for more information.
 
 from enums import *
 from plugin import *
+from errors import *
 
 
 class IClient(object):
@@ -64,7 +65,8 @@ class IClient(object):
         self._Skype._DoCommand('OPEN AUTHORIZATION %s' % Username)
 
     def OpenDialog(self, Name, Param1='', Param2=''):
-        pass
+        # TODO
+        raise ISkypeError(0, 'Not implemented')
 
     def OpenVideoTestDialog(self):
         self._Skype._DoCommand('OPEN VIDEOTEST')

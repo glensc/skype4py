@@ -9,6 +9,7 @@ accompanying LICENSE file for more information.
 
 from utils import *
 from enums import *
+from errors import *
 
 
 class IVoicemail(Cached):
@@ -47,7 +48,8 @@ class IVoicemail(Cached):
         self._Alter('DELETE')
 
     def StartPlaybackInCall(self):
-        pass
+        # TODO
+        raise ISkypeError(0, 'Not implemented')
 
     def SetUnplayed(self):
         self._Property('STATUS', TVoicemailStatus.Unplayed)
