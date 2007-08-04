@@ -1,5 +1,14 @@
 #!/usr/bin/env python
 
+'''
+Copyright (c) 2007, Arkadiusz Wahlig
+
+All rights reserved.
+
+Distributed under the BSD License, see the
+accompanying LICENSE file for more information.
+'''
+
 from distutils.core import setup
 
 setup(name='Skype4Py',
