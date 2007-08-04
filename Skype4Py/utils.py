@@ -99,13 +99,11 @@ def EventHandling(events):
             self._EventHandlers = {}
 
         def _CallEventHandler(self, name, *args, **kwargs):
-            d = self._EventHandlers.get(name, {})
-            for h in d:
-                threading.Thread(name=name, target=d[h], args=args, kwargs=kwargs).start()
-            d = self._Events
-            for h in d:
-                if hasattr(d[h], name):
-                    threading.Thread(name=name, target=getattr(d[h], name), args=args, kwargs=kwargs).start()
+            for h in self._EventHandlers.get(name, {}).values():
+                threading.Thread(name=name, target=h, args=args, kwargs=kwargs).start()
+            for h in self._Events.values():
+                if hasattr(h, name):
+                    threading.Thread(name=name, target=getattr(h, name), args=args, kwargs=kwargs).start()
 
         def _GetEventHandler(self, name):
             try:
@@ -135,12 +133,12 @@ def EventHandling(events):
             except KeyError:
                 pass
 
-        def _RegisterEventsClass(self, cls):
-            self._Events[cls] = cls()
+        def _RegisterEvents(self, info, obj):
+            self._Events[info] = obj
 
-        def _UnregisterEventsClass(self, cls):
+        def _UnregisterEvents(self, info):
             try:
-                del self._Events[cls]
+                del self._Events[info]
             except KeyError:
                 pass
 
@@ -154,8 +152,7 @@ def EventHandling(events):
         return property(lambda self: self._GetEventHandler(event), lambda self, value: self._SetEventHandler(event, value))
 
     for event in events:
-        if not event.startswith('_'):
-            setattr(EventHandlingBase, 'On' + event, make_event(event))
+        setattr(EventHandlingBase, 'On' + event, make_event(event))
     return EventHandlingBase
 
 

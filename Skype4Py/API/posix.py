@@ -166,6 +166,7 @@ class ISkypeAPI(threading.Thread):
             else:
                 command._timer.cancel()
                 del command._timer
+            self.Handler('rece_api', command.Reply)
             self.Handler('rece', command)
         else:
             self.Handler('rece_api', com)

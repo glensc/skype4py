@@ -64,7 +64,7 @@ class IChat(Cached):
 
     Name = property(lambda self: self._Name)
     Bookmarked = property(lambda self: self._Property('BOOKMARKED') == 'TRUE')
-    Timestamp = property(lambda self: int(self._Property('TIMESTAMP')))
+    Timestamp = property(lambda self: float(self._Property('TIMESTAMP')))
     Adder = property(lambda self: IUser(self._Property('ADDER'), self._Skype))
     Status = property(lambda self: TChatStatus(self._Property('STATUS')))
     Topic = property(_GetTopic, _SetTopic)
@@ -86,7 +86,7 @@ class IChatMessage(Cached):
         return self._Skype._Property('CHATMESSAGE', self._Id, PropName, Value, Cache)
 
     Id = property(lambda self: self._Id)
-    Timestamp = property(lambda self: int(self._Property('TIMESTAMP')))
+    Timestamp = property(lambda self: float(self._Property('TIMESTAMP')))
     FromHandle = property(lambda self: self._Property('FROM_HANDLE'))
     FromDisplayName = property(lambda self: self._Property('FROM_DISPNAME'))
     Type = property(lambda self: TChatMessageType(self._Property('TYPE')))

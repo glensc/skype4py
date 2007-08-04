@@ -20,6 +20,8 @@ from settings import *
 from chat import *
 from application import *
 from voicemail import *
+from sms import *
+from filetransfer import *
 import time
 
 
@@ -27,127 +29,61 @@ import time
 _version_ = '0.4.0.0'
 
 
-class ISkypeEvents(object):
-    def Command(self, Command):
-        print '<CmdSend> ' + Command.Command
-
-    def Reply(self, Command):
-        print '<CmdRece> ' + Command.Reply
-
-    def Error_(self, pCommand, Number, Description):
-        pass
-
-    def AttachmentStatus(self, Status):
-        pass
-
-    def ConnectionStatus(self, Status):
-        pass
-
-    def UserStatus(self, Status):
-        pass
-
-    def OnlineStatus(self, pUser, Status):
-        pass
-
-    def CallStatus(self, pCall, Status):
-        pass
-
-    def CallHistory(self):
-        pass
-
-    def Mute(self, Mute):
-        pass
-
-    def MessageStatus(self, pMessage, Status):
-        pass
-
-    def MessageHistory(self, Username):
-        pass
-
-    def AutoAway(self, Automatic):
-        pass
-
-    def CallDtmfReceived(self, pCall, Code):
-        pass
-
-    def VoicemailStatus(self, pMail, Status):
-        pass
-
-    def ApplicationConnecting(self, pApp, pUsers):
-        pass
-
-    def ApplicationStreams(self, pApp, pStreams):
-        pass
-
-    def ApplicationDatagram(self, pApp, pStream, Text):
-        pass
-
-    def ApplicationSending(self, pApp, pStreams):
-        pass
-
-    def ApplicationReceiving(self, pApp, pStreams):
-        pass
-
-    def ContactsFocused(self, Username):
-        pass
-
-    def GroupVisible(self, pGroup, Visible):
-        pass
-
-    def GroupExpanded(self, pGroup, Expanded):
-        pass
-
-    def GroupUsers(self, pGroup, pUsers):
-        pass
-
-    def GroupDeleted(self, GroupId):
-        pass
-
-    def UserMood(self, pUser, MoodText):
-        pass
-
-    def SmsMessageStatusChanged(self, pMessage, Status):
-        pass
-
-    def SmsTargetStatusChanged(self, pTarget, Status):
-        pass
-
-    def CallInputStatusChanged(self, pCall, Status):
-        pass
-
-    def AsyncSearchUsersFinished(self, Cookie, pUsers):
-        pass
-
-    def CallSeenStatusChanged(self, pCall, Status):
-        pass
-
-    def PluginEventClicked(self, pEvent):
-        pass
-
-    def PluginMenuItemClicked(self, pMenuItem, pUsers, PluginContext, ContextId):
-        pass
-
-    def WallpaperChanged(self, Path):
-        pass
-
-    def FileTransferStatusChanged(self, pTransfer, Status):
-        pass
+import gc
+gc.set_debug(gc.DEBUG_LEAK)
 
 
-ISkypeEventHandling = EventHandling(dir(ISkypeEvents))
+ISkypeEventHandling = EventHandling([
+    'Command',
+    'Reply',
+    'Error_',
+    'AttachmentStatus',
+    'ConnectionStatus',
+    'UserStatus',
+    'OnlineStatus',
+    'CallStatus',
+    'CallHistory',
+    'Mute',
+    'MessageStatus',
+    'MessageHistory',
+    'AutoAway',
+    'CallDtmfReceived',
+    'VoicemailStatus',
+    'ApplicationConnecting',
+    'ApplicationStreams',
+    'ApplicationDatagram',
+    'ApplicationSending',
+    'ApplicationReceiving',
+    'ContactsFocused',
+    'GroupVisible',
+    'GroupExpanded',
+    'GroupUsers',
+    'GroupDeleted',
+    'UserMood',
+    'SmsMessageStatusChanged',
+    'SmsTargetStatusChanged',
+    'CallInputStatusChanged',
+    'AsyncSearchUsersFinished',
+    'CallSeenStatusChanged',
+    'PluginEventClicked',
+    'PluginMenuItemClicked',
+    'WallpaperChanged',
+    'FileTransferStatusChanged'])
 
 
 class ISkype(ISkypeEventHandling):
-    def __init__(self, Events=ISkypeEvents):
+    def __init__(self, Events=None):
         ISkypeEventHandling.__init__(self)
-        self._RegisterEventsClass(Events)
+
+        if Events:
+            self._RegisterEvents('default', Events)
 
         self._API = ISkypeAPI(self._Handler)
         self._Cache = True
         self.ResetCache()
 
         self._Timeout = 30000
-        self._AttachmentStatus = TAttachmentStatus.apiAttachUnknown
+        self._AttachmentStatus = TAttachmentStatus.Unknown
 
         self._Convert = IConversion(self)
         self._Client = IClient(self)
@@ -159,7 +95,6 @@ class ISkype(ISkypeEventHandling):
 
     def _Handler(self, mode, arg):
         if mode == 'rece_api':
-            print '<ApiRece> ' + arg.encode('latin-1', 'replace')
             a, b = chop(arg)
             ObjectType = None
             if a == 'ERROR':
@@ -171,40 +106,56 @@ class ISkype(ISkypeEventHandling):
                 if self._Cache:
                     self._CacheDict[str(ObjectType), unicode(ObjectId), str(PropName)] = Value
                 if ObjectType == 'USER':
-                    usr = IUser(ObjectId, self)
+                    o = IUser(ObjectId, self)
                     if PropName == 'ONLINESTATUS':
-                        self._CallEventHandler('OnlineStatus', usr, TOnlineStatus(Value))
+                        self._CallEventHandler('OnlineStatus', o, TOnlineStatus(Value))
                     elif PropName == 'MOOD_TEXT':
-                        self._CallEventHandler('UserMood', usr, Value)
+                        self._CallEventHandler('UserMood', o, Value)
                 if ObjectType == 'CALL':
-                    call = ICall(ObjectId, self)
+                    o = ICall(ObjectId, self)
                     if PropName == 'STATUS':
-                        self._CallEventHandler('CallStatus', call, TCallStatus(Value))
+                        self._CallEventHandler('CallStatus', o, TCallStatus(Value))
                     elif PropName == 'SEEN':
-                        self._CallEventHandler('CallSeenStatusChanged', call, Value == 'TRUE')
-                if ObjectType == 'CHATMESSAGE' and PropName == 'STATUS':
-                    self._CallEventHandler('MessageStatus', IChatMessage(ObjectId, self), TChatMessageStatus(Value))
+                        self._CallEventHandler('CallSeenStatusChanged', o, Value == 'TRUE')
+                    elif PropName == 'INPUT':
+                        self._CallEventHandler('CallInputStatusChanged', o, Value.startswith('SOUNDCARD='))
+                if ObjectType == 'CHATMESSAGE':
+                    o = IChatMessage(ObjectId, self)
+                    if PropName == 'STATUS':
+                        self._CallEventHandler('MessageStatus', o, TChatMessageStatus(Value))
                 if ObjectType == 'APPLICATION':
-                    app = IApplication(ObjectId, self)
+                    o = IApplication(ObjectId, self)
                     if PropName == 'CONNECTING':
-                        self._CallEventHandler('ApplicationConnecting', app, map(lambda x: IUser(x, self), esplit(Value)))
+                        self._CallEventHandler('ApplicationConnecting', o, map(lambda x: IUser(x, self), esplit(Value)))
                     elif PropName == 'STREAMS':
-                        self._CallEventHandler('ApplicationStreams', app, map(lambda x: IApplicationStream(x, app), esplit(Value)))
+                        self._CallEventHandler('ApplicationStreams', o, map(lambda x: IApplicationStream(x, app), esplit(Value)))
                     elif PropName == 'DATAGRAM':
                         handle, text = chop(Value)
-                        self._CallEventHandler('ApplicationDatagram', app, IApplicationStream(handle, app), text)
+                        self._CallEventHandler('ApplicationDatagram', o, IApplicationStream(handle, app), text)
                     elif PropName == 'SENDING':
-                        self._CallEventHandler('ApplicationSending', app, map(lambda x: IApplicationStream(x.split('=')[0], app), esplit(Value)))
+                        self._CallEventHandler('ApplicationSending', o, map(lambda x: IApplicationStream(x.split('=')[0], app), esplit(Value)))
                     elif PropName == 'RECEIVED':
-                        self._CallEventHandler('ApplicationReceiving', app, map(lambda x: IApplicationStream(x.split('=')[0], app), esplit(Value)))
+                        self._CallEventHandler('ApplicationReceiving', o, map(lambda x: IApplicationStream(x.split('=')[0], app), esplit(Value)))
                 elif ObjectType == 'GROUP':
-                    group = IGroup(ObjectId, self)
+                    o = IGroup(ObjectId, self)
                     if PropName == 'VISIBLE':
-                        self._CallEventHandler('GroupVisible', group, Value == 'TRUE')
+                        self._CallEventHandler('GroupVisible', o, Value == 'TRUE')
                     elif PropName == 'EXPANDED':
-                        self._CallEventHandler('GroupExpanded', group, Value == 'TRUE')
+                        self._CallEventHandler('GroupExpanded', o, Value == 'TRUE')
                     elif PropName == 'USERS':
-                        self._CallEventHandler('GroupUsers', group, map(lambda x: IUser(x, self), esplit(Value, ', ')))
+                        self._CallEventHandler('GroupUsers', o, map(lambda x: IUser(x, self), esplit(Value, ', ')))
+                elif ObjectType == 'SMS':
+                    o = ISmsMessage(ObjectId, self)
+                    if PropName == 'STATUS':
+                        self._CallEventHandler('SmsMessageStatusChanged', o, TSmsMessageStatus(Value))
+                    elif PropName == 'TARGET_STATUSES':
+                        for t in esplit(Value, ', '):
+                            number, status = t.split('=')
+                            self._CallEventHandler('SmsTargetStatusChanged', ISmsTarget(number, o), TSmsTargetStatus(status))
+                elif ObjectType == 'FILETRANSFER':
+                    o = IFileTransfer(ObjectId, self)
+                    if PropName == 'STATUS':
+                        self._CallEventHandler('FileTransferStatusChanged', o, TFileTransferStatus(Value))
             elif a in ['PROFILE', 'PRIVILEGE']:
                 ObjectType, ObjectId, PropName, Value = [a, ''] + chop(b)
                 if self._Cache:
@@ -243,8 +194,6 @@ class ISkype(ISkypeEventHandling):
                 self._CallEventHandler('WallpaperChanged', b)
         elif mode == 'rece':
             self._CallEventHandler('Reply', arg)
-            if hasattr(arg, '_reply_handler'):
-                getattr(arg, '_reply_handler')(arg)
         elif mode == 'send':
             self._CallEventHandler('Command', arg)
         elif mode == 'attach':
@@ -258,7 +207,9 @@ class ISkype(ISkypeEventHandling):
         self.SendCommand(command)
         a, b = chop(command.Reply)
         if a == 'ERROR':
-            self._CallEventHandler('Error_', command, *chop(b))
+            errnum, errstr = chop(b)
+            self._CallEventHandler('Error_', command, int(errnum), errstr)
+            raise ISkypeError(int(errnum), errstr)
         if not command.Reply.startswith(command.Expected):
             raise ISkypeError(0, 'Unexpected reply from Skype')
         return command.Reply
@@ -296,12 +247,14 @@ class ISkype(ISkypeEventHandling):
 
     def AsyncSearchUsers(self, Target):
         command = ICommand(-1, 'SEARCH USERS %s' % Target, 'USERS', False, self.Timeout)
-        command._reply_handler = self._AsyncSearchUsersEnd
+        self._RegisterEventHandler('Reply', 'AsyncSearchUsers', self._AsyncSearchUsersEnd)
         self.SendCommand(command)
         return command.Id
 
-    def _AsyncSearchUsersEnd(self, Command):
-        self._CallEventHandler('AsyncSearchUsersFinished', Command.Id, map(lambda x: IUser(x, self), esplit(chop(Command.Reply)[-1], ', ')))
+    def _AsyncSearchUsersEnd(self, command):
+        if command.Command.startswith('SEARCH USERS'):
+            self._CallEventHandler('AsyncSearchUsersFinished', command.Id, map(lambda x: IUser(x, self), esplit(chop(command.Reply)[-1], ', ')))
+            self._UnregisterEventHandler('Reply', 'AsyncSearchUsers')
 
     def Attach(self, Protocol=5, Wait=True):
         self._API.Protocol = Protocol
@@ -346,7 +299,7 @@ class ISkype(ISkypeEventHandling):
     def ClearVoicemailHistory(self):
         self._DoCommand('CLEAR VOICEMAILHISTORY')
 
-    def ClearCallHistory(self, Username='ALL', type_=TCallHistory.chsAllCalls):
+    def ClearCallHistory(self, Username='ALL', type_=TCallHistory.AllCalls):
         self._DoCommand('CLEAR CALLHISTORY %s %s' % (str(type_), Username))
 
     def _SetCache(self, Cache):
@@ -372,19 +325,21 @@ class ISkype(ISkypeEventHandling):
         self._DoCommand('DELETE GROUP %s' % GroupId)
 
     def CreateSms(self, MessageType, TargetNumbers):
-        # [out, retval] ISmsMessage **pMessage
-        pass
+        return ISmsMessage(chop(self._DoCommand('CREATE SMS %s %s' % (TSmsMessageType(MessageType), TargetNumbers)), 2)[1], self)
 
     def SendSms(self, TargetNumbers, MessageText, ReplyToNumber=''):
-        # [out, retval] ISmsMessage **pMessage
-        pass
+        sms = ISmsMessage(chop(self._DoCommand('CREATE SMS OUTGOING %s' % TargetNumbers), 2)[1], self)
+        sms.Body = MessageText
+        sms.ReplyToNumber = ReplyToNumber
+        sms.Send()
+        return sms
 
-    def _Property(self, ObjectType, ObjectId, PropName, Value=None, Cache=True):
+    def _Property(self, ObjectType, ObjectId, PropName, Set=None, Cache=True):
         h = (str(ObjectType).upper(), unicode(ObjectId), str(PropName).upper())
         arg = ('%s %s %s' % h).split()
         while '' in arg:
             arg.remove('')
-        if Value == None: # Get
+        if Set == None: # Get
             if Cache and h in self._CacheDict:
                 return self._CacheDict[h]
             Value = self._DoCommand('GET %s' % ' '.join(arg))
@@ -401,16 +356,16 @@ class ISkype(ISkypeEventHandling):
                 self._CacheDict[h] = Value
             return Value
         else: # Set
-            Value = unicode(Value)
+            Value = unicode(Set)
             self._DoCommand('SET %s %s' % (' '.join(arg), Value))
             if Cache and self._Cache:
                 self._CacheDict[h] = Value
 
-    def Property(self, ObjectType, ObjectId, PropName, Value=None):
-        return self._Property(ObjectType, ObjectId, PropName, Value)
+    def Property(self, ObjectType, ObjectId, PropName, Set=None):
+        return self._Property(ObjectType, ObjectId, PropName, Set)
 
-    def Variable(self, Name, Value=None):
-        return self._Property(Name, '', '', Value)
+    def Variable(self, Name, Set=None):
+        return self._Property(Name, '', '', Set)
 
     def Privilege(self, Name):
         return self._Property('PRIVILEGE', '', Name) == 'TRUE'
@@ -422,25 +377,38 @@ class ISkype(ISkypeEventHandling):
         return map(lambda x: IChatMessage(x, self), self._Search('CHATMESSAGES', Target))
 
     def User(self, Username=''):
-        return IUser(Username, self)
+        o = IUser(Username, self)
+        o.OnlineStatus
+        return o
 
     def Message(self, Id=0):
-        return IChatMessage(Id, self)
+        o = IChatMessage(Id, self)
+        o.Status
+        return o
 
     def Call(self, Id=0):
-        return ICall(Id, self)
+        o = ICall(Id, self)
+        o.Status
+        return o
 
     def Chat(self, Name=''):
-        return IChat(name, self)
+        o = IChat(name, self)
+        o.Status
+        return o
 
     def Conference(self, Id=0):
-        return IConference(Id, self)
+        o = IConference(Id, self)
+        if Id <= 0 or o.Calls == []:
+            raise ISkypeError(0, 'Unknown conference')
+        return o
 
-    def Profile(self, Property, Value=None):
-        return self._Property('PROFILE', '', Property, Value)
+    def Profile(self, Property, Set=None):
+        return self._Property('PROFILE', '', Property, Set)
 
     def Application(self, Name):
-        return IApplication(Name, self)
+        o = IApplication(Name, self)
+        o.Streams
+        return o
 
     def Greeting(self, Username=''):
         # TODO
@@ -450,7 +418,9 @@ class ISkype(ISkypeEventHandling):
         return ICommand(Id, command, Reply, Block, Timeout)
 
     def Voicemail(self, Id):
-        return IVoicemail(Id, self)
+        o = IVoicemail(Id, self)
+        o.Type
+        return o
 
     def ApiSecurityContextEnabled(self, Context):
         raise SkypeError(0, 'Not supported')
@@ -466,6 +436,14 @@ class ISkype(ISkypeEventHandling):
 
     def _SetFriendlyName(self, FriendlyName):
         self._API.SetFriendlyName(FriendlyName)
+
+    def _GetConferences(self):
+        confs = []
+        for c in self.Calls():
+            cid = c.ConferenceId
+            if cid > 0 and cid not in map(lambda x: x.Id, confs):
+                confs.append(IConference(cid, self))
+        return confs
 
     def ResetIdleTimer(self):
         self._DoCommand('RESETIDLETIMER')
@@ -513,12 +491,11 @@ class ISkype(ISkypeEventHandling):
     BookmarkedChats = property(lambda self: map(lambda x: IChat(x, self), self._Search('BOOKMARKEDCHATS')))
     MissedMessages = property(lambda self: map(lambda x: IChatMessage(x, self), self._Search('MISSEDCHATMESSAGES')))
 
-    '''
-    IConferenceCollection Conferences
-    IVoicemailCollection Voicemails
-    IVoicemailCollection MissedVoicemails
-    ISmsMessageCollection Smss
-    ISmsMessageCollection MissedSmss
-    IFileTransferCollection FileTransfers
-    IFileTransferCollection ActiveFileTransfers
-    '''
+    Voicemails = property(lambda self: map(lambda x: IVoicemail(x, self), self._Search('VOICEMAILS')))
+    MissedVoicemails = property(lambda self: map(lambda x: IVoicemail(x, self), self._Search('MISSEDVOICEMAILS')))
+
+    Conferences = property(_GetConferences)
+    Smss = property(lambda self: map(lambda x: ISmsMessage(x, self), self._Search('SMSS')))
+    MissedSmss = property(lambda self: map(lambda x: ISmsMessage(x, self), self._Search('MISSEDSMSS')))
+    FileTransfers = property(lambda self: map(lambda x: IFileTransfer(x, self), self._Search('FILETRANSFERS')))
+    ActiveFileTransfers = property(lambda self: map(lambda x: IFileTransfer(x, self), self._Search('ACTIVEFILETRANSFERS')))

@@ -11,8 +11,8 @@ class ISettings(object):
     def __init__(self, Skype):
         self._Skype = Skype
 
-    def Avatar(self, Id='1', Value=None):
-        return self._Skype._Property('AVATAR', Id, '', Value)
+    def Avatar(self, Id='1', Set=None):
+        return self._Skype._Property('AVATAR', Id, '', Set)
 
     def RingToneStatus(self, Id='1', Value=None):
         if Value == None:

@@ -13,17 +13,6 @@ from errors import *
 import time
 
 
-class ICallChannelManagerEvents(object):
-    def Channels(self, pManager, pChannels):
-        pass
-
-    def Message(self, pManager, pChannel, pMessage):
-        pass
-
-    def Created(self):
-        pass
-
-
 class ICallChannel(object):
     def __init__(self, Manager, Call, Stream, Type):
         self._Manager = Manager
@@ -32,9 +21,9 @@ class ICallChannel(object):
         self._Type = Type
 
     def SendTextMessage(self, Text):
-        if self._Type == TCallChannelType.cctReliable:
+        if self._Type == TCallChannelType.Reliable:
             self._Stream.Write(Text)
-        elif self._Type == TCallChannelType.cctDatagram:
+        elif self._Type == TCallChannelType.Datagram:
             self._Stream.SendDatagram(Text)
         else:
             raise SkypeError(0, 'Cannot send using %s channel type' & repr(self._Type))
@@ -45,13 +34,17 @@ class ICallChannel(object):
     Call = property(lambda self: self._Call)
 
 
-ICallChannelManagerEventHandling = EventHandling(dir(ICallChannelManagerEvents))
+ICallChannelManagerEventHandling = EventHandling([
+    'Channels',
+    'Message',
+    'Created'])
 
 
 class ICallChannelManager(ICallChannelManagerEventHandling):
-    def __init__(self, Events=ICallChannelManagerEvents):
+    def __init__(self, Events=None):
         ICallChannelManagerEventHandling.__init__(self)
-        self._RegisterEventsClass(Events)
+        if Events:
+            self._RegisterEvents('default', Events)
 
         self._Skype = None
         self._CallStatusEventHandler = None
@@ -60,7 +53,7 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
         self._ApplicationDatagramEventHandler = None
         self._Application = None
         self._Name = u'CallChannelManager'
-        self._ChannelType = TCallChannelType.cctReliable
+        self._ChannelType = TCallChannelType.Reliable
         self._Channels = []
 
     def __del__(self):
@@ -72,7 +65,7 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
             self._Skype._UnregisterEventHandler('ApplicationDatagram', self._ApplicationDatagramEventHandler)
 
     def _OnCallStatus(self, pCall, Status):
-        if Status == TCallStatus.clsRinging:
+        if Status == TCallStatus.Ringing:
             streams = self._Application.Streams
             self._Application.Connect(pCall.PartnerHandle, True)
             for stream in self._Application.Streams:
@@ -80,7 +73,7 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
                     self._Channels.append(ICallChannel(self, pCall, stream, self._ChannelType))
                     self._CallEventHandler('Channels', self, self._Channels)
                     break
-        elif Status in [TCallStatus.clsCancelled, TCallStatus.clsFailed, TCallStatus.clsFinished, TCallStatus.clsRefused, TCallStatus.clsMissed]:
+        elif Status in [TCallStatus.Cancelled, TCallStatus.Failed, TCallStatus.Finished, TCallStatus.Refused, TCallStatus.Missed]:
             for ch in self._Channels:
                 if ch.Call == pCall:
                     self._Channels.remove(ch)

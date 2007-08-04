@@ -17,8 +17,8 @@ class IApplication(Cached):
         self._Name = unicode(Name)
         self._Skype = Skype
 
-    def _Property(self, PropName, Value=None):
-        return self._Skype._Property('APPLICATION', self._Name, PropName, Value)
+    def _Property(self, PropName, Set=None):
+        return self._Skype._Property('APPLICATION', self._Name, PropName, Set)
 
     def _Alter(self, AlterName, Args=None):
         return self._Skype._Alter('APPLICATION', self._Name, AlterName, Args)

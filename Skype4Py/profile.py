@@ -16,8 +16,8 @@ class IProfile(object):
     def __init__(self, Skype):
         self._Skype = Skype
 
-    def _Property(self, PropName, Value=None):
-        return self._Skype._Property('PROFILE', '', PropName, Value)
+    def _Property(self, PropName, Set=None):
+        return self._Skype._Property('PROFILE', '', PropName, Set)
 
     def getBirthday(self):
         value = self._Property('BIRTHDAY')

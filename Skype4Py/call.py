@@ -9,6 +9,7 @@ accompanying LICENSE file for more information.
 
 from utils import *
 from enums import *
+from errors import *
 
 
 class ICall(Cached):
@@ -16,8 +17,8 @@ class ICall(Cached):
         self._Skype = Skype
         self._Id = int(Id)
 
-    def _Property(self, PropName, Value=None):
-        return self._Skype._Property('CALL', self._Id, PropName, Value)
+    def _Property(self, PropName, Set=None):
+        return self._Skype._Property('CALL', self._Id, PropName, Set)
 
     def _Alter(self, AlterName, Args=None):
         return self._Skype._Alter('CALL', self._Id, AlterName, Args)
@@ -56,26 +57,26 @@ class ICall(Cached):
     def Transfer(self, Target):
         self._Alter('TRANSFER', Target)
 
-    def InputDevice(self, DeviceType=None, Value=None):
-        if DeviceType == None and Value == None:
+    def InputDevice(self, DeviceType=None, Set=None):
+        if DeviceType == None and Set == None:
             a, b = self._Property('INPUT').split('=')
             return TCallIoDeviceType(a), b[1:-1]
-        elif DeviceType != None and Value != None:
-            self.Alter('SET_INPUT', '%s=\"%s\"' % (str(DeviceType), Value))
+        elif DeviceType != None and Set != None:
+            self.Alter('SET_INPUT', '%s=\"%s\"' % (str(DeviceType), Set))
 
-    def OutputDevice(self, DeviceType=None, Value=None):
-        if DeviceType == None and Value == None:
+    def OutputDevice(self, DeviceType=None, Set=None):
+        if DeviceType == None and Set == None:
             a, b = self._Property('OUTPUT').split('=')
             return TCallIoDeviceType(a), b[1:-1]
-        elif DeviceType != None and Value != None:
-            self.Alter('SET_OUTPUT', '%s=\"%s\"' % (str(DeviceType), Value))
+        elif DeviceType != None and Set != None:
+            self.Alter('SET_OUTPUT', '%s=\"%s\"' % (str(DeviceType), Set))
 
-    def CaptureMicDevice(self, DeviceType=None, Value=None):
-        if DeviceType == None and Value == None:
+    def CaptureMicDevice(self, DeviceType=None, Set=None):
+        if DeviceType == None and Set == None:
             a, b = self._Property('CAPTURE_MIC').split('=')
             return TCallIoDeviceType(a), b[1:-1]
-        elif DeviceType != None and Value != None:
-            self.Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (str(DeviceType), Value))
+        elif DeviceType != None and Set != None:
+            self.Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (str(DeviceType), Set))
 
     def CanTransfer(self, Target):
         return self._Property('CAN_TRANSFER %s' % Target) == 'TRUE'
@@ -88,7 +89,7 @@ class ICall(Cached):
         return parts
 
     Id = property(lambda self: self._Id)
-    Timestamp = property(lambda self: int(self._Property('TIMESTAMP')))
+    Timestamp = property(lambda self: float(self._Property('TIMESTAMP')))
     PartnerHandle = property(lambda self: self._Property('PARTNER_HANDLE'))
     PartnerDisplayName = property(lambda self: self._Property('PARTNER_DISPNAME'))
     ConferenceId = property(lambda self: int(self._Property('CONF_ID')))
@@ -135,26 +136,37 @@ class IParticipant(Cached):
     CallStatus = property(lambda self: self._Property(6))
 
 
-# TODO:
 class IConference(Cached):
     def _Init(self, Id, Skype):
         self._Skype = Skype
         self._Id = int(Id)
 
-    def _Property(self, PropName, Value=None):
-        return self._Skype._Property('CALL', self._Id, PropName, Value)
-
     def Hold(self):
-        self._Property('STATUS', 'ONHOLD')
+        for c in self._GetCalls():
+            c.Hold()
 
     def Resume(self):
-        self._Property('STATUS', 'INPROGRESS')
+        for c in self._GetCalls():
+            c.Resume()
 
     def Finish(self):
-        self._Property('STATUS', 'FINISHED')
+        for c in self._GetCalls():
+            c.Finish()
+
+    def _GetCalls(self):
+        calls = []
+        for c in self._Skype.Calls():
+            if c.ConferenceId == self._Id:
+                calls.append(c)
+        return calls
+
+    def _GetActiveCalls(self):
+        calls = []
+        for c in self._Skype.ActiveCalls:
+            if c.ConferenceId == self._Id:
+                calls.append(c)
+        return calls
 
     Id = property(lambda self: self._Id)
-'''
-ICallCollection Calls
-ICallCollection ActiveCalls
-'''
+    Calls = property(_GetCalls)
+    ActiveCalls = property(_GetActiveCalls)

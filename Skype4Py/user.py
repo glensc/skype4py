@@ -16,8 +16,8 @@ class IUser(Cached):
         self._Skype = Skype
         self.Handle = unicode(Handle)
 
-    def _Property(self, PropName, Value=None):
-        return self._Skype._Property('USER', self.Handle, PropName, Value)
+    def _Property(self, PropName, Set=None):
+        return self._Skype._Property('USER', self.Handle, PropName, Set)
 
     def _GetBirthday(self):
         value = self._Property('BIRTHDAY')
@@ -118,7 +118,7 @@ class IGroup(Cached):
     def _GetOnlineUsers(self):
         online = []
         for u in self.Users:
-            if u.OnlineStatus == TOnlineStatus.olsOnline:
+            if u.OnlineStatus == TOnlineStatus.Online:
                 online.append(u)
         return u
 

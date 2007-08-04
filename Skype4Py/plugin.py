@@ -25,8 +25,7 @@ class IPluginMenuItem(Cached):
     def _Init(self, Id, Skype, Caption=None, Hint=None, Enabled=None):
         self._Skype = Skype
         self._Id = unicode(Id)
-        if not hasattr(self, '_CacheDict'):
-            self._CacheDict = {}
+        self._CacheDict = {}
         if Caption != None:
             self._CacheDict['CAPTION'] = unicode(Caption)
         if Hint != None:
@@ -34,11 +33,11 @@ class IPluginMenuItem(Cached):
         if Enabled != None:
             self._CacheDict['ENABLED'] = u'TRUE' if Enabled else u'FALSE'
 
-    def _Property(self, PropName, Value=None):
-        if Value == None:
+    def _Property(self, PropName, Set=None):
+        if Set == None:
             return self._CacheDict[PropName]
-        self._Skype._Property('MENU_ITEM', self._Id, PropName, Value, Cache=False)
-        self._CacheDict[PropName] = unicode(Value)
+        self._Skype._Property('MENU_ITEM', self._Id, PropName, Set, Cache=False)
+        self._CacheDict[PropName] = unicode(Set)
 
     def Delete(self):
         self._Skype._DoCommand('DELETE MENU_ITEM %s' % self._Id)

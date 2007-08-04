@@ -95,7 +95,7 @@ class IClient(object):
         return IPluginEvent(EventId, self._Skype)
 
     def CreateMenuItem(self, MenuItemId, PluginContext, CaptionText, HintText='', IconPath='', Enabled=True,
-                       ContactType=TPluginContactType.pluginContactTypeAll, MultipleContacts=False):
+                       ContactType=TPluginContactType.All, MultipleContacts=False):
         com = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s' % (MenuItemId, str(PluginContext), quote(CaptionText))
         if HintText:
             com += ' HINT %s' % quote(HintText)
