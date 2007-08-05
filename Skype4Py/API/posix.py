@@ -14,6 +14,7 @@ import time
 import dbus, dbus.mainloop.glib, dbus.service
 import gobject
 from Skype4Py.API import *
+from Skype4Py.enums import *
 from Skype4Py.errors import ISkypeAPIError
 
 
@@ -88,10 +89,10 @@ class ISkypeAPI(threading.Thread):
         self.SendCommand(c)
         if c.Reply != 'OK':
             self.skype_in = self.skype_out = None
-            self.Handler('attach', 'REFUSED')
+            self.Handler('attach', apiAttachRefused)
             return
         self.SendCommand(ICommand(-1, 'PROTOCOL %s' % self.Protocol))
-        self.Handler('attach', 'SUCCESS')
+        self.Handler('attach', apiAttchSuccess)
 
     def IsRunning(self):
         try:
@@ -138,6 +139,7 @@ class ISkypeAPI(threading.Thread):
             result = self.skype_out.Invoke(com)
         except dbus.DbusException:
             # Skype probably closed
+            self.Handler('attach', apiAttachNotAvailable)
             return False
         if result.startswith(u'#%d ' % Command.Id):
             self.notify(result)

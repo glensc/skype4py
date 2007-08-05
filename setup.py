@@ -10,15 +10,21 @@ accompanying LICENSE file for more information.
 '''
 
 from distutils.core import setup
+from Skype4Py.skype import GetVersion
+import os
+
+
+LanguagesPath = 'Skype4Py/Languages'
 
 setup(name='Skype4Py',
-      version='0.4.0.0',
+      version=str(GetVersion()),
       description='Skype API wrapper for Python.',
       long_description='Skype4Py is a high-level, platform independant Skype API\nwrapper for Python with API simmilar to Skype4COM.',
       author='Arkadiusz Wahlig',
       author_email='yak@nokix.pasjagsm.pl',
-      url='http://sourceforge.net/projects/skype4py',
+      url='http://skype4py.sourceforge.net',
       license='BSD License',
       platforms=['Windows 2000/XP', 'Linux'],
       packages=['Skype4Py', 'Skype4Py/API'],
+      package_data={'Skype4Py': ['Languages/*']},
      )

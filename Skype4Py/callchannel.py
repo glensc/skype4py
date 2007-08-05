@@ -21,9 +21,9 @@ class ICallChannel(object):
         self._Type = Type
 
     def SendTextMessage(self, Text):
-        if self._Type == TCallChannelType.Reliable:
+        if self._Type == cctReliable:
             self._Stream.Write(Text)
-        elif self._Type == TCallChannelType.Datagram:
+        elif self._Type == cctDatagram:
             self._Stream.SendDatagram(Text)
         else:
             raise SkypeError(0, 'Cannot send using %s channel type' & repr(self._Type))
@@ -53,7 +53,7 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
         self._ApplicationDatagramEventHandler = None
         self._Application = None
         self._Name = u'CallChannelManager'
-        self._ChannelType = TCallChannelType.Reliable
+        self._ChannelType = cctReliable
         self._Channels = []
 
     def __del__(self):
@@ -65,7 +65,7 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
             self._Skype._UnregisterEventHandler('ApplicationDatagram', self._ApplicationDatagramEventHandler)
 
     def _OnCallStatus(self, pCall, Status):
-        if Status == TCallStatus.Ringing:
+        if Status == clsRinging:
             streams = self._Application.Streams
             self._Application.Connect(pCall.PartnerHandle, True)
             for stream in self._Application.Streams:
@@ -73,7 +73,7 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
                     self._Channels.append(ICallChannel(self, pCall, stream, self._ChannelType))
                     self._CallEventHandler('Channels', self, self._Channels)
                     break
-        elif Status in [TCallStatus.Cancelled, TCallStatus.Failed, TCallStatus.Finished, TCallStatus.Refused, TCallStatus.Missed]:
+        elif Status in [clsCancelled, clsFailed, clsFinished, clsRefused, clsMissed]:
             for ch in self._Channels:
                 if ch.Call == pCall:
                     self._Channels.remove(ch)
@@ -122,7 +122,7 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
         self._CallEventHandler('Created')
 
     def _SetChannelType(self, ChannelType):
-        self._ChannelType = TCallChannelType(ChannelType)
+        self._ChannelType = ChannelType
 
     def _SetName(self, Name):
         self._Name = Name

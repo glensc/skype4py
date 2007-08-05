@@ -52,14 +52,14 @@ class IVoicemail(Cached):
         raise ISkypeError(0, 'Not implemented')
 
     def SetUnplayed(self):
-        self._Property('STATUS', TVoicemailStatus.Unplayed)
+        self._Property('STATUS', vmsUnplayed)
 
     Id = property(lambda self: self._Id)
-    Type = property(lambda self: TVoicemailType(self._Property('TYPE')))
+    Type = property(lambda self: self._Property('TYPE'))
     PartnerHandle = property(lambda self: self._Property('PARTNER_HANDLE'))
     PartnerDisplayName = property(lambda self: self._Property('PARTNER_DISPNAME'))
-    Status = property(lambda self: TVoicemailStatus(self._Property('STATUS')))
-    FailureReason = property(lambda self: TVoicemailFailureReason(self._Property('FAILUREREASON')))
+    Status = property(lambda self: self._Property('STATUS'))
+    FailureReason = property(lambda self: self._Property('FAILUREREASON'))
     Timestamp = property(lambda self: float(self._Property('TIMESTAMP')))
     Duration = property(lambda self: int(self._Property('DURATION')))
     AllowedDuration = property(lambda self: int(self._Property('ALLOWED_DURATION')))

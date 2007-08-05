@@ -57,13 +57,11 @@ HWND_BROADCAST = 0xFFFF
 SkypeControlAPIDiscover = windll.user32.RegisterWindowMessageA('SkypeControlAPIDiscover')
 SkypeControlAPIAttach = windll.user32.RegisterWindowMessageA('SkypeControlAPIAttach')
 
-class _SkypeControlAPI:
-    SKYPECONTROLAPI_ATTACH_SUCCESS, \
-    SKYPECONTROLAPI_ATTACH_PENDING_AUTHORIZATION, \
-    SKYPECONTROLAPI_ATTACH_REFUSED, \
-    SKYPECONTROLAPI_ATTACH_NOT_AVAILABLE = range(4)
-
-    SKYPECONTROLAPI_ATTACH_API_AVAILABLE = 0x8001
+SKYPECONTROLAPI_ATTACH_SUCCESS, \
+SKYPECONTROLAPI_ATTACH_PENDING_AUTHORIZATION, \
+SKYPECONTROLAPI_ATTACH_REFUSED, \
+SKYPECONTROLAPI_ATTACH_NOT_AVAILABLE = range(4)
+SKYPECONTROLAPI_ATTACH_API_AVAILABLE = 0x8001
 
 class ISkypeAPI(threading.Thread):
     def __init__(self, Handler):
@@ -75,7 +73,7 @@ class ISkypeAPI(threading.Thread):
         self.Skype = None
         self.Commands = {}
         self.Handler = Handler
-        self.APIAttach = _SkypeControlAPI.SKYPECONTROLAPI_ATTACH_NOT_AVAILABLE
+        self.APIAttach = SKYPECONTROLAPI_ATTACH_NOT_AVAILABLE
 
     def run(self):
         if not self.CreateWindow():
@@ -123,12 +121,12 @@ class ISkypeAPI(threading.Thread):
             self.Wait = False
         t = threading.Timer(Timeout / 1000, ftimeout)
         t.start()
-        while self.Wait and self.APIAttach not in [_SkypeControlAPI.SKYPECONTROLAPI_ATTACH_SUCCESS,
-                                                   _SkypeControlAPI.SKYPECONTROLAPI_ATTACH_REFUSED]:
-            if self.APIAttach == _SkypeControlAPI.SKYPECONTROLAPI_ATTACH_PENDING_AUTHORIZATION:
+        while self.Wait and self.APIAttach not in [SKYPECONTROLAPI_ATTACH_SUCCESS,
+                                                   SKYPECONTROLAPI_ATTACH_REFUSED]:
+            if self.APIAttach == SKYPECONTROLAPI_ATTACH_PENDING_AUTHORIZATION:
                 # disable the timeout
                 t.cancel()
-            elif self.APIAttach == _SkypeControlAPI.SKYPECONTROLAPI_ATTACH_API_AVAILABLE:
+            elif self.APIAttach == SKYPECONTROLAPI_ATTACH_API_AVAILABLE:
                 # rebroadcast
                 if not windll.user32.SendMessageTimeoutA(HWND_BROADCAST, SkypeControlAPIDiscover,
                                                          self.hwnd, None, 2, 5000, None):
@@ -203,9 +201,9 @@ class ISkypeAPI(threading.Thread):
 
     def WinProc(self, hwnd, uMsg, wParam, lParam):
         if uMsg == SkypeControlAPIAttach:
-            if lParam == _SkypeControlAPI.SKYPECONTROLAPI_ATTACH_SUCCESS:
+            if lParam == SKYPECONTROLAPI_ATTACH_SUCCESS:
                 self.Skype = wParam
-            elif lParam == _SkypeControlAPI.SKYPECONTROLAPI_ATTACH_REFUSED:
+            elif lParam == SKYPECONTROLAPI_ATTACH_REFUSED:
                 self.Skype = None
             self.APIAttach = lParam
             self.Handler('attach', self.APIAttach)
@@ -259,6 +257,8 @@ class ISkypeAPI(threading.Thread):
                     raise ISkypeAPIError('Skype command timeout')
             else:
                 timer.start()
+        else:
+            self.Handler('attach', SKYPECONTROLAPI_ATTACH_NOT_AVAILABLE)
         return ok
 
     def async_cmd_timeout(self, cid):

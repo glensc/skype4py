@@ -24,9 +24,9 @@ class IFileTransfer(Cached):
         return self._Skype._Alter('FILETRANSFER', self._Id, AlterName, Args)
 
     Id = property(lambda self: self._Id)
-    Type = property(lambda self: TFileTransferType(self._Property('TYPE')))
-    Status = property(lambda self: TFileTransferStatus(self._Property('STATUS')))
-    FailureReason = property(lambda self: TFileTransferFailureReason(self._Property('FAILUREREASON')))
+    Type = property(lambda self: self._Property('TYPE'))
+    Status = property(lambda self: self._Property('STATUS'))
+    FailureReason = property(lambda self: self._Property('FAILUREREASON'))
     PartnerHandle = property(lambda self: self._Property('PARTNER_HANDLE'))
     PartnerDisplayName = property(lambda self: self._Property('PARTNER_DISPNAME'))
     StartTime = property(lambda self: float(self._Property('STARTTIME')))

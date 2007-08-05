@@ -7,9 +7,9 @@ Distributed under the BSD License, see the
 accompanying LICENSE file for more information.
 '''
 
-import time
 from enums import *
 from utils import *
+import time
 
 
 class IProfile(object):
@@ -34,7 +34,7 @@ class IProfile(object):
 
     FullName = property(lambda self: self._Property('FULLNAME'), lambda self, value: self._Property('FULLNAME', value))
     Birthday = property(getBirthday, _SetBirthday)
-    Sex = property(lambda self: TUserSex(self._Property('SEX')), lambda self, value: self._Property('SEX', value))
+    Sex = property(lambda self: self._Property('SEX'), lambda self, value: self._Property('SEX', value))
     Languages = property(lambda self: self._Property('LANGUAGES'), lambda self, value: self._Property('LANGUAGES', value))
     Country = property(lambda self: chop(self._Property('COUNTRY'))[0], lambda self, value: self._Property('COUNTRY', value))
     Province = property(lambda self: self._Property('PROVINCE'), lambda self, value: self._Property('PROVINCE', value))

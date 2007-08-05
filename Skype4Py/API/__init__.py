@@ -11,13 +11,13 @@ from sys import builtin_module_names
 
 
 class ICommand(object):
-    def __init__(self, Id, Command, Expected='', Blocking=False, Timeout=30000):
+    def __init__(self, Id, Command, Expected=u'', Blocking=False, Timeout=30000):
         self.Id = Id
-        self.Command = Command
-        self.Expected = Expected
+        self.Command = unicode(Command)
+        self.Expected = unicode(Expected)
         self.Blocking = Blocking
         self.Timeout = Timeout
-        self.Reply = ''
+        self.Reply = u''
 
 
 # Select apropriate low-level Skype API module

@@ -9,6 +9,7 @@ accompanying LICENSE file for more information.
 
 from utils import *
 from enums import *
+import time
 
 
 class IUser(Cached):
@@ -52,7 +53,7 @@ class IUser(Cached):
 
     FullName = property(lambda self: self._Property('FULLNAME'))
     Birthday = property(_GetBirthday)
-    Sex = property(lambda self: TUserSex(self._Property('SEX')))
+    Sex = property(lambda self: self._Property('SEX'))
     Country = property(_GetCountry)
     Province = property(lambda self: self._Property('PROVINCE'))
     City = property(lambda self: self._Property('CITY'))
@@ -62,7 +63,7 @@ class IUser(Cached):
     Homepage = property(lambda self: self._Property('HOMEPAGE'))
     About = property(lambda self: self._Property('ABOUT'))
     HasCallEquipment = property(lambda self: self._Property('HASCALLEQUIPMENT') == 'TRUE')
-    BuddyStatus = property(lambda self: TBuddyStatus(int(self._Property('BUDDYSTATUS'))),
+    BuddyStatus = property(lambda self: int(self._Property('BUDDYSTATUS')),
                            lambda self, value: self._Property('BUDDYSTATUS', int(value)))
     IsAuthorized = property(lambda self: self._Property('ISAUTHORIZED') == 'TRUE', \
                             lambda self, value: self._Property('ISAUTHORIZED', 'TRUE' if value else 'FALSE'))
@@ -70,7 +71,7 @@ class IUser(Cached):
                          lambda self, value: self._Property('ISBLOCKED', 'TRUE' if value else 'FALSE'))
     DisplayName = property(lambda self: self._Property('DISPLAYNAME'),
                            lambda self, value: self._Property('DISPLAYNAME', value))
-    OnlineStatus = property(lambda self: TOnlineStatus(self._Property('ONLINESTATUS')))
+    OnlineStatus = property(lambda self: self._Property('ONLINESTATUS'))
     LastOnline = property(lambda self: float(self._Property('LASTONLINETIMESTAMP')))
     CountryCode = property(_GetCountryCode)
     ReceivedAuthRequest = property(lambda self: self._Property('RECEIVEDAUTHREQUEST'))
@@ -118,12 +119,12 @@ class IGroup(Cached):
     def _GetOnlineUsers(self):
         online = []
         for u in self.Users:
-            if u.OnlineStatus == TOnlineStatus.Online:
+            if u.OnlineStatus == olsOnline:
                 online.append(u)
         return u
 
     Id = property(lambda self: self._Id)
-    Type = property(lambda self: TGroupType(self._Property('TYPE')))
+    Type = property(lambda self: self._Property('TYPE'))
     CustomGroupId = property(lambda self: self._Property('CUSTOM_GROUP_ID'))
     DisplayName = property(lambda self: self._Property('DISPLAYNAME'), lambda self, value: self._Property('DISPLAYNAME', value))
     Users = property(lambda self: map(lambda x: IUser(x, self._Skype), esplit(users, ', ')))

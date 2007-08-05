@@ -60,21 +60,21 @@ class ICall(Cached):
     def InputDevice(self, DeviceType=None, Set=None):
         if DeviceType == None and Set == None:
             a, b = self._Property('INPUT').split('=')
-            return TCallIoDeviceType(a), b[1:-1]
+            return a, b[1:-1]
         elif DeviceType != None and Set != None:
             self.Alter('SET_INPUT', '%s=\"%s\"' % (str(DeviceType), Set))
 
     def OutputDevice(self, DeviceType=None, Set=None):
         if DeviceType == None and Set == None:
             a, b = self._Property('OUTPUT').split('=')
-            return TCallIoDeviceType(a), b[1:-1]
+            return a, b[1:-1]
         elif DeviceType != None and Set != None:
             self.Alter('SET_OUTPUT', '%s=\"%s\"' % (str(DeviceType), Set))
 
     def CaptureMicDevice(self, DeviceType=None, Set=None):
         if DeviceType == None and Set == None:
             a, b = self._Property('CAPTURE_MIC').split('=')
-            return TCallIoDeviceType(a), b[1:-1]
+            return a, b[1:-1]
         elif DeviceType != None and Set != None:
             self.Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (str(DeviceType), Set))
 
@@ -93,10 +93,10 @@ class ICall(Cached):
     PartnerHandle = property(lambda self: self._Property('PARTNER_HANDLE'))
     PartnerDisplayName = property(lambda self: self._Property('PARTNER_DISPNAME'))
     ConferenceId = property(lambda self: int(self._Property('CONF_ID')))
-    Type = property(lambda self: TCallType(self._Property('TYPE')))
-    Status = property(lambda self: TCallStatus(self._Property('STATUS')),
+    Type = property(lambda self: self._Property('TYPE'))
+    Status = property(lambda self: self._Property('STATUS'),
                       lambda self, value: self._Property('STATUS', str(value)))
-    FailureReason = property(lambda self: TCallFailureReason(int(self._Property('FAILUREREASON'))))
+    FailureReason = property(lambda self: int(self._Property('FAILUREREASON')))
     Subject = property(lambda self: self._Property('SUBJECT'))
     PstnNumber = property(lambda self: self._Property('PSTN_NUMBER'))
     Duration = property(lambda self: int(self._Property('DURATION')))
@@ -107,15 +107,15 @@ class ICall(Cached):
     Participants = property(_GetParticipants)
     VmDuration = property(lambda self: int(self._Property('VM_DURATION')))
     VmAllowedDuration = property(lambda self: int(self._Property('VM_ALLOWED_DURATION')))
-    VideoStatus = property(lambda self: TCallVideoStatus(self._Property('VIDEO_STATUS')))
-    VideoSendStatus = property(lambda self: TCallVideoSendStatus(self._Property('VIDEO_SEND_STATUS')))
-    VideoReceiveStatus = property(lambda self: TCallVideoSendStatus(self._Property('VIDEO_RECEIVE_STATUS')))
+    VideoStatus = property(lambda self: self._Property('VIDEO_STATUS'))
+    VideoSendStatus = property(lambda self: self._Property('VIDEO_SEND_STATUS'))
+    VideoReceiveStatus = property(lambda self: self._Property('VIDEO_RECEIVE_STATUS'))
     Rate = property(lambda self: int(self._Property('RATE')))
     RateCurrency = property(lambda self: self._Property('RATE_CURRENCY'))
     RatePrecision = property(lambda self: int(self._Property('RATE_PRECISION')))
     InputStatus = property(lambda self: self._Property('VAA_INPUT_STATUS') == 'TRUE')
     ForwardedBy = property(lambda self: self._Property('FORWARDED_BY'))
-    TransferStatus = property(lambda self: TCallStatus(self._Property('VIDEO_SEND_STATUS')))
+    TransferStatus = property(lambda self: self._Property('VIDEO_SEND_STATUS'))
     TransferActive = property(lambda self: self._Property('TRANSFER_ACTIVE') == 'TRUE')
     TransferredBy = property(lambda self: self._Property('TRANSFERRED_BY'))
     TransferredTo = property(lambda self: self._Property('TRANSFERRED_TO'))
