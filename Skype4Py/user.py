@@ -24,8 +24,6 @@ class IUser(Cached):
         value = self._Property('BIRTHDAY')
         if len(value) == 8:
             return time.mktime((int(value[:4]), int(value[4:6]), int(value[6:]), 0, 0, 0, -1, -1, -1))
-        else:
-            return None
 
     def _GetCountry(self):
         value = self._Property('COUNTRY')
@@ -91,9 +89,10 @@ class IUser(Cached):
     Language = property(_GetLanguage)
     LanguageCode = property(_GetLanguageCode)
     IsVideoCapable = property(lambda self: self._Property('IS_VIDEO_CAPABLE') == 'TRUE')
-    IsSkypeOutContact = property() # property(lambda self: self._Property('') == 'TRUE')
     NumberOfAuthBuddies = property(lambda self: int(self._Property('NROF_AUTHED_BUDDIES')))
     RichMoodText = property(lambda self: self._Property('RICH_MOOD_TEXT'))
+    # TODO
+    IsSkypeOutContact = property()
 
 
 class IGroup(Cached):
