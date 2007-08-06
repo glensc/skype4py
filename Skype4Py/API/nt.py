@@ -203,7 +203,7 @@ class ISkypeAPI(threading.Thread):
         if uMsg == SkypeControlAPIAttach:
             if lParam == SKYPECONTROLAPI_ATTACH_SUCCESS:
                 self.Skype = wParam
-            elif lParam == SKYPECONTROLAPI_ATTACH_REFUSED:
+            elif lParam in [SKYPECONTROLAPI_ATTACH_REFUSED, SKYPECONTROLAPI_ATTACH_NOT_AVAILABLE, SKYPECONTROLAPI_ATTACH_API_AVAILABLE]:
                 self.Skype = None
             self.APIAttach = lParam
             self.Handler('attach', self.APIAttach)
@@ -257,8 +257,6 @@ class ISkypeAPI(threading.Thread):
                     raise ISkypeAPIError('Skype command timeout')
             else:
                 timer.start()
-        else:
-            self.Handler('attach', SKYPECONTROLAPI_ATTACH_NOT_AVAILABLE)
         return ok
 
     def async_cmd_timeout(self, cid):

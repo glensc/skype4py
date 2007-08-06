@@ -139,7 +139,6 @@ class ISkypeAPI(threading.Thread):
             result = self.skype_out.Invoke(com)
         except dbus.DbusException:
             # Skype probably closed
-            self.Handler('attach', apiAttachNotAvailable)
             return False
         if result.startswith(u'#%d ' % Command.Id):
             self.notify(result)

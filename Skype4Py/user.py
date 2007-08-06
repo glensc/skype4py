@@ -29,27 +29,33 @@ class IUser(Cached):
 
     def _GetCountry(self):
         value = self._Property('COUNTRY')
-        if self._Skype.Protocol >= 4:
-            value = chop(value)[1]
+        if value:
+            if self._Skype.Protocol >= 4:
+                value = chop(value)[-1]
         return value
 
     def _GetCountryCode(self):
-        if self._Skype.API.Protocol < 4:
-            return ''
+        if self._Skype.Protocol < 4:
+            return u''
         value = self._Property('COUNTRY')
-        return chop(value)[0]
+        if value:
+            value = chop(value)[0]	
+        return value
 
     def _GetLanguage(self):
         value = self._Property('LANGUAGE')
-        if self._Skype.API.Protocol >= 4:
-            value = chop(value)[1]
+        if value:
+            if self._Skype.Protocol >= 4:
+                value = chop(value)[-1]
         return value
 
     def _GetLanguageCode(self):
-        if self._Skype.API.Protocol < 4:
-            return ''
+        if self._Skype.Protocol < 4:
+            return u''
         value = self._Property('LANGUAGE')
-        return chop(value)[0]
+        if value:
+            value = chop(value)[0]
+        return value
 
     FullName = property(lambda self: self._Property('FULLNAME'))
     Birthday = property(_GetBirthday)

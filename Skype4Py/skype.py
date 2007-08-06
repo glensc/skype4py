@@ -201,10 +201,11 @@ class ISkype(ISkypeEventHandling):
         elif mode == 'send':
             self._CallEventHandler('Command', arg)
         elif mode == 'attach':
-            self._AttachmentStatus = arg
-            self._CallEventHandler('AttachmentStatus', self._AttachmentStatus)
-            if self._AttachmentStatus == 'REFUSED':
-                raise ISkypeAPIError('Skype connection refused')
+            if arg != self._AttachmentStatus:
+                self._AttachmentStatus = arg
+                self._CallEventHandler('AttachmentStatus', self._AttachmentStatus)
+                if self._AttachmentStatus == 'REFUSED':
+                    raise ISkypeAPIError('Skype connection refused')
 
     def _DoCommand(self, com, reply=''):
         command = ICommand(-1, com, reply, True, self.Timeout)
