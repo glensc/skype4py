@@ -99,13 +99,8 @@ class ISkype(ISkypeEventHandling):
         if mode == 'rece_api':
             a, b = chop(arg)
             ObjectType = None
-            if a == 'ERROR':
-                # ERROR, raise an error exception
-                errnum, errstr = chop(b)
-                self._CallEventHandler('Error_', None, int(errnum), errstr)
-                raise ISkypeError(int(errnum), errstr)
             # if..elif handling cache and most event handlers
-            elif a in ['CALL', 'USER', 'GROUP', 'CHAT', 'CHATMESSAGE', 'CHATMEMBER', 'VOICEMAIL', 'APPLICATION', 'SMS', 'FILETRANSFER']:
+            if a in ['CALL', 'USER', 'GROUP', 'CHAT', 'CHATMESSAGE', 'CHATMEMBER', 'VOICEMAIL', 'APPLICATION', 'SMS', 'FILETRANSFER']:
                 ObjectType, ObjectId, PropName, Value = [a] + chop(b, 2)
                 if self._Cache:
                     self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
