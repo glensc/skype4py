@@ -178,3 +178,6 @@ class Cached(object):
                 o._Init(Id, *args, **kwargs)
             cls._cache_[h] = o
             return o
+
+    def __copy__(self):
+        return self

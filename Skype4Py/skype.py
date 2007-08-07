@@ -324,7 +324,7 @@ class ISkype(ISkypeEventHandling):
         self._DoCommand('DELETE GROUP %s' % GroupId)
 
     def CreateSms(self, MessageType, TargetNumbers):
-        return ISmsMessage(chop(self._DoCommand('CREATE SMS %s %s' % (TSmsMessageType(MessageType), TargetNumbers)), 2)[1], self)
+        return ISmsMessage(chop(self._DoCommand('CREATE SMS %s %s' % (MessageType, TargetNumbers)), 2)[1], self)
 
     def SendSms(self, TargetNumbers, MessageText, ReplyToNumber=''):
         sms = ISmsMessage(chop(self._DoCommand('CREATE SMS OUTGOING %s' % TargetNumbers), 2)[1], self)

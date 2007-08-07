@@ -43,9 +43,9 @@ class ISmsMessage(Cached):
 
     Id = property(lambda self: self._Id)
     Body = property(lambda self: self._Property('BODY'), lambda self, value: self._Property('BODY', value))
-    Type = property(lambda self: TSmsMessageType(self._Property('TYPE')))
-    Status = property(lambda self: TSmsMessageStatus(self._Property('STATUS')))
-    FailureReason = property(lambda self: TSmsFailureReason(self._Property('FAILUREREASON')))
+    Type = property(lambda self: self._Property('TYPE'))
+    Status = property(lambda self: self._Property('STATUS'))
+    FailureReason = property(lambda self: self._Property('FAILUREREASON'))
     IsFailedUnseen = property(lambda self: self._Property('IS_FAILED_UNSEEN') == 'TRUE')
     Seen = property(fset=lambda self, value: self._Property('SEEN', 'TRUE' if value else 'FALSE'))
     Timestamp = property(lambda self: float(self._Property('TIMESTAMP')))
@@ -71,7 +71,7 @@ class ISmsTarget(object):
         for t in esplit(self._Message._Property('TARGET_STATUSES'), ', '):
             number, status = t.split('=')
             if number == self._Number:
-                return TSmsTargetStatus(status)
+                return status
 
     Number = property(lambda self: self._Number)
     Message = property(lambda self: self._Message)

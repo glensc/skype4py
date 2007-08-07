@@ -14,7 +14,7 @@ import os
 
 class IFileTransfer(Cached):
     def _Init(self, Id, Skype):
-        self._Id = Id
+        self._Id = int(Id)
         self._Skype = Skype
 
     def _Property(self, PropName, Set=None):
