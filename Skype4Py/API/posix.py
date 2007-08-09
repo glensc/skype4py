@@ -31,16 +31,11 @@ class _SkypeNotify(dbus.service.Object):
     def Notify(self, com):
         self.notify(com)
 
-class ISkypeAPI(threading.Thread):
-    def __init__(self, Handler):
-        threading.Thread.__init__(self)
-        self.setDaemon(True)
-        self.FriendlyName = u'Skype4Py'
-        self.Protocol = 5
-        self.Handler = Handler
+class ISkypeAPI(ISkypeAPIBase):
+    def __init__(self):
+        ISkypeAPIBase.__init__(self)
         self.loop = None
         self.skype_in = self.skype_out = None
-        self.Commands = {}
         self.bus = dbus.SessionBus()
 
     def run(self):
@@ -89,10 +84,10 @@ class ISkypeAPI(threading.Thread):
         self.SendCommand(c)
         if c.Reply != 'OK':
             self.skype_in = self.skype_out = None
-            self.Handler('attach', apiAttachRefused)
+            self.CallHandler('attach', apiAttachRefused)
             return
         self.SendCommand(ICommand(-1, 'PROTOCOL %s' % self.Protocol))
-        self.Handler('attach', apiAttchSuccess)
+        self.CallHandler('attach', apiAttchSuccess)
 
     def IsRunning(self):
         try:
@@ -128,7 +123,7 @@ class ISkypeAPI(threading.Thread):
                 Command.Id += 1
         if Command.Id in self.Commands:
             raise ISkypeAPIError('Command Id conflict')
-        self.Handler('send', Command)
+        self.CallHandler('send', Command)
         com = u'#%d %s' % (Command.Id, Command.Command)
         if Command.Blocking:
             Command._event = event = threading.Event()
@@ -167,7 +162,7 @@ class ISkypeAPI(threading.Thread):
             else:
                 command._timer.cancel()
                 del command._timer
-            self.Handler('rece_api', command.Reply)
-            self.Handler('rece', command)
+            self.CallHandler('rece_api', command.Reply)
+            self.CallHandler('rece', command)
         else:
-            self.Handler('rece_api', com)
+            self.CallHandler('rece_api', com)

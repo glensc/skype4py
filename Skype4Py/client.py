@@ -10,11 +10,18 @@ accompanying LICENSE file for more information.
 from enums import *
 from plugin import *
 from errors import *
+import weakref
 
 
 class IClient(object):
     def __init__(self, Skype):
-        self._Skype = Skype
+        self._SkypeRef = weakref.ref(Skype)
+
+    def _GetSkype(self):
+        skype = self._SkypeRef()
+        if skype:
+            return skype
+        raise Exception()
 
     def Start(self, Minimized=False, Nosplash=False):
         self._Skype._API.Start(Minimized, Nosplash)
@@ -106,6 +113,8 @@ class IClient(object):
         com += ' ENABLED %s ENABLE_MULTIPLE_CONTACTS %s' % ('TRUE' if Enabled else 'FALSE', 'TRUE' if MultipleContacts else 'FALSE')
         self._Skype._DoCommand(com)
         return IPluginMenuItem(MenuItemId, self._Skype, CaptionText, HintText, Enabled)
+
+    _Skype = property(_GetSkype)
 
     IsRunning = property(lambda self: self._Skype._API.IsRunning())
     Wallpaper = property(lambda self: self._Skype.Variable('WALLPAPER'),

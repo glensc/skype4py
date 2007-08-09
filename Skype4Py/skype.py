@@ -26,12 +26,16 @@ import time
 
 
 # Skype4Py version
-_version_ = '0.4.0.3'
+_version_ = '0.4.0.10'
 
 
 # early version, enable leak debugging
 import gc
 gc.set_debug(gc.DEBUG_LEAK)
+
+
+# ISkypeAPI object, created when ISkype object is created
+_SkypeAPI = None
 
 
 ISkypeEventHandling = EventHandling([
@@ -75,11 +79,15 @@ ISkypeEventHandling = EventHandling([
 class ISkype(ISkypeEventHandling):
     def __init__(self, Events=None):
         ISkypeEventHandling.__init__(self)
-
         if Events:
             self._RegisterEvents('default', Events)
 
-        self._API = ISkypeAPI(self._Handler)
+        global _SkypeAPI
+        if _SkypeAPI == None:
+            _SkypeAPI = ISkypeAPI()
+        self._API = _SkypeAPI
+        self._API.RegisterHandler(self._Handler)
+
         self._Cache = True
         self.ResetCache()
 
@@ -92,7 +100,10 @@ class ISkype(ISkypeEventHandling):
         self._Profile = IProfile(self)
 
     def __del__(self):
-        self.Close()
+        if self._API.NumOfHandlers() == 0:
+            self._API.Close()
+            global _SkypeAPI
+            _SkypeAPI = self._API = None
 
     def _Handler(self, mode, arg):
         # low-level API callback
@@ -238,9 +249,6 @@ class ISkype(ISkypeEventHandling):
         if Args != None:
             com = '%s %s' % (com, Args)
         return esplit(chop(self._DoCommand(com))[-1], ', ')
-
-    def Close(self):
-        self._API.Close()
 
     def SearchForUsers(self, Target):
         return map(lambda x: IUser(x, self), self._Search('USERS', Target))

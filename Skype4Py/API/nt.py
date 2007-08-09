@@ -63,16 +63,11 @@ SKYPECONTROLAPI_ATTACH_REFUSED, \
 SKYPECONTROLAPI_ATTACH_NOT_AVAILABLE = range(4)
 SKYPECONTROLAPI_ATTACH_API_AVAILABLE = 0x8001
 
-class ISkypeAPI(threading.Thread):
-    def __init__(self, Handler):
-        threading.Thread.__init__(self)
-        self.setDaemon(True)
-        self.FriendlyName = u'Skype4Py'
-        self.Protocol = 5
+class ISkypeAPI(ISkypeAPIBase):
+    def __init__(self):
+        ISkypeAPIBase.__init__(self)
         self.hwnd = None
         self.Skype = None
-        self.Commands = {}
-        self.Handler = Handler
         self.APIAttach = SKYPECONTROLAPI_ATTACH_NOT_AVAILABLE
 
     def run(self):
@@ -206,7 +201,7 @@ class ISkypeAPI(threading.Thread):
             elif lParam in [SKYPECONTROLAPI_ATTACH_REFUSED, SKYPECONTROLAPI_ATTACH_NOT_AVAILABLE, SKYPECONTROLAPI_ATTACH_API_AVAILABLE]:
                 self.Skype = None
             self.APIAttach = lParam
-            self.Handler('attach', self.APIAttach)
+            self.CallHandler('attach', self.APIAttach)
             return 1
         elif uMsg == WM_COPYDATA and wParam == self.Skype and lParam:
             copydata = cast(lParam, PCOPYDATASTRUCT).contents
@@ -224,10 +219,10 @@ class ISkypeAPI(threading.Thread):
                 else:
                     command._timer.cancel()
                     del command._timer
-                self.Handler('rece_api', command.Reply)
-                self.Handler('rece', command)
+                self.CallHandler('rece_api', command.Reply)
+                self.CallHandler('rece', command)
             else:
-                self.Handler('rece_api', com)
+                self.CallHandler('rece_api', com)
             return 1
         return windll.user32.DefWindowProcA(c_int(hwnd), c_int(uMsg), c_int(wParam), c_int(lParam))
 
@@ -240,7 +235,7 @@ class ISkypeAPI(threading.Thread):
                 Command.Id += 1
         if Command.Id in self.Commands:
             raise ISkypeAPIError('Command Id conflict')
-        self.Handler('send', Command)
+        self.CallHandler('send', Command)
         com = u'#%d %s' % (Command.Id, Command.Command)
         com8 = com.encode('utf-8') + '\0'
         copydata = COPYDATASTRUCT(None, len(com8), com8)

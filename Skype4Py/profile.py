@@ -10,11 +10,18 @@ accompanying LICENSE file for more information.
 from enums import *
 from utils import *
 import time
+import weakref
 
 
 class IProfile(object):
     def __init__(self, Skype):
-        self._Skype = Skype
+        self._SkypeRef = weakref.ref(Skype)
+
+    def _GetSkype(self):
+        skype = self._SkypeRef()
+        if skype:
+            return skype
+        raise Exception()
 
     def _Property(self, PropName, Set=None):
         return self._Skype._Property('PROFILE', '', PropName, Set)
@@ -31,6 +38,8 @@ class IProfile(object):
             self._Property('BIRTHDAY', time.strftime('%Y%m%d', time.localtime(value)))
         else:
             self._Property('BIRTHDAY', 0)
+
+    _Skype = property(_GetSkype)
 
     FullName = property(lambda self: self._Property('FULLNAME'), lambda self, value: self._Property('FULLNAME', value))
     Birthday = property(getBirthday, _SetBirthday)

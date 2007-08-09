@@ -96,7 +96,7 @@ class IChatMessage(Cached):
                     lambda self, value: self._Property('BODY', value))
     ChatName = property(lambda self: self._Property('CHATNAME'))
     Users = property(lambda self: map(lambda x: IUser(self._Skype, x), esplit(self._Property('USERS'))))
-    Seen = property(lambda self: self._Property('SEEN') == 'TRUE', \
+    Seen = property(lambda self: self._Property('SEEN') == 'TRUE',
                     lambda self, value: self._Property('SEEN', 'TRUE' if value else 'FALSE'))
     Chat = property(lambda self: IChat(self.ChatName, self._Skype))
     Sender = property(lambda self: IUser(self.FromHandle, self._Skype))

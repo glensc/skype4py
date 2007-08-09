@@ -37,7 +37,7 @@ class IUser(Cached):
             return u''
         value = self._Property('COUNTRY')
         if value:
-            value = chop(value)[0]	
+            value = chop(value)[0]
         return value
 
     def _GetLanguage(self):
@@ -69,7 +69,7 @@ class IUser(Cached):
     HasCallEquipment = property(lambda self: self._Property('HASCALLEQUIPMENT') == 'TRUE')
     BuddyStatus = property(lambda self: int(self._Property('BUDDYSTATUS')),
                            lambda self, value: self._Property('BUDDYSTATUS', int(value)))
-    IsAuthorized = property(lambda self: self._Property('ISAUTHORIZED') == 'TRUE', \
+    IsAuthorized = property(lambda self: self._Property('ISAUTHORIZED') == 'TRUE',
                             lambda self, value: self._Property('ISAUTHORIZED', 'TRUE' if value else 'FALSE'))
     IsBlocked = property(lambda self: self._Property('ISBLOCKED') == 'TRUE',
                          lambda self, value: self._Property('ISBLOCKED', 'TRUE' if value else 'FALSE'))
@@ -132,7 +132,7 @@ class IGroup(Cached):
     Type = property(lambda self: self._Property('TYPE'))
     CustomGroupId = property(lambda self: self._Property('CUSTOM_GROUP_ID'))
     DisplayName = property(lambda self: self._Property('DISPLAYNAME'), lambda self, value: self._Property('DISPLAYNAME', value))
-    Users = property(lambda self: map(lambda x: IUser(x, self._Skype), esplit(users, ', ')))
+    Users = property(lambda self: map(lambda x: IUser(x, self._Skype), esplit(self._Property('USERS', Cache=False), ', ')))
     OnlineUsers = property(_GetOnlineUsers)
     IsVisible = property(lambda self: self._Property('VISIBLE') == 'TRUE')
     IsExpanded = property(lambda self: self._Property('EXPANDED') == 'TRUE')

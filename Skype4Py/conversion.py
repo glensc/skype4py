@@ -14,7 +14,6 @@ import os
 
 class IConversion(object):
     def __init__(self, Skype):
-        self._Skype = Skype
         self._Language = u''
         self._Dict = {}
         self._SetLanguage('en')

@@ -7,9 +7,18 @@ Distributed under the BSD License, see the
 accompanying LICENSE file for more information.
 '''
 
+import weakref
+
+
 class ISettings(object):
     def __init__(self, Skype):
-        self._Skype = Skype
+        self._SkypeRef = weakref.ref(Skype)
+
+    def _GetSkype(self):
+        skype = self._SkypeRef()
+        if skype:
+            return skype
+        raise Exception()
 
     def Avatar(self, Id='1', Set=None):
         return self._Skype._Property('AVATAR', Id, '', Set)
@@ -21,6 +30,8 @@ class ISettings(object):
 
     def RingTone(self, Id='1', Value=None):
         return self._Skype._Property('RINGTONE', Id, '', Value)
+
+    _Skype = property(_GetSkype)
 
     AudioIn = property(lambda self: self._Skype.Variable('AUDIO_IN'),
                        lambda self, value: self._Skype.Variable('AUDIO_IN', value))
