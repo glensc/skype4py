@@ -11,10 +11,7 @@ accompanying LICENSE file for more information.
 
 from distutils.core import setup
 from Skype4Py.skype import GetVersion
-import os
 
-
-LanguagesPath = 'Skype4Py/Languages'
 
 setup(name='Skype4Py',
       version=str(GetVersion()),
@@ -26,5 +23,5 @@ setup(name='Skype4Py',
       license='BSD License',
       platforms=['Windows 2000/XP', 'Linux'],
       packages=['Skype4Py', 'Skype4Py/API'],
-      package_data={'Skype4Py': ['Languages/*']},
+      package_data={'Skype4Py': ['Languages/??']},
      )
