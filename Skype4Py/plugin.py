@@ -36,7 +36,7 @@ class IPluginMenuItem(Cached):
     def _Property(self, PropName, Set=None):
         if Set == None:
             return self._CacheDict[PropName]
-        self._Skype._Property('MENU_ITEM', self._Id, PropName, Set, Cache=False)
+        self._Skype._Property('MENU_ITEM', self._Id, PropName, Set)
         self._CacheDict[PropName] = unicode(Set)
 
     def Delete(self):

@@ -359,14 +359,9 @@ class ISkype(ISkypeEventHandling):
                     break
                 del arg[0]
                 Value = b
-            if Cache and self._Cache:
-                self._CacheDict[h] = Value
             return Value
         else: # Set
-            Value = unicode(Set)
-            self._DoCommand('SET %s %s' % (' '.join(arg), Value))
-            if Cache and self._Cache:
-                self._CacheDict[h] = Value
+            self._DoCommand('SET %s %s' % (' '.join(arg), unicode(Set)))
 
     def Property(self, ObjectType, ObjectId, PropName, Set=None):
         return self._Property(ObjectType, ObjectId, PropName, Set)
