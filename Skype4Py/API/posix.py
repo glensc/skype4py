@@ -1,5 +1,5 @@
 '''
-Low level Skype (for Linux) interface implemented using dbus module.
+Low level Skype for Linux interface implemented using dbus module.
 
 Copyright (c) 2007, Arkadiusz Wahlig
 
@@ -87,7 +87,7 @@ class ISkypeAPI(ISkypeAPIBase):
             self.CallHandler('attach', apiAttachRefused)
             return
         self.SendCommand(ICommand(-1, 'PROTOCOL %s' % self.Protocol))
-        self.CallHandler('attach', apiAttchSuccess)
+        self.CallHandler('attach', apiAttachSuccess)
 
     def IsRunning(self):
         try:
@@ -166,3 +166,4 @@ class ISkypeAPI(ISkypeAPIBase):
             self.CallHandler('rece', command)
         else:
             self.CallHandler('rece_api', com)
+

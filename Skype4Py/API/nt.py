@@ -1,5 +1,5 @@
 '''
-Low level Skype (for Windows) interface implemented
+Low level Skype for Windows interface implemented
 using Windows messaging. Uses direct WinAPI calls
 through ctypes module.
 
@@ -257,3 +257,4 @@ class ISkypeAPI(ISkypeAPIBase):
     def async_cmd_timeout(self, cid):
         if cid in self.Commands:
             del self.Commands[cid]
+
