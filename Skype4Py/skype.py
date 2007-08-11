@@ -26,7 +26,7 @@ import time
 
 
 # Skype4Py version
-_version_ = '0.4.0.10'
+_version_ = '0.4.0.11'
 
 
 # early version, enable leak debugging
