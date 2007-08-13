@@ -173,7 +173,7 @@ olsAway = 'AWAY'
 olsNotAvailable = 'NA'
 olsDoNotDisturb = 'DND'
 olsInvisible = 'INVISIBLE'
-olsSkypeOut = 'SkypeOut'
+olsSkypeOut = 'SKYPEOUT'
 olsSkypeMe = 'SKYPEME'
 
 

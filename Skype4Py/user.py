@@ -91,8 +91,7 @@ class IUser(Cached):
     IsVideoCapable = property(lambda self: self._Property('IS_VIDEO_CAPABLE') == 'TRUE')
     NumberOfAuthBuddies = property(lambda self: int(self._Property('NROF_AUTHED_BUDDIES')))
     RichMoodText = property(lambda self: self._Property('RICH_MOOD_TEXT'))
-    # TODO
-    IsSkypeOutContact = property()
+    IsSkypeOutContact = property(lambda self: self.OnlineStatus == olsSkypeOut)
 
 
 class IGroup(Cached):
