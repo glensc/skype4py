@@ -94,20 +94,53 @@ def EventHandling(events):
     '''
 
     class EventHandlingBase(object):
+        class EventHandlingThread(threading.Thread):
+            def __init__(self, name=None):
+                threading.Thread.__init__(self, name=name)
+                self.setDaemon(False)
+                self.lock = threading.Lock()
+                self.queue = []
+
+            def enqueue(self, target, args, kwargs):
+                self.queue.append((target, args, kwargs))
+
+            def run(self):
+                while True:
+                    try:
+                        self.lock.acquire()
+                        h = self.queue[0]
+                        del self.queue[0]
+                    except IndexError:
+                        break
+                    finally:
+                        self.lock.release()
+                    h[0](*h[1], **h[2])
+
         def __init__(self):
             self._Events = {}
             self._EventHandlers = {}
+            self._EventThreads = {}
 
         def _CallEventHandler(self, name, *args, **kwargs):
+            # Initialize event handling thread if needed
+            if name in self._EventThreads:
+                t = self._EventThreads[name]
+                t.lock.acquire()
+                if not self._EventThreads[name].isAlive():
+                    t = self._EventThreads[name] = self.EventHandlingThread(name)
+            else:
+                t = self._EventThreads[name] = self.EventHandlingThread(name)
+            # enqueue handlers
             for h in self._EventHandlers.get(name, {}).values():
-                t = threading.Thread(name=name, target=h, args=args, kwargs=kwargs)
-                t.setDaemon(False)
-                t.start()
+                t.enqueue(h, args, kwargs)
             for h in self._Events.values():
                 if hasattr(h, name):
-                    t = threading.Thread(name=name, target=getattr(h, name), args=args, kwargs=kwargs)
-                    t.setDaemon(False)
-                    t.start()
+                    t.enqueue(getattr(h, name), args, kwargs)
+            # start serial event processing
+            try:
+                t.lock.release()
+            except:
+                t.start()
 
         def _GetEventHandler(self, name):
             try:

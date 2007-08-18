@@ -26,7 +26,7 @@ import time
 
 
 # Skype4Py version
-_version_ = '0.4.0.11'
+_version_ = '0.4.0.12'
 
 
 # early version, enable leak debugging
@@ -138,14 +138,14 @@ class ISkype(ISkypeEventHandling):
                     if PropName == 'CONNECTING':
                         self._CallEventHandler('ApplicationConnecting', o, map(lambda x: IUser(x, self), esplit(Value)))
                     elif PropName == 'STREAMS':
-                        self._CallEventHandler('ApplicationStreams', o, map(lambda x: IApplicationStream(x, app), esplit(Value)))
+                        self._CallEventHandler('ApplicationStreams', o, map(lambda x: IApplicationStream(x, o), esplit(Value)))
                     elif PropName == 'DATAGRAM':
                         handle, text = chop(Value)
-                        self._CallEventHandler('ApplicationDatagram', o, IApplicationStream(handle, app), text)
+                        self._CallEventHandler('ApplicationDatagram', o, IApplicationStream(handle, o), text)
                     elif PropName == 'SENDING':
-                        self._CallEventHandler('ApplicationSending', o, map(lambda x: IApplicationStream(x.split('=')[0], app), esplit(Value)))
+                        self._CallEventHandler('ApplicationSending', o, map(lambda x: IApplicationStream(x.split('=')[0], o), esplit(Value)))
                     elif PropName == 'RECEIVED':
-                        self._CallEventHandler('ApplicationReceiving', o, map(lambda x: IApplicationStream(x.split('=')[0], app), esplit(Value)))
+                        self._CallEventHandler('ApplicationReceiving', o, map(lambda x: IApplicationStream(x.split('=')[0], o), esplit(Value)))
                 elif ObjectType == 'GROUP':
                     o = IGroup(ObjectId, self)
                     if PropName == 'VISIBLE':
