@@ -21,7 +21,7 @@ class IClient(object):
         skype = self._SkypeRef()
         if skype:
             return skype
-        raise Exception()
+        raise ISkypeError('Skype4Py internal error')
 
     def Start(self, Minimized=False, Nosplash=False):
         self._Skype._API.Start(Minimized, Nosplash)
@@ -44,8 +44,8 @@ class IClient(object):
     def OpenSearchDialog(self):
         self._Skype._DoCommand('OPEN SEARCH')
 
-    def OpenOptionsDialog(self, Page):
-        self._Skype._DoCommand('OPEN OPTIONS')
+    def OpenOptionsDialog(self, Page=''):
+        self._Skype._DoCommand('OPEN OPTIONS %s' % Page)
 
     def OpenCallHistoryTab(self):
         self._Skype._DoCommand('OPEN CALLHISTORY')
