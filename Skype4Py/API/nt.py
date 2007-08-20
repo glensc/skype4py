@@ -244,15 +244,15 @@ class ISkypeAPI(ISkypeAPIBase):
         else:
             Command._timer = timer = threading.Timer(Command.Timeout / 1000.0, self.async_cmd_timeout, (Command.Id,))
         self.Commands[Command.Id] = Command
-        ok = windll.user32.SendMessageA(self.Skype, WM_COPYDATA, self.hwnd, byref(copydata))
-        if ok:
+        if windll.user32.SendMessageA(self.Skype, WM_COPYDATA, self.hwnd, byref(copydata)):
             if Command.Blocking:
                 event.wait(Command.Timeout / 1000.0)
                 if not event.isSet():
                     raise ISkypeAPIError('Skype command timeout')
             else:
                 timer.start()
-        return ok
+        else:
+            raise ISkypeAPIError('Skype probably closed')
 
     def async_cmd_timeout(self, cid):
         if cid in self.Commands:

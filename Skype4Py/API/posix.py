@@ -132,9 +132,9 @@ class ISkypeAPI(ISkypeAPIBase):
         self.Commands[Command.Id] = Command
         try:
             result = self.skype_out.Invoke(com)
-        except dbus.DbusException:
+        except dbus.DBusException, err:
             # Skype probably closed
-            return False
+            raise ISkypeAPIError('Skype probably closed (%s)' % str(err))
         if result.startswith(u'#%d ' % Command.Id):
             self.notify(result)
         if Command.Blocking:
@@ -143,7 +143,6 @@ class ISkypeAPI(ISkypeAPIBase):
                 raise ISkypeAPIError('Skype command timeout')
         else:
             timer.start()
-        return True
 
     def async_cmd_timeout(self, cid):
         if cid in self.Commands:

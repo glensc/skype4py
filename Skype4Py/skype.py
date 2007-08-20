@@ -282,8 +282,7 @@ class ISkype(ISkypeEventHandling):
         return self.CreateChatWith(Username).SendMessage(Text)
 
     def SendCommand(self, Command):
-        if not self._API.SendCommand(Command):
-            raise ISkypeError(0, 'Skype does not respond')
+        self._API.SendCommand(Command)
 
     def ChangeUserStatus(self, newVal):
         self.CurrentUserStatus = newVal
