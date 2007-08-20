@@ -96,7 +96,7 @@ def EventHandling(events):
     class EventHandlingBase(object):
         class EventHandlingThread(threading.Thread):
             def __init__(self, name=None):
-                threading.Thread.__init__(self, name=name)
+                threading.Thread.__init__(self, name='%s event handler' % name)
                 self.setDaemon(False)
                 self.lock = threading.Lock()
                 self.queue = []
