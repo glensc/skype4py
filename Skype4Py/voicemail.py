@@ -54,6 +54,33 @@ class IVoicemail(Cached):
     def SetUnplayed(self):
         self._Property('STATUS', vmsUnplayed)
 
+    def InputDevice(self, DeviceType=None, Set=None):
+        if DeviceType == None and Set == None:
+            a, b = self._Property('INPUT').split('=')
+            return a, b[1:-1]
+        elif DeviceType != None and Set != None:
+            self._Alter('SET_INPUT', '%s=\"%s\"' % (DeviceType, Set))
+        else:
+            raise TypeError('too much or too little arguments specified')
+
+    def OutputDevice(self, DeviceType=None, Set=None):
+        if DeviceType == None and Set == None:
+            a, b = self._Property('OUTPUT').split('=')
+            return a, b[1:-1]
+        elif DeviceType != None and Set != None:
+            self._Alter('SET_OUTPUT', '%s=\"%s\"' % (DeviceType, Set))
+        else:
+            raise TypeError('too much or too little arguments specified')
+
+    def CaptureMicDevice(self, DeviceType=None, Set=None):
+        if DeviceType == None and Set == None:
+            a, b = self._Property('CAPTURE_MIC').split('=')
+            return a, b[1:-1]
+        elif DeviceType != None and Set != None:
+            self._Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (DeviceType, Set))
+        else:
+            raise TypeError('too much or too little arguments specified')
+
     Id = property(lambda self: self._Id)
     Type = property(lambda self: self._Property('TYPE'))
     PartnerHandle = property(lambda self: self._Property('PARTNER_HANDLE'))

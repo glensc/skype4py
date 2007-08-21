@@ -114,6 +114,9 @@ class IClient(object):
         self._Skype._DoCommand(com)
         return IPluginMenuItem(MenuItemId, self._Skype, CaptionText, HintText, Enabled)
 
+    def OpenLiveTab(self):
+        self._Skype._DoCommand('OPEN LIVETAB')
+
     _Skype = property(_GetSkype)
 
     IsRunning = property(lambda self: self._Skype._API.IsRunning())

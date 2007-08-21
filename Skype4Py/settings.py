@@ -20,8 +20,8 @@ class ISettings(object):
             return skype
         raise Exception()
 
-    def Avatar(self, Id='1', Set=None):
-        return self._Skype._Property('AVATAR', Id, '', Set)
+    def Avatar(self, Id='1', newVal=''):
+        self._Skype._Property('AVATAR', Id, newVal)
 
     def RingToneStatus(self, Id='1', Value=None):
         if Value == None:
@@ -30,6 +30,15 @@ class ISettings(object):
 
     def RingTone(self, Id='1', Value=None):
         return self._Skype._Property('RINGTONE', Id, '', Value)
+
+    def ResetIdleTimer(self):
+        self._Skype._DoCommand('RESETIDLETIMER')
+
+    def LoadAvatarFromFile(self, Filename, AvatarId='1'):
+        self._Skype._Property('AVATAR', Id, '', Filename)
+
+    def SaveAvatarToFile(self, Filename, AvatarId='1'):
+        self._Skype._Property('AVATAR', Id, Filename)
 
     _Skype = property(_GetSkype)
 
@@ -51,4 +60,4 @@ class ISettings(object):
                         lambda self, value: self._Skype.Variable('UI_LANGUAGE', value))
 
     # TODO
-    AutoAway = property()
+    #AutoAway

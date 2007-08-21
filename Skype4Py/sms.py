@@ -11,16 +11,20 @@ from utils import *
 from enums import *
 
 
-# TODO
-# For future use?
 class ISmsChunk(object):
     def __init__(self, Id, Message):
         self._Id = Id
         self._Message = Message
 
+    def _GetCharactersLeft(self):
+        count, left = map(int, chop(self._Message._Property('CHUNKING', Cache=False)))
+        if self._Id == count - 1:
+            return left
+        return 0
+
     Id = property(lambda self: self._Id)
-    CharactersLeft = property()
-    Text = property()
+    CharactersLeft = property(_GetCharactersLeft)
+    Text = property(lambda self: self._Message._Property('CHUNK %s' % self._Id))
     Message = property(lambda self: self._Message)
 
 
@@ -29,8 +33,8 @@ class ISmsMessage(Cached):
         self._Id = int(Id)
         self._Skype = Skype
 
-    def _Property(self, PropName, Set=None):
-        return self._Skype._Property('SMS', self._Id, PropName, Set)
+    def _Property(self, PropName, Set=None, Cache=True):
+        return self._Skype._Property('SMS', self._Id, PropName, Set, Cache)
 
     def _Alter(self, AlterName, Args=None):
         return self._Skype._Alter('SMS', self._Id, AlterName, Args)
@@ -57,9 +61,7 @@ class ISmsMessage(Cached):
     Targets = property(lambda self: map(lambda x: ISmsTarget(x, self), esplit(self._Property('TARGET_NUMBERS'), ', ')))
     TargetNumbers = property(lambda self: self._Property('TARGET_NUMBERS'),
                              lambda self, value: self._Property('TARGET_NUMBERS', value))
-    # TODO
-    # Chunks? For future use?
-    Chunks = property(lambda self: [])
+    Chunks = property(lambda self: map(lambda x: ISmsChunk(x, self), range(int(chop(self._Property('CHUNKING', Cache=False))[0]))))
 
 
 class ISmsTarget(object):

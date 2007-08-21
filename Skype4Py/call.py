@@ -62,21 +62,27 @@ class ICall(Cached):
             a, b = self._Property('INPUT').split('=')
             return a, b[1:-1]
         elif DeviceType != None and Set != None:
-            self.Alter('SET_INPUT', '%s=\"%s\"' % (str(DeviceType), Set))
+            self._Alter('SET_INPUT', '%s=\"%s\"' % (DeviceType, Set))
+        else:
+            raise TypeError('too much or too little arguments specified')
 
     def OutputDevice(self, DeviceType=None, Set=None):
         if DeviceType == None and Set == None:
             a, b = self._Property('OUTPUT').split('=')
             return a, b[1:-1]
         elif DeviceType != None and Set != None:
-            self.Alter('SET_OUTPUT', '%s=\"%s\"' % (str(DeviceType), Set))
+            self._Alter('SET_OUTPUT', '%s=\"%s\"' % (DeviceType, Set))
+        else:
+            raise TypeError('too much or too little arguments specified')
 
     def CaptureMicDevice(self, DeviceType=None, Set=None):
         if DeviceType == None and Set == None:
             a, b = self._Property('CAPTURE_MIC').split('=')
             return a, b[1:-1]
         elif DeviceType != None and Set != None:
-            self.Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (str(DeviceType), Set))
+            self._Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (DeviceType, Set))
+        else:
+            raise TypeError('too much or too little arguments specified')
 
     def CanTransfer(self, Target):
         return self._Property('CAN_TRANSFER %s' % Target) == 'TRUE'
@@ -115,10 +121,11 @@ class ICall(Cached):
     RatePrecision = property(lambda self: int(self._Property('RATE_PRECISION')))
     InputStatus = property(lambda self: self._Property('VAA_INPUT_STATUS') == 'TRUE')
     ForwardedBy = property(lambda self: self._Property('FORWARDED_BY'))
-    TransferStatus = property(lambda self: self._Property('VIDEO_SEND_STATUS'))
+    TransferStatus = property(lambda self: self._Property('TRANSFER_STATUS'))
     TransferActive = property(lambda self: self._Property('TRANSFER_ACTIVE') == 'TRUE')
     TransferredBy = property(lambda self: self._Property('TRANSFERRED_BY'))
     TransferredTo = property(lambda self: self._Property('TRANSFERRED_TO'))
+    TargetIdentify = property(lambda self: self._Property('TARGET_IDENTIFY'))
 
 
 class IParticipant(Cached):

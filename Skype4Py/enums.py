@@ -353,3 +353,47 @@ fileTransferFailureReasonFailedWrite = 'FAILED_WRITE'
 fileTransferFailureReasonFailedRemoteWrite = 'FAILED_REMOTE_WRITE'
 fileTransferFailureReasonRemoteDoesNotSupportFT = 'REMOTE_DOES_NOT_SUPPORT_FT'
 fileTransferFailureReasonRemoteOfflineTooLong = 'REMOTE_OFFLINE_TOO_LONG'
+
+
+# TChatMemberRole
+chatMemberRoleUnknown = 'UNKNOWN'
+chatMemberRoleCreator = 'CREATOR'
+chatMemberRoleMaster = 'MASTER'
+chatMemberRoleHelper = 'HELPER'
+chatMemberRoleUser = 'USER'
+chatMemberRoleListener = 'LISTENER'
+chatMemberRoleApplicant = 'APPLICANT'
+
+
+# TChatMyStatus
+chatStatusUnknown = 'UNKNOWN'
+chatStatusConnecting = 'CONNECTING'
+chatStatusWaitingRemoteAccept = 'WAITING_REMOTE_ACCEPT'
+chatStatusAcceptRequired = 'ACCEPT_REQUIRED'
+chatStatusPasswordRequired = 'PASSWORD_REQUIRED'
+chatStatusSubscribed = 'SUBSCRIBED'
+chatStatusUnsubscribed = 'UNSUBSCRIBED'
+chatStatusDisbanded = 'CHAT_DISBANDED'
+chatStatusQueuedBecauseChatIsFull = 'QUEUED_BECAUSE_CHAT_IS_FULL'
+chatStatusApplicationDenied = 'APPLICATION_DENIED'
+chatStatusKicked = 'KICKED'
+chatStatusBanned = 'BANNED'
+chatStatusRetryConnecting = 'RETRY_CONNECTING'
+
+
+# TChatOptions
+chatOptionJoiningEnabled = 1
+chatOptionJoinersBecomeApplicants = 2
+chatOptionJoinersBecomeListeners = 4
+chatOptionHistoryDisclosed = 8
+chatOptionUsersAreListeners = 16
+chatOptionTopicAndPictureLockedForUsers = 32
+
+
+# TChatType
+chatTypeUnknown = 'UNKNOWN'
+chatTypeDialog = 'DIALOG'
+chatTypeLegacyDialog = 'LEGACY_DIALOG'
+chatTypeLegacyUnsubscribed = 'LEGACY_UNSUBSCRIBED'
+chatTypeMultiChat = 'MULTICHAT'
+chatTypeSharedGroup = 'SHAREDGROUP'

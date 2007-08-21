@@ -21,8 +21,8 @@ class IChat(Cached):
     def _Property(self, PropName, Value=None, Cache=True):
         return self._Skype._Property('CHAT', self._Name, PropName, Value, Cache)
 
-    def _Alter(self, AlterName, Args=None, Reply=None):
-        return self._Skype._Alter('CHAT', self._Name, AlterName, Args, Reply)
+    def _Alter(self, AlterName, Args=None):
+        return self._Skype._Alter('CHAT', self._Name, AlterName, Args, 'ALTER CHAT %s' % AlterName)
 
     def OpenWindow(self):
         self._Skype._DoCommand('OPEN CHAT %s' % self._Name)
@@ -42,10 +42,10 @@ class IChat(Cached):
         self._Alter('ADDMEMBERS', ', '.join(map(lambda x: x.Handle, pMembers)))
 
     def Bookmark(self):
-        self._Alter('BOOKMARK', Reply='ALTER CHAT BOOKMARK')
+        self._Alter('BOOKMARK')
 
     def Unbookmark(self):
-        self._Alter('UNBOOKMARK', Reply='ALTER CHAT UNBOOKMARK')
+        self._Alter('UNBOOKMARK')
 
     def _GetTopic(self):
         try:
@@ -58,9 +58,33 @@ class IChat(Cached):
 
     def _SetTopic(self, Topic):
         try:
-            self._Alter('SETTOPICXML', Topic, 'ALTER CHAT SETTOPICXML')
+            self._Alter('SETTOPICXML', Topic)
         except SkypeError:
-            self._Alter('SETTOPIC', Topic, 'ALTER CHAT SETTOPIC')
+            self._Alter('SETTOPIC', Topic)
+
+    def AcceptAdd(self):
+        self._Alter('ACCEPTADD')
+
+    def ClearRecentMessages(self):
+        self._Alter('CLEARRECENTMESSAGES')
+
+    def Disband(self):
+        self._Alter('DISBAND')
+
+    def Join(self):
+        self._Alter('JOIN')
+
+    def Kick(self, Handle):
+        self._Alter('KICK', Handle)
+
+    def KickBan(self, Handle):
+        self._Alter('KICKBAN', Handle)
+
+    def EnterPassword(self, Password):
+        self._Alter('ENTERPASSWORD', Password)
+
+    def SetPassword(self, Password, Hint=''):
+        self._Alter('SETPASSWORD', '%s %s' % (Password, Hint))
 
     Name = property(lambda self: self._Name)
     Bookmarked = property(lambda self: self._Property('BOOKMARKED') == 'TRUE')
@@ -74,7 +98,24 @@ class IChat(Cached):
     ActiveMembers = property(lambda self: map(lambda x: IUser(x, self._Skype), esplit(self._Property('ACTIVEMEMBERS', Cache=False))))
     Messages = property(lambda self: map(lambda x: IChatMessage(x ,self._Skype), esplit(self._Property('CHATMESSAGES', Cache=False), ', ')))
     RecentMessages = property(lambda self: map(lambda x: IChatMessage(x, self._Skype), esplit(self._Property('RECENTCHATMESSAGES', Cache=False), ', ')))
-
+    ActivityTimestamp = property(lambda self: float(self._Property('ACTIVITY_TIMESTAMP')))
+    Applicants = property(lambda self: map(lambda x: IUser(x, self._Skype), esplit(self._Property('APPLICANTS'))))
+    Blob = property(lambda self: self._Property('BLOB'))
+    Description = property(lambda self: self._Property('DESCRIPTION'),
+                           lambda self, value: self._Property('DESCRIPTION', value))
+    DialogPartner = property(lambda self: self._Property('DIALOG_PARTNER'))
+    GuideLines = property(lambda self: self._Property('GUIDELINES'),
+                          lambda self, value: self._Alter('SETGUIDELINES', value))
+    MemberObjects = property(lambda self: map(lambda x: IChatMember(x, self._Skype), esplit(self._Property('MEMBEROBJECTS'), ', ')))
+    MyRole = property(lambda self: self._Property('MYROLE'))
+    MyStatus = property(lambda self: self._Property('MYSTATUS'))
+    Options = property(lambda self: int(self._Property('OPTIONS')),
+                       lambda self, value: self._Alter('SETOPTIONS', value))
+    PasswordHint = property(lambda self: self._Property('PASSWORDHINT'))
+    TopicXML = property(lambda self: self._Property('TOPICXML'),
+                        lambda self, value: self._Property('TOPICXML', value))
+    Type = property(lambda self: self._Property('TYPE'))
+    AlertString = property(fset=lambda self, value: self._Alter('SETALERTSTRING', quote('=%s' % value)))
 
 
 class IChatMessage(Cached):
@@ -100,3 +141,25 @@ class IChatMessage(Cached):
                     lambda self, value: self._Property('SEEN', 'TRUE' if value else 'FALSE'))
     Chat = property(lambda self: IChat(self.ChatName, self._Skype))
     Sender = property(lambda self: IUser(self.FromHandle, self._Skype))
+
+
+class IChatMember(Cached):
+    def _Init(self, Id, Skype):
+        self._Skype = Skype
+        self._Id = int(Id)
+
+    def _Property(self, PropName, Value=None, Cache=True):
+        return self._Skype._Property('CHATMEMBER', self._Id, PropName, Value, Cache)
+
+    def _Alter(self, AlterName, Args=None):
+        return self._Skype._Alter('CHATMEMBER', self._Id, AlterName, Args, 'ALTER CHATMEMBER %s' % AlterName)
+
+    def CanSetRoleTo(self, Role):
+        return self._Alter('CANSETROLETO', Role) == 'TRUE'
+
+    Id = property(lambda self: self._Id)
+    Handle = property(lambda self: self._Property('IDENTITY'))
+    Role = property(lambda self: self._Property('ROLE'),
+                    lambda self, value: self._Alter('SETROLETO', value))
+    IsActive = property(lambda self: self._Property('IS_ACTIVE') == 'TRUE')
+    Chat = property(lambda self: IChat(self._Property('CHATNAME'), self._Skype))

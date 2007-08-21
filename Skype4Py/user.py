@@ -55,6 +55,9 @@ class IUser(Cached):
             value = chop(value)[0]
         return value
 
+    def SaveAvatarToFile(self, Filename, AvatarId='1'):
+        self._Property('AVATAR', Id, Filename)
+
     FullName = property(lambda self: self._Property('FULLNAME'))
     Birthday = property(_GetBirthday)
     Sex = property(lambda self: self._Property('SEX'))
@@ -92,6 +95,7 @@ class IUser(Cached):
     NumberOfAuthBuddies = property(lambda self: int(self._Property('NROF_AUTHED_BUDDIES')))
     RichMoodText = property(lambda self: self._Property('RICH_MOOD_TEXT'))
     IsSkypeOutContact = property(lambda self: self.OnlineStatus == olsSkypeOut)
+    IsVoicemailCapable = property(lambda self: self._Property('IS_VOICEMAIL_CAPABLE') == 'TRUE')
 
 
 class IGroup(Cached):

@@ -26,7 +26,7 @@ import time
 
 
 # Skype4Py version
-_version_ = '0.4.0.12'
+_version_ = '0.9.28.0'
 
 
 # early version, enable leak debugging
@@ -73,7 +73,10 @@ ISkypeEventHandling = EventHandling([
     'PluginEventClicked',
     'PluginMenuItemClicked',
     'WallpaperChanged',
-    'FileTransferStatusChanged'])
+    'FileTransferStatusChanged',
+    'CallTransferStatusChanged',
+    'ChatMembersChanged',
+    'ChatMemberRoleChanged'])
 
 
 class ISkype(ISkypeEventHandling):
@@ -121,7 +124,7 @@ class ISkype(ISkypeEventHandling):
                         self._CallEventHandler('OnlineStatus', o, Value)
                     elif PropName == 'MOOD_TEXT' or PropName == 'RICH_MOOD_TEXT':
                         self._CallEventHandler('UserMood', o, Value)
-                if ObjectType == 'CALL':
+                elif ObjectType == 'CALL':
                     o = ICall(ObjectId, self)
                     if PropName == 'STATUS':
                         self._CallEventHandler('CallStatus', o, Value)
@@ -129,11 +132,21 @@ class ISkype(ISkypeEventHandling):
                         self._CallEventHandler('CallSeenStatusChanged', o, Value == 'TRUE')
                     elif PropName == 'INPUT':
                         self._CallEventHandler('CallInputStatusChanged', o, Value.startswith('SOUNDCARD='))
-                if ObjectType == 'CHATMESSAGE':
+                    elif PropName == 'TRANSFER_STATUS':
+                        self._CallEventHandler('CallTransferStatusChanged', o, Value)
+                elif ObjectType == 'CHAT':
+                    o = IChat(ObjectId, self)
+                    if PropName == 'MEMBERS':
+                        self._CallEventHandler('ChatMembersChanged', o, map(lambda x: IUser(x, self), esplit(Value)))
+                elif ObjectType == 'CHATMEMBER':
+                    o = IChatMember(ObjectId, self)
+                    if PropName == 'ROLE':
+                        self._CallEventHandler('ChatMemberRoleChanged', o, Value)
+                elif ObjectType == 'CHATMESSAGE':
                     o = IChatMessage(ObjectId, self)
                     if PropName == 'STATUS':
                         self._CallEventHandler('MessageStatus', o, Value)
-                if ObjectType == 'APPLICATION':
+                elif ObjectType == 'APPLICATION':
                     o = IApplication(ObjectId, self)
                     if PropName == 'CONNECTING':
                         self._CallEventHandler('ApplicationConnecting', o, map(lambda x: IUser(x, self), esplit(Value)))
@@ -447,9 +460,11 @@ class ISkype(ISkypeEventHandling):
                 confs.append(IConference(cid, self))
         return confs
 
-    # Custom, ISettings.AutoAway should be based on this?
-    def ResetIdleTimer(self):
-        self._DoCommand('RESETIDLETIMER')
+    def CreateChatUsingBlob(self, Blob):
+        return IChat(chop(self._DoCommand('CHAT CREATEUSINGBLOB %s' % Blob), 2)[1], self)
+
+    def FindChatUsingBlob(self, Blob):
+        return IChat(chop(self._DoCommand('CHAT FINDUSINGBLOB %s' % Blob), 2)[1], self)
 
     Timeout = property(lambda self: self._Timeout, _SetTimeout)
     Protocol = property(lambda self: self._API.Protocol, _SetProtocol)
@@ -503,8 +518,7 @@ class ISkype(ISkypeEventHandling):
     FileTransfers = property(lambda self: map(lambda x: IFileTransfer(x, self), self._Search('FILETRANSFERS')))
     ActiveFileTransfers = property(lambda self: map(lambda x: IFileTransfer(x, self), self._Search('ACTIVEFILETRANSFERS')))
 
-    # Custom
-    FocusedContact = property(lambda self: chop(self.Variable('CONTACTS_FOCUSED'), 2)[-1])
+    FocusedContacts = property(lambda self: map(lambda x: IUser(x, self), esplit(chop(self.Variable('CONTACTS_FOCUSED'), 2)[-1])))
 
 
 def GetVersion():
