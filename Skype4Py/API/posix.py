@@ -133,8 +133,7 @@ class ISkypeAPI(ISkypeAPIBase):
         try:
             result = self.skype_out.Invoke(com)
         except dbus.DBusException, err:
-            # Skype probably closed
-            raise ISkypeAPIError('Skype probably closed (%s)' % str(err))
+            raise ISkypeAPIError(str(err))
         if result.startswith(u'#%d ' % Command.Id):
             self.notify(result)
         if Command.Blocking:

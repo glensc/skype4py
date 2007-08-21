@@ -252,7 +252,7 @@ class ISkypeAPI(ISkypeAPIBase):
             else:
                 timer.start()
         else:
-            raise ISkypeAPIError('Skype probably closed')
+            raise ISkypeAPIError('Skype API error, check if Skype wasn\'t closed')
 
     def async_cmd_timeout(self, cid):
         if cid in self.Commands:
