@@ -238,6 +238,28 @@ class ISkype(ISkypeEventHandling):
             raise ISkypeError(0, 'Unexpected reply from Skype')
         return command.Reply
 
+    def _Property(self, ObjectType, ObjectId, PropName, Set=None, Cache=True):
+        h = (str(ObjectType).upper(), str(ObjectId), str(PropName).upper())
+        arg = ('%s %s %s' % h).split()
+        while '' in arg:
+            arg.remove('')
+        if Set == None: # Get
+            if Cache and h in self._CacheDict:
+                return self._CacheDict[h]
+            Value = self._DoCommand('GET %s' % ' '.join(arg))
+            while arg:
+                try:
+                    a, b = chop(Value)
+                except ValueError:
+                    break
+                if a != arg[0]:
+                    break
+                del arg[0]
+                Value = b
+            return Value
+        else: # Set
+            self._DoCommand('SET %s %s' % (' '.join(arg), unicode(Set)))
+
     def _Alter(self, ObjectType, ObjectId, AlterName, Args=None, Reply=None):
         com = 'ALTER %s %s %s' % (str(ObjectType).upper(), unicode(ObjectId), str(AlterName).upper())
         if Reply == None:
@@ -313,7 +335,7 @@ class ISkype(ISkypeEventHandling):
         raise ISkypeError(0, 'Not implemented')
 
     def ClearChatHistory(self):
-        self._DoCommand('CLEAR CHARHISTORY')
+        self._DoCommand('CLEAR CHATHISTORY')
 
     def ClearVoicemailHistory(self):
         self._DoCommand('CLEAR VOICEMAILHISTORY')
@@ -352,28 +374,6 @@ class ISkype(ISkypeEventHandling):
         sms.ReplyToNumber = ReplyToNumber
         sms.Send()
         return sms
-
-    def _Property(self, ObjectType, ObjectId, PropName, Set=None, Cache=True):
-        h = (str(ObjectType).upper(), str(ObjectId), str(PropName).upper())
-        arg = ('%s %s %s' % h).split()
-        while '' in arg:
-            arg.remove('')
-        if Set == None: # Get
-            if Cache and h in self._CacheDict:
-                return self._CacheDict[h]
-            Value = self._DoCommand('GET %s' % ' '.join(arg))
-            while arg:
-                try:
-                    a, b = chop(Value)
-                except ValueError:
-                    break
-                if a != arg[0]:
-                    break
-                del arg[0]
-                Value = b
-            return Value
-        else: # Set
-            self._DoCommand('SET %s %s' % (' '.join(arg), unicode(Set)))
 
     def Property(self, ObjectType, ObjectId, PropName, Set=None):
         return self._Property(ObjectType, ObjectId, PropName, Set)
