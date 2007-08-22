@@ -259,7 +259,7 @@ class ISkypeAPI(ISkypeAPIBase):
             del self.Commands[cid]
 
     def ApiSecurityContextEnabled(self, Context):
-        raise ISkypeAPIError('Not supported')
+        raise ISkypeAPIError('Functionality not implemented')
 
     def EnableApiSecurityContext(self, Context):
-        raise ISkypeAPIError('Not supported')
+        raise ISkypeAPIError('Functionality not implemented')
