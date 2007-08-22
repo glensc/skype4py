@@ -64,6 +64,4 @@ class IProfile(object):
     BalanceCurrency = property(lambda self: self._Property('PSTN_BALANCE_CURRENCY'))
     BalanceToText = property(lambda self: self._Property('PSTN_BALANCE_CURRENCY') + ' ' + self._Property('PSTN_BALANCE'))
     IPCountry = property(lambda self: self._Property('IPCOUNTRY'))
-
-    # TODO
-    ValidatedSmsNumbers = property()
+    ValidatedSmsNumbers = property(lambda self: self._Property('SMS_VALIDATED_NUMBERS'))

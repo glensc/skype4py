@@ -331,8 +331,7 @@ class ISkype(ISkypeEventHandling):
         return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join(map(lambda x: x.Handle, pMembers))), 2)[1], self)
 
     def SendVoicemail(self, Username):
-        # TODO
-        raise ISkypeError(0, 'Not implemented')
+        self._DoCommand('VOICEMAIL %s' % Username)
 
     def ClearChatHistory(self):
         self._DoCommand('CLEAR CHATHISTORY')
@@ -438,10 +437,10 @@ class ISkype(ISkypeEventHandling):
         return o
 
     def ApiSecurityContextEnabled(self, Context):
-        raise SkypeError(0, 'Not supported')
+        self._API.ApiSecurityContextEnabled(Context)
 
     def EnableApiSecurityContext(self, Context):
-        raise SkypeError(0, 'Not supported')
+        self._API.EnableApiSecurityContext(Context)
 
     def _SetTimeout(self, Timeout):
         self._Timeout = Timeout

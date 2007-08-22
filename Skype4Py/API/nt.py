@@ -258,3 +258,8 @@ class ISkypeAPI(ISkypeAPIBase):
         if cid in self.Commands:
             del self.Commands[cid]
 
+    def ApiSecurityContextEnabled(self, Context):
+        raise ISkypeAPIError('Not supported')
+
+    def EnableApiSecurityContext(self, Context):
+        raise ISkypeAPIError('Not supported')

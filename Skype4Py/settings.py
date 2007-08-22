@@ -58,6 +58,5 @@ class ISettings(object):
                    lambda self, value: self._Skype.Variable('AEC', 'ON' if value else 'OFF'))
     Language = property(lambda self: self._Skype.Variable('UI_LANGUAGE'),
                         lambda self, value: self._Skype.Variable('UI_LANGUAGE', value))
-
-    # TODO
-    #AutoAway
+    AutoAway = property(lambda self: self._Skype.Variable('AUTOAWAY') == 'ON',
+                        lambda self, value: self._Skype.Variable('AUTOAWAY', 'ON' if value else 'OFF'))

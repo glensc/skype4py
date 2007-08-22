@@ -48,8 +48,7 @@ class IVoicemail(Cached):
         self._Alter('DELETE')
 
     def StartPlaybackInCall(self):
-        # TODO
-        raise ISkypeError(0, 'Not implemented')
+        self._Alter('STARTPLAYBACKINCALL')
 
     def SetUnplayed(self):
         self._Property('STATUS', vmsUnplayed)

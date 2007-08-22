@@ -33,59 +33,58 @@ class IClient(object):
         self._Skype._API.Shutdown()
 
     def OpenProfileDialog(self):
-        self._Skype._DoCommand('OPEN PROFILE')
+        self.OpenDialog('PROFILE')
 
     def OpenUserInfoDialog(self, Username):
-        self._Skype._DoCommand('OPEN USERINFO %s' % Username)
+        self.OpenDialog('USERINFO', Username)
 
     def OpenConferenceDialog(self):
-        self._Skype._DoCommand('OPEN CONFERENCE')
+        self.OpenDialog('CONFERENCE')
 
     def OpenSearchDialog(self):
-        self._Skype._DoCommand('OPEN SEARCH')
+        self.OpenDialog('SEARCH')
 
     def OpenOptionsDialog(self, Page=''):
-        self._Skype._DoCommand('OPEN OPTIONS %s' % Page)
+        self.OpenDialog('OPTIONS', Page)
 
     def OpenCallHistoryTab(self):
-        self._Skype._DoCommand('OPEN CALLHISTORY')
+        self.OpenDialog('CALLHISTORY')
 
     def OpenContactsTab(self):
-        self._Skype._DoCommand('OPEN CONTACTS')
+        self.OpenDialog('CONTACTS')
 
     def OpenDialpadTab(self):
-        self._Skype._DoCommand('OPEN DIALPAD')
+        self.OpenDialog('DIALPAD')
 
     def OpenSendContactsDialog(self, Username=''):
-        self._Skype._DoCommand('OPEN SENDCONTACTS %s' % Username)
+        self.OpenDialog('SENDCONTACTS', Username)
 
     def OpenBlockedUsersDialog(self):
-        self._Skype._DoCommand('OPEN BLOCKEDUSERS')
+        self.OpenDialog('BLOCKEDUSERS')
 
     def OpenImportContactsWizard(self):
-        self._Skype._DoCommand('OPEN IMPORTCONTACTS')
+        self.OpenDialog('IMPORTCONTACTS')
 
     def OpenGettingStartedWizard(self):
-        self._Skype._DoCommand('OPEN GETTINGSTARTED')
+        self.OpenDialog('GETTINGSTARTED')
 
     def OpenAuthorizationDialog(self, Username):
-        self._Skype._DoCommand('OPEN AUTHORIZATION %s' % Username)
+        self.OpenDialog('AUTHORIZATION', Username)
 
     def OpenDialog(self, Name, Param1='', Param2=''):
-        # TODO
-        raise ISkypeError(0, 'Not implemented')
+        self._Skype._DoCommand('OPEN %s %s %s' % (Name, Param1, Param2))
 
     def OpenVideoTestDialog(self):
-        self._Skype._DoCommand('OPEN VIDEOTEST')
+        self.OpenDialog('VIDEOTEST')
 
     def OpenAddContactDialog(self, Username=''):
-        self._Skype._DoCommand('OPEN ADDAFRIEND %s' % Username)
+        self.OpenDialog('ADDAFRIEND', Username)
 
     def OpenMessageDialog(self, Username, Text=''):
-        self._Skype._DoCommand('OPEN IM %s %s' % (Username, Text))
+        self.OpenDialog('IM', Username, Text)
 
     def OpenFileTransferDialog(self, Username, Folder):
-        self._Skype._DoCommand('OPEN FILETRANSFER %s IN %s' % (Username, Folder))
+        self.OpenDialog('FILETRANSFER', Username, 'IN %s' % Folder)
 
     def Focus(self):
         self._Skype._DoCommand('FOCUS')
@@ -97,7 +96,7 @@ class IClient(object):
         self._Skype._DoCommand('BTN_RELEASED %s' % Key)
 
     def OpenSmsDialog(self, SmsId):
-        self._Skype._DoCommand('OPEN SMS %s' % SmsId)
+        self.OpenDialog('SMS', SmsId)
 
     def CreateEvent(self, EventId, Caption, Hint):
         self._Skype._DoCommand('CREATE EVENT %s CAPTION %s HINT %s' % (EventId, quote(Caption), quote(Hint)))
@@ -115,7 +114,7 @@ class IClient(object):
         return IPluginMenuItem(MenuItemId, self._Skype, CaptionText, HintText, Enabled)
 
     def OpenLiveTab(self):
-        self._Skype._DoCommand('OPEN LIVETAB')
+        self.OpenDialog('LIVETAB')
 
     _Skype = property(_GetSkype)
 
