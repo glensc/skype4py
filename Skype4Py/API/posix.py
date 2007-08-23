@@ -164,9 +164,3 @@ class ISkypeAPI(ISkypeAPIBase):
             self.CallHandler('rece', command)
         else:
             self.CallHandler('rece_api', com)
-
-    def ApiSecurityContextEnabled(self, Context):
-        raise ISkypeAPIError('Functionality not implemented')
-
-    def EnableApiSecurityContext(self, Context):
-        raise ISkypeAPIError('Functionality not implemented')

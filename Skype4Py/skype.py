@@ -8,7 +8,7 @@ accompanying LICENSE file for more information.
 '''
 
 from API import *
-from errors import ISkypeError
+from errors import *
 from enums import *
 from utils import *
 from conversion import *
@@ -22,23 +22,15 @@ from application import *
 from voicemail import *
 from sms import *
 from filetransfer import *
-import time
+import threading
 
 
 # Skype4Py version
 _version_ = '0.9.28.0'
 
 
-# early version, enable leak debugging
-import gc
-gc.set_debug(gc.DEBUG_LEAK)
-
-
-# ISkypeAPI object, created when ISkype object is created
-_SkypeAPI = None
-
-
 ISkypeEventHandling = EventHandling([
+    'Notify', # custom
     'Command',
     'Reply',
     'Error_',
@@ -80,16 +72,17 @@ ISkypeEventHandling = EventHandling([
 
 
 class ISkype(ISkypeEventHandling):
+    # low-level API object shared by all instances
+    _API = None
+
     def __init__(self, Events=None):
         ISkypeEventHandling.__init__(self)
         if Events:
             self._RegisterEvents('default', Events)
 
-        global _SkypeAPI
-        if _SkypeAPI == None:
-            _SkypeAPI = ISkypeAPI()
-        self._API = _SkypeAPI
-        self._API.RegisterHandler(self._Handler)
+        if ISkype._API == None:
+            ISkype._API = ISkypeAPI()
+        ISkype._API.RegisterHandler(self._Handler)
 
         self._Cache = True
         self.ResetCache()
@@ -103,21 +96,21 @@ class ISkype(ISkypeEventHandling):
         self._Profile = IProfile(self)
 
     def __del__(self):
-        if self._API.NumOfHandlers() == 0:
-            self._API.Close()
-            global _SkypeAPI
-            _SkypeAPI = self._API = None
+        # since ISkypeAPI holds a weakref to our handler, it is gone now and won't be included in the count
+        if ISkype._API.NumOfHandlers() == 0:
+            ISkype._API.Close()
+            ISkype._API = None
 
     def _Handler(self, mode, arg):
         # low-level API callback
         if mode == 'rece_api':
+            self._CallEventHandler('Notify', arg)
             a, b = chop(arg)
             ObjectType = None
             # if..elif handling cache and most event handlers
             if a in ['CALL', 'USER', 'GROUP', 'CHAT', 'CHATMESSAGE', 'CHATMEMBER', 'VOICEMAIL', 'APPLICATION', 'SMS', 'FILETRANSFER']:
                 ObjectType, ObjectId, PropName, Value = [a] + chop(b, 2)
-                if self._Cache:
-                    self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
+                self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
                 if ObjectType == 'USER':
                     o = IUser(ObjectId, self)
                     if PropName == 'ONLINESTATUS':
@@ -181,12 +174,10 @@ class ISkype(ISkypeEventHandling):
                         self._CallEventHandler('FileTransferStatusChanged', o, Value)
             elif a in ['PROFILE', 'PRIVILEGE']:
                 ObjectType, ObjectId, PropName, Value = [a, ''] + chop(b)
-                if self._Cache:
-                    self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
+                self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
             elif a in ['CURRENTUSERHANDLE', 'USERSTATUS', 'CONNSTATUS', 'PREDICTIVE_DIALER_COUNTRY', 'SILENT_MODE', 'AUDIO_IN', 'AUDIO_OUT', 'RINGER', 'MUTE']:
                 ObjectType, ObjectId, PropName, Value = [a, '', '', b]
-                if self._Cache:
-                    self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
+                self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
                 if ObjectType == 'MUTE':
                     self._CallEventHandler('Mute', Value == 'TRUE')
                 elif ObjectType == 'CONNSTATUS':
@@ -244,7 +235,7 @@ class ISkype(ISkypeEventHandling):
         while '' in arg:
             arg.remove('')
         if Set == None: # Get
-            if Cache and h in self._CacheDict:
+            if Cache and self._Cache and h in self._CacheDict:
                 return self._CacheDict[h]
             Value = self._DoCommand('GET %s' % ' '.join(arg))
             while arg:
@@ -285,23 +276,34 @@ class ISkype(ISkypeEventHandling):
             com = '%s %s' % (com, Args)
         return esplit(chop(self._DoCommand(com))[-1], ', ')
 
+    def Attach(self, Protocol=5, Wait=True):
+        try:
+            self._API.Protocol = Protocol
+            self._API.Attach(self.Timeout)
+        except ISkypeAPIError:
+            self.ResetCache()
+            raise
+
+    def SendCommand(self, Command):
+        try:
+            self._API.SendCommand(Command)
+        except ISkypeAPIError:
+            self.ResetCache()
+            raise
+
     def SearchForUsers(self, Target):
         return map(lambda x: IUser(x, self), self._Search('USERS', Target))
 
     def AsyncSearchUsers(self, Target):
+        def reply_handler(command):
+            if command.Command.startswith('SEARCH USERS'):
+                self._CallEventHandler('AsyncSearchUsersFinished', command.Id, map(lambda x: IUser(x, self), esplit(chop(command.Reply)[-1], ', ')))
+                self._UnregisterEventHandler('Reply', 'AsyncSearchUsers')
         command = ICommand(-1, 'SEARCH USERS %s' % Target, 'USERS', False, self.Timeout)
-        self._RegisterEventHandler('Reply', 'AsyncSearchUsers', self._AsyncSearchUsersEnd)
+        self._RegisterEventHandler('Reply', 'AsyncSearchUsers', reply_handler)
         self.SendCommand(command)
+        # return pCookie - search identifier
         return command.Id
-
-    def _AsyncSearchUsersEnd(self, command):
-        if command.Command.startswith('SEARCH USERS'):
-            self._CallEventHandler('AsyncSearchUsersFinished', command.Id, map(lambda x: IUser(x, self), esplit(chop(command.Reply)[-1], ', ')))
-            self._UnregisterEventHandler('Reply', 'AsyncSearchUsers')
-
-    def Attach(self, Protocol=5, Wait=True):
-        self._API.Protocol = Protocol
-        self._API.Attach(self.Timeout)
 
     def PlaceCall(self, Target, Target2='', Target3='', Target4=''):
         com = 'CALL %s' % Target
@@ -316,13 +318,15 @@ class ISkype(ISkypeEventHandling):
     def SendMessage(self, Username, Text):
         return self.CreateChatWith(Username).SendMessage(Text)
 
-    def SendCommand(self, Command):
-        self._API.SendCommand(Command)
-
     def ChangeUserStatus(self, newVal):
+        event = threading.Event()
+        def userstatus_handler(status):
+            if status.upper() == newVal.upper():
+                event.set()
+        self._RegisterEventHandler('UserStatus', 'ChangeUserStatus', userstatus_handler)
         self.CurrentUserStatus = newVal
-        while self.CurrentUser.OnlineStatus != newVal:
-            time.sleep(0.01)
+        event.wait()
+        self._UnregisterEventHandler('UserStatus', 'ChangeUserStatus')
 
     def CreateChatWith(self, Username):
         return IChat(chop(self._DoCommand('CHAT CREATE %s' % Username), 2)[1], self)
@@ -344,8 +348,6 @@ class ISkype(ISkypeEventHandling):
 
     def _SetCache(self, Cache):
         self._Cache = Cache
-        if not Cache:
-            self.ResetCache()
 
     def ResetCache(self):
         self._CacheDict = {}

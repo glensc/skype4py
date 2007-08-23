@@ -9,7 +9,7 @@ accompanying LICENSE file for more information.
 
 from sys import builtin_module_names
 import threading
-import weakref
+from Skype4Py.utils import *
 
 
 class ICommand(object):
@@ -31,17 +31,17 @@ class ISkypeAPIBase(threading.Thread):
         self.Commands = {}
         self.Handlers = []
 
+    def _NotImplemented(self):
+        raise ISkypeAPIError('Functionality not implemented')
+
     def RegisterHandler(self, Handler):
-        r = weakref.ref(Handler.im_self), Handler.im_func
-        if r not in self.Handlers:
-            self.Handlers.append(r)
+        for h in self.Handlers:
+            if h() == Handler:
+                return
+        self.Handlers.append(WeakCallableRef(Handler))
 
     def UpdateHandlers(self):
-        alive = []
-        for h in self.Handlers:
-            if h[0]():
-                alive.append(h)
-        self.Handlers = alive
+        self.Handlers = filter(lambda x: x(), self.Handlers)
 
     def NumOfHandlers(self):
         self.UpdateHandlers()
@@ -49,9 +49,9 @@ class ISkypeAPIBase(threading.Thread):
 
     def CallHandler(self, mode, arg):
         for h in self.Handlers:
-            o = h[0]()
-            if o:
-                h[1](o, mode, arg)
+            f = h()
+            if f:
+                f(mode, arg)
 
     def Close(self):
         pass
@@ -60,19 +60,25 @@ class ISkypeAPIBase(threading.Thread):
         self.FriendlyName = FriendlyName
 
     def Attach(self, Timeout):
-        pass
+        self._NotImplemented()
 
     def IsRunning(self):
-        pass
+        self._NotImplemented()
 
     def Start(self, Minimized=False, Nosplash=False):
-        pass
+        self._NotImplemented()
 
     def Shutdown(self):
-        pass
+        self._NotImplemented()
 
     def SendCommand(self, Command):
-        pass
+        self._NotImplemented()
+
+    def ApiSecurityContextEnabled(self, Context):
+        self._NotImplemented()
+
+    def EnableApiSecurityContext(self, Context):
+        self._NotImplemented()
 
 
 # Select apropriate low-level Skype API module

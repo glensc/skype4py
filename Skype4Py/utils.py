@@ -9,6 +9,7 @@ accompanying LICENSE file for more information.
 
 import weakref
 import threading
+from new import instancemethod
 
 
 def chop(s, n=1):
@@ -31,10 +32,10 @@ def chop(s, n=1):
 
 
 def quote(s):
-    ''' Adds quotes to string if neede.
+    ''' Adds quotes to string if needed.
 
     If s contains spaces, returns the string in quotes (if it contained quotes too, they are
-    replaced by \". If string doesn't contain spaces, returns the string unchanged.
+    preceded with backslash. If string doesn't contain spaces, returns the string unchanged.
     '''
 
     if ' ' in s:
@@ -46,6 +47,48 @@ def esplit(s, d=None):
     if s:
         return s.split(d)
     return []
+
+
+class WeakMethod:
+    ''' Helper class for WeakCallableRef function (see below).
+    Don't use directly.
+    '''
+
+    def __init__(self, method, callback=None):
+        self.im_func = method.im_func
+        try:
+            self.weak_im_self = weakref.ref(method.im_self, self._dies)
+        except TypeError:
+            self.weak_im_self = None
+        self.im_class = method.im_class
+        self.callback = callback
+
+    def _dies(self, ref):
+        self.im_func = self.im_class = None
+        if self.callback != None:
+            self.callback(self)
+
+    def __call__(self):
+        if self.weak_im_self:
+            im_self = self.weak_im_self()
+            if im_self == None:
+                return None
+        else:
+            im_self = None
+        return instancemethod(self.im_func, im_self, self.im_class)
+
+
+def WeakCallableRef(c, callback=None):
+    ''' Creates and returns a new weak reference to a callable object.
+
+    In contrast to weakref.ref() works on all kinds of callables.
+    Parameters are same as for weakref.ref().
+    '''
+
+    try:
+        return WeakMethod(c, callback)
+    except AttributeError:
+        return weakref.ref(c, callback)
 
 
 def EventHandling(events):
@@ -64,7 +107,7 @@ def EventHandling(events):
         Metods:
             _RegisterEventHandler(name, info, target)
                 registers a callable as event handler, any number of callables can be
-                assigned to an event
+                assigned to an event, a weak reference to the callable is stored
                 name - event name
                 info - unique string defining this handler, 'On...' properties use 'default',
                        if None, a unique value will be generated, it will also be returned for
@@ -76,14 +119,15 @@ def EventHandling(events):
                 name - event name
                 info - same as with _RegisterEventHandler()
 
-            _RegisterEventsClass(cls)
-                registers a class as event handler, class should contain methods with names
-                corresponding to event names, class will be instatinated automatically
-                cls - class to register
+            _RegisterEvents(info, obj)
+                registers an object as event handler, object should contain methods with names
+                corresponding to event names, a weak reference to the object is stored
+                info - unique string defining this object
+                obj - object to register
 
-            _UnregisterEventsClass(cls)
-                unregisteres a class
-                cls - class to unregister
+            _UnregisterEvents(info)
+                unregisteres an object
+                info - unique string defining this object
 
             _CallEventHandler(name, ...)
                 calls all event handlers defined for given event (name), additional parameters
@@ -91,6 +135,14 @@ def EventHandling(events):
                 separate threads
                 name - event name
                 ... - event handlers parameters
+
+            _CreateEventHandlerInfo(self, name)
+                creates a unique string defining an event handler, can be passed as info to
+                _RegisterEventHandler()
+
+            _CreateEventsInfo(self)
+                creates a unique string defining an object, can be passed as info to
+                _RegisterEvents()
     '''
 
     class EventHandlingBase(object):
@@ -122,7 +174,26 @@ def EventHandling(events):
             self._EventThreads = {}
 
         def _CallEventHandler(self, name, *args, **kwargs):
-            # Initialize event handling thread if needed
+            # get list of relevant handlers
+            cleanup = False
+            allhandlers = map(lambda x: x(), self._EventHandlers.get(name, {}).values())
+            handlers = filter(bool, allhandlers)
+            if len(allhandlers) != len(handlers):
+                cleanup = True
+            for wh in self._Events.values():
+                h = wh()
+                if h:
+                    if hasattr(h, name):
+                        handlers.append(getattr(h, name))
+                else:
+                    cleanup = True
+            # do the cleanup if needed
+            if cleanup:
+                self._CleanupEventHandlers()
+            # if no handlers, leave
+            if not handlers:
+                return
+            # initialize event handling thread if needed
             if name in self._EventThreads:
                 t = self._EventThreads[name]
                 t.lock.acquire()
@@ -130,12 +201,9 @@ def EventHandling(events):
                     t = self._EventThreads[name] = self.EventHandlingThread(name)
             else:
                 t = self._EventThreads[name] = self.EventHandlingThread(name)
-            # enqueue handlers
-            for h in self._EventHandlers.get(name, {}).values():
+            # enqueue handlers in thread
+            for h in handlers:
                 t.enqueue(h, args, kwargs)
-            for h in self._Events.values():
-                if hasattr(h, name):
-                    t.enqueue(getattr(h, name), args, kwargs)
             # start serial event processing
             try:
                 t.lock.release()
@@ -144,7 +212,7 @@ def EventHandling(events):
 
         def _GetEventHandler(self, name):
             try:
-                return self._EventHandlers.get(name, {})['default']
+                return self._EventHandlers.get(name, {})['default']()
             except KeyError:
                 return None
 
@@ -156,12 +224,12 @@ def EventHandling(events):
 
         def _RegisterEventHandler(self, name, info, target):
             if not callable(target):
-                raise ValueError('%s is not callable' % repr(target))
+                raise TypeError('%s is not callable' % repr(target))
             if not info:
                 info = self._CreateEventHandlerInfo(name)
             if name not in self._EventHandlers:
                 self._EventHandlers[name] = {}
-            self._EventHandlers[name][info] = target
+            self._EventHandlers[name][info] = WeakCallableRef(target)
             return info
 
         def _UnregisterEventHandler(self, name, info):
@@ -171,7 +239,7 @@ def EventHandling(events):
                 pass
 
         def _RegisterEvents(self, info, obj):
-            self._Events[info] = obj
+            self._Events[info] = weakref.ref(obj)
 
         def _UnregisterEvents(self, info):
             try:
@@ -179,9 +247,30 @@ def EventHandling(events):
             except KeyError:
                 pass
 
+        def _CleanupEventHandlers(self):
+            dead = []
+            for name in self._EventHandlers:
+                for info in self._EventHandlers[name]:
+                    if handlers[info]() == None:
+                        dead.append((name, info))
+            for name, info in dead:
+                self._UnregisterEventHandler(name, info)
+            dead = []
+            for info in self._Events:
+                if self._Events[info]() == None:
+                    dead.append(info)
+            for info in dead:
+                self._UnregisterEvents(info)
+
         def _CreateEventHandlerInfo(self, name):
             i = 1
             while str(i) in self._EventHandlers.get(name, {}):
+                i += 1
+            return str(i)
+
+        def _CreateEventsInfo(self):
+            i = 1
+            while str(i) in self._Events:
                 i += 1
             return str(i)
 
@@ -196,8 +285,13 @@ def EventHandling(events):
 class Cached(object):
     ''' Base class for cached objects.
 
-    Every object is identified by an Id. Trying to create two objects with same Id yields
-    the same object.
+    Every object is identified by an Id specified as first parameter of the constructor.
+    Trying to create two objects with same Id yields the same object. Uses weak references
+    to allow the objects to be deleted normally.
+
+    WARNING!
+    __init__() is always called, don't use it to prevent initializing an already
+    initialized object. Use _Init() instead, it is called only once.
     '''
     _cache_ = weakref.WeakValueDictionary()
 
@@ -211,5 +305,6 @@ class Cached(object):
                 o._Init(Id, *args, **kwargs)
             cls._cache_[h] = o
             return o
+
     def __copy__(self):
         return self

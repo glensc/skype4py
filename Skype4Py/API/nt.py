@@ -257,9 +257,3 @@ class ISkypeAPI(ISkypeAPIBase):
     def async_cmd_timeout(self, cid):
         if cid in self.Commands:
             del self.Commands[cid]
-
-    def ApiSecurityContextEnabled(self, Context):
-        raise ISkypeAPIError('Functionality not implemented')
-
-    def EnableApiSecurityContext(self, Context):
-        raise ISkypeAPIError('Functionality not implemented')

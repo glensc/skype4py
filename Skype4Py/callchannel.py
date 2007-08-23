@@ -66,7 +66,6 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
 
     def _OnCallStatus(self, pCall, Status):
         if Status == clsRinging:
-            streams = self._Application.Streams
             self._Application.Connect(pCall.PartnerHandle, True)
             for stream in self._Application.Streams:
                 if stream.PartnerHandle == pCall.PartnerHandle:
