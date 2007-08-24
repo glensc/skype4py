@@ -24,78 +24,103 @@ class IClient(object):
         raise ISkypeError('Skype4Py internal error')
 
     def Start(self, Minimized=False, Nosplash=False):
+        '''Starts Skype application.'''
         self._Skype._API.Start(Minimized, Nosplash)
 
     def Minimize(self):
+        '''Hides Skype application window.'''
         self._Skype._DoCommand('MINIMIZE')
 
     def Shutdown(self):
+        '''Closes Skype application.'''
         self._Skype._API.Shutdown()
 
     def OpenProfileDialog(self):
+        '''Opens current user profile dialog.'''
         self.OpenDialog('PROFILE')
 
     def OpenUserInfoDialog(self, Username):
+        '''Opens user information dialog.'''
         self.OpenDialog('USERINFO', Username)
 
     def OpenConferenceDialog(self):
+        '''Opens create conference dialog.'''
         self.OpenDialog('CONFERENCE')
 
     def OpenSearchDialog(self):
+        '''Opens search dialog.'''
         self.OpenDialog('SEARCH')
 
     def OpenOptionsDialog(self, Page=''):
+        '''Opens options dialog.'''
         self.OpenDialog('OPTIONS', Page)
 
     def OpenCallHistoryTab(self):
+        '''Opens call history tab.'''
         self.OpenDialog('CALLHISTORY')
 
     def OpenContactsTab(self):
+        '''Opens contacts tab.'''
         self.OpenDialog('CONTACTS')
 
     def OpenDialpadTab(self):
+        '''Opens dial pad tab.'''
         self.OpenDialog('DIALPAD')
 
     def OpenSendContactsDialog(self, Username=''):
+        '''Opens send contacts dialog.'''
         self.OpenDialog('SENDCONTACTS', Username)
 
     def OpenBlockedUsersDialog(self):
+        '''Opens blocked users dialog.'''
         self.OpenDialog('BLOCKEDUSERS')
 
     def OpenImportContactsWizard(self):
+        '''Opens import contacts wizard.'''
         self.OpenDialog('IMPORTCONTACTS')
 
     def OpenGettingStartedWizard(self):
+        '''Opens getting started wizard.'''
         self.OpenDialog('GETTINGSTARTED')
 
     def OpenAuthorizationDialog(self, Username):
+        '''Opens authorization dialog.'''
         self.OpenDialog('AUTHORIZATION', Username)
 
     def OpenDialog(self, Name, Param1='', Param2=''):
+        '''Open dialog.'''
         self._Skype._DoCommand('OPEN %s %s %s' % (Name, Param1, Param2))
 
     def OpenVideoTestDialog(self):
+        '''Opens video test dialog.'''
         self.OpenDialog('VIDEOTEST')
 
     def OpenAddContactDialog(self, Username=''):
+        '''Opens "Add a Contact" dialog.'''
         self.OpenDialog('ADDAFRIEND', Username)
 
     def OpenMessageDialog(self, Username, Text=''):
+        '''Opens "Send an IM Message" dialog.'''
         self.OpenDialog('IM', Username, Text)
 
     def OpenFileTransferDialog(self, Username, Folder):
+        '''Opens file transfer dialog.'''
         self.OpenDialog('FILETRANSFER', Username, 'IN %s' % Folder)
 
     def Focus(self):
+        '''Sets focus to Skype application window.'''
         self._Skype._DoCommand('FOCUS')
 
     def ButtonPressed(self, Key):
+        '''Sends button button pressed to client.'''
         self._Skype._DoCommand('BTN_PRESSED %s' % Key)
 
     def ButtonReleased(self, Key):
+        '''Sends button released event to client.'''
         self._Skype._DoCommand('BTN_RELEASED %s' % Key)
 
     def OpenSmsDialog(self, SmsId):
+        '''Opens SMS window'''
         self.OpenDialog('SMS', SmsId)
 
     def CreateEvent(self, EventId, Caption, Hint):

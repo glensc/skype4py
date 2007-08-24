@@ -25,9 +25,11 @@ class IChat(Cached):
         return self._Skype._Alter('CHAT', self._Name, AlterName, Args, 'ALTER CHAT %s' % AlterName)
 
     def OpenWindow(self):
+        '''Opens chat window.'''
         self._Skype._DoCommand('OPEN CHAT %s' % self._Name)
 
     def SendMessage(self, MessageText):
+        '''Sends chat message.'''
         msgs1 = self.RecentMessages
         self._Skype._DoCommand('CHATMESSAGE %s %s' % (self._Name, MessageText))
         msgs2 = self.RecentMessages
@@ -36,15 +38,19 @@ class IChat(Cached):
                 return m
 
     def Leave(self):
+        '''Leaves the chat.'''
         self._Alter('LEAVE')
 
     def AddMembers(self, pMembers):
+        '''Adds new members to the chat.'''
         self._Alter('ADDMEMBERS', ', '.join(map(lambda x: x.Handle, pMembers)))
 
     def Bookmark(self):
+        '''Bookmarks the chat.'''
         self._Alter('BOOKMARK')
 
     def Unbookmark(self):
+        '''Bookmarks the chat.'''
         self._Alter('UNBOOKMARK')
 
     def _GetTopic(self):

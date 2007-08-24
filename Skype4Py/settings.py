@@ -21,15 +21,18 @@ class ISettings(object):
         raise Exception()
 
     def Avatar(self, Id='1', newVal=''):
+        '''Returns/sets user avatar picture.'''
         self._Skype._Property('AVATAR', Id, newVal)
 
-    def RingToneStatus(self, Id='1', Value=None):
-        if Value == None:
+    def RingToneStatus(self, Id='1', Set=None):
+        '''Returns/sets ringtone status.'''
+        if Set == None:
             return self._Skype._Property('RINGTONE', Id, 'STATUS') == 'ON'
-        return self._Skype._Property('RINGTONE', Id, 'STATUS', 'ON' if Value else 'OFF')
+        return self._Skype._Property('RINGTONE', Id, 'STATUS', 'ON' if Set else 'OFF')
 
-    def RingTone(self, Id='1', Value=None):
-        return self._Skype._Property('RINGTONE', Id, '', Value)
+    def RingTone(self, Id='1', Set):
+        '''Sets ringtone.'''
+        self._Skype._Property('RINGTONE', Id, '', Set)
 
     def ResetIdleTimer(self):
         self._Skype._DoCommand('RESETIDLETIMER')

@@ -40,9 +40,11 @@ class ISmsMessage(Cached):
         return self._Skype._Alter('SMS', self._Id, AlterName, Args)
 
     def Send(self):
+        '''Sends the message.'''
         self._Alter('SEND')
 
     def Delete(self):
+        '''Deletes the message.'''
         self._Skype._DoCommand('DELETE SMS %s' % self._Id)
 
     Id = property(lambda self: self._Id)

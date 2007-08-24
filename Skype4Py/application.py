@@ -24,12 +24,15 @@ class IApplication(Cached):
         return self._Skype._Alter('APPLICATION', self._Name, AlterName, Args)
 
     def Create(self):
+        '''Creates application.'''
         self._Skype._DoCommand('CREATE APPLICATION %s' % self._Name)
 
     def Delete(self):
+        '''Deletes application.'''
         self._Skype._DoCommand('DELETE APPLICATION %s' % self._Name)
 
     def Connect(self, Username, WaitConnected=False):
+        '''Connects application to user.'''
         self._Alter('CONNECT', Username)
         User = IUser(Username, self._Skype)
         if WaitConnected:
@@ -40,6 +43,7 @@ class IApplication(Cached):
                     time.sleep(0.01)
 
     def SendDatagram(self, Text, pStreams=None):
+        '''Sends datagram to application streams.'''
         if pStreams == None:
             pStreams = self.Streams
         for s in pStreams:
@@ -59,15 +63,19 @@ class IApplicationStream(Cached):
         self._Application = Application
 
     def Read(self):
+        '''Reads stream.'''
         return self._Application._Alter('READ', self._Handle)
 
     def Write(self, Text):
+        '''Writes stream.'''
         self._Application._Alter('WRITE', '%s %s' % (self._Handle, Text))
 
     def SendDatagram(self, Text):
+        '''Send datagram on stream.'''
         self._Application._Alter('DATAGRAM', '%s %s' % (self._Handle, Text))
 
     def Disconnect(self):
+        '''Disconnect stream.'''
         self._Application._Alter('DISCONNECT', self._Handle)
 
     def _GetDataLength(self):

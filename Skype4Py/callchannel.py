@@ -21,6 +21,7 @@ class ICallChannel(object):
         self._Type = Type
 
     def SendTextMessage(self, Text):
+        '''Sends text message over channel.'''
         if self._Type == cctReliable:
             self._Stream.Write(Text)
         elif self._Type == cctDatagram:
@@ -103,14 +104,17 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
                     break
 
     def Connect(self, pSkype):
+        '''Connects to Skype.'''
         self._Skype = pSkype
         self._CallStatusEventHandler = self._Skype._RegisterEventHandler('CallStatus', None, self._OnCallStatus)
 
     def Disconnect(self):
+        '''Disconnects from Skype.'''
         self._Skype._UnregisterEventHandler('CallStatus', self._CallStatusEventHandler)
         self._Skype = None
 
     def CreateApplication(self, ApplicationName=''):
+        '''Creates application context.'''
         if ApplicationName:
             self.Name = ApplicationName
         self._Application = self._Skype.Application(self.Name)

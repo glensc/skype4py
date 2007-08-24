@@ -110,18 +110,23 @@ class IGroup(Cached):
         return self._Skype.Alter('GROUP', self._Id, AlterName, Args)
 
     def AddUser(self, Username):
+        '''Adds new a user or PSTN number to group.'''
         self._Alter('ADDUSER', Username)
 
     def RemoveUser(self, Username):
+        '''Removes a user or PSTN number from group.'''
         self._Alter('REMOVEUSER', Username)
 
     def Share(self, MessageText=''):
+        '''Shares a group.'''
         self._Alter('SHARE', MessageText)
 
     def Accept(self):
+        '''Accepts a shared group.'''
         self._Alter('ACCEPT')
 
     def Decline(self):
+        '''Decline a shared group.'''
         self._Alter('DECLINE')
 
     def _GetOnlineUsers(self):

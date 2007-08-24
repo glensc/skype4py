@@ -24,33 +24,43 @@ class IVoicemail(Cached):
         return self._Skype.Alter('VOICEMAIL', self._Id, AlterName, Args)
 
     def Open(self):
+        '''Opens voicemail.'''
         self._Skype._DoCommand('OPEN VOICEMAIL %s' % self._Id)
 
     def StartPlayback(self):
+        '''Starts voicemail playback.'''
         self._Alter('STARTPLAYBACK')
 
     def StopPlayback(self):
+        '''Stops voicemail playback.'''
         self._Alter('STOPPLAYBACK')
 
+    def StartPlaybackInCall(self):
+        '''Starts playback in call.'''
+        self._Alter('STARTPLAYBACKINCALL')
+
     def Upload(self):
+        '''Uploads voicemail.'''
         self._Alter('UPLOAD')
 
     def Download(self):
+        '''Downloads voicemail.'''
         self._Alter('DOWNLOAD')
 
     def StartRecording(self):
+        '''Starts voicemail recording.'''
         self._Alter('STARTRECORDING')
 
     def StopRecording(self):
+        '''Stops voicemail recording.'''
         self._Alter('STOPRECORDING')
 
     def Delete(self):
+        '''Deletes voicemail.'''
         self._Alter('DELETE')
 
-    def StartPlaybackInCall(self):
-        self._Alter('STARTPLAYBACKINCALL')
-
     def SetUnplayed(self):
+        '''Changes played voicemail status back to unplayed.'''
         self._Property('STATUS', vmsUnplayed)
 
     def InputDevice(self, DeviceType=None, Set=None):

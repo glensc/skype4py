@@ -30,22 +30,30 @@ class ICall(Cached):
         self._Property('STATUS', 'FINISHED')
 
     def Answer(self):
+        '''Answers the call.'''
         self._Property('STATUS', 'INPROGRESS')
-    Resume = Answer
+
+    def Resume(self):
+        '''Resumes the held call.'''
+        self.Answer()
 
     def Join(self, Id):
         self._Property('JOIN_CONFERENCE', Id)
 
     def StartVideoSend(self):
+        '''Starts video send.'''
         self._Property('START_VIDEO_SEND', '')
 
     def StopVideoSend(self):
+        '''Stops video send.'''
         self._Property('STOP_VIDEO_SEND', '')
 
     def StartVideoReceive(self):
+        '''Starts video receive.'''
         self._Property('START_VIDEO_RECEIVE', '')
 
     def StopVideoReceive(self):
+        '''Stops video receive.'''
         self._Property('STOP_VIDEO_RECEIVE', '')
 
     def RedirectToVoicemail(self):
@@ -149,14 +157,17 @@ class IConference(Cached):
         self._Id = int(Id)
 
     def Hold(self):
+        '''Hold conference.'''
         for c in self._GetCalls():
             c.Hold()
 
     def Resume(self):
+        '''Resume conference.'''
         for c in self._GetCalls():
             c.Resume()
 
     def Finish(self):
+        '''End conference.'''
         for c in self._GetCalls():
             c.Finish()
 

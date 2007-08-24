@@ -277,6 +277,7 @@ class ISkype(ISkypeEventHandling):
         return esplit(chop(self._DoCommand(com))[-1], ', ')
 
     def Attach(self, Protocol=5, Wait=True):
+        '''Connects to Skype API.'''
         try:
             self._API.Protocol = Protocol
             self._API.Attach(self.Timeout)
@@ -285,16 +286,23 @@ class ISkype(ISkypeEventHandling):
             raise
 
     def SendCommand(self, Command):
+        '''Sends Skype API command.'''
         try:
             self._API.SendCommand(Command)
         except ISkypeAPIError:
             self.ResetCache()
             raise
 
+    def Command(self, Id, command, Reply='', Block=False, Timeout=30000):
+        '''Returns a new command object.'''
+        return ICommand(Id, command, Reply, Block, Timeout)
+
     def SearchForUsers(self, Target):
+        '''Returns collection of users found as the result of search operation.'''
         return map(lambda x: IUser(x, self), self._Search('USERS', Target))
 
     def AsyncSearchUsers(self, Target):
+        '''Search for Skype users.'''
         def reply_handler(command):
             if command.Command.startswith('SEARCH USERS'):
                 self._CallEventHandler('AsyncSearchUsersFinished', command.Id, map(lambda x: IUser(x, self), esplit(chop(command.Reply)[-1], ', ')))
@@ -306,6 +314,7 @@ class ISkype(ISkypeEventHandling):
         return command.Id
 
     def PlaceCall(self, Target, Target2='', Target3='', Target4=''):
+        '''Calls specified target and returns a new call object.'''
         com = 'CALL %s' % Target
         if Target2:
             com = '%s, %s' % (com, Target2)
@@ -316,9 +325,11 @@ class ISkype(ISkypeEventHandling):
         return ICall(chop(self._DoCommand(com), 2)[1], self)
 
     def SendMessage(self, Username, Text):
+        '''Sends IM message to specified user and returns a new message object.'''
         return self.CreateChatWith(Username).SendMessage(Text)
 
     def ChangeUserStatus(self, newVal):
+        '''Changes current user online status.'''
         event = threading.Event()
         def userstatus_handler(status):
             if status.upper() == newVal.upper():
@@ -329,30 +340,38 @@ class ISkype(ISkypeEventHandling):
         self._UnregisterEventHandler('UserStatus', 'ChangeUserStatus')
 
     def CreateChatWith(self, Username):
+        '''Creates a new chat with a single user.'''
         return IChat(chop(self._DoCommand('CHAT CREATE %s' % Username), 2)[1], self)
 
     def CreateChatMultiple(self, pMembers):
+        '''Creates a new chat with multiple members.'''
         return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join(map(lambda x: x.Handle, pMembers))), 2)[1], self)
 
     def SendVoicemail(self, Username):
+        '''Sends voicemail to specified user.'''
         self._DoCommand('VOICEMAIL %s' % Username)
 
     def ClearChatHistory(self):
+        '''Clears chat history.'''
         self._DoCommand('CLEAR CHATHISTORY')
 
     def ClearVoicemailHistory(self):
+        '''Clears voicemail history.'''
         self._DoCommand('CLEAR VOICEMAILHISTORY')
 
     def ClearCallHistory(self, Username='ALL', Type=chsAllCalls):
+        '''Clears call history.'''
         self._DoCommand('CLEAR CALLHISTORY %s %s' % (str(Type), Username))
 
     def _SetCache(self, Cache):
         self._Cache = Cache
 
     def ResetCache(self):
+        '''Empties command cache.'''
         self._CacheDict = {}
 
     def CreateGroup(self, GroupName):
+        '''Creates a new custom group.'''
         groups1 = self._Search('GROUPS', 'CUSTOM')
         self._DoCommand('CREATE GROUP %s' % GroupName)
         groups2 = self._Search('GROUPS', 'CUSTOM')
@@ -364,12 +383,15 @@ class ISkype(ISkypeEventHandling):
         return IGroup(g, self)
 
     def DeleteGroup(self, GroupId):
+        '''Deletes a custom group.'''
         self._DoCommand('DELETE GROUP %s' % GroupId)
 
     def CreateSms(self, MessageType, TargetNumbers):
+        '''Returns new SMS object.'''
         return ISmsMessage(chop(self._DoCommand('CREATE SMS %s %s' % (MessageType, TargetNumbers)), 2)[1], self)
 
     def SendSms(self, TargetNumbers, MessageText, ReplyToNumber=''):
+        '''Sends a SMS messages.'''
         sms = ISmsMessage(chop(self._DoCommand('CREATE SMS OUTGOING %s' % TargetNumbers), 2)[1], self)
         sms.Body = MessageText
         sms.ReplyToNumber = ReplyToNumber
@@ -377,12 +399,15 @@ class ISkype(ISkypeEventHandling):
         return sms
 
     def Property(self, ObjectType, ObjectId, PropName, Set=None):
+        '''Returns/sets USER, CALL, CHAT, CHATMESSAGE or VOICEMAIL object property value.'''
         return self._Property(ObjectType, ObjectId, PropName, Set)
 
     def Variable(self, Name, Set=None):
+        '''Returns/sets general variable value.'''
         return self._Property(Name, '', '', Set)
 
     def Privilege(self, Name):
+        '''Returns current user privilege.'''
         return self._Property('PRIVILEGE', '', Name) == 'TRUE'
 
     def Calls(self, Target=''):
@@ -418,9 +443,11 @@ class ISkype(ISkypeEventHandling):
         return o
 
     def Profile(self, Property, Set=None):
+        '''Returns user profile property value.'''
         return self._Property('PROFILE', '', Property, Set)
 
     def Application(self, Name):
+        '''Returns new application object.'''
         return IApplication(Name, self)
 
     def Greeting(self, Username=''):
@@ -430,18 +457,18 @@ class ISkype(ISkypeEventHandling):
             if v.Type in [vmtDefaultGreeting, vmtCustomGreeting]:
                 return v
 
-    def Command(self, Id, command, Reply='', Block=False, Timeout=30000):
-        return ICommand(Id, command, Reply, Block, Timeout)
-
     def Voicemail(self, Id):
+        '''Returns voicemail object.'''
         o = IVoicemail(Id, self)
         o.Type
         return o
 
     def ApiSecurityContextEnabled(self, Context):
+        '''Checks for enabled API security contexts.'''
         self._API.ApiSecurityContextEnabled(Context)
 
     def EnableApiSecurityContext(self, Context):
+        '''Enables API security contexts.'''
         self._API.EnableApiSecurityContext(Context)
 
     def _SetTimeout(self, Timeout):
