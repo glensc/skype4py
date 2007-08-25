@@ -322,7 +322,13 @@ class ISkype(ISkypeEventHandling):
             com = '%s, %s' % (com, Target3)
         if Target4:
             com = '%s, %s' % (com, Target4)
-        return ICall(chop(self._DoCommand(com), 2)[1], self)
+        calls1 = self.ActiveCalls
+        self._DoCommand(com)
+        calls2 = self.ActiveCalls
+        for c in calls2:
+            if c not in calls1:
+                return c
+        raise SkypeError(0, 'Placing call failed')
 
     def SendMessage(self, Username, Text):
         '''Sends IM message to specified user and returns a new message object.'''
@@ -372,9 +378,9 @@ class ISkype(ISkypeEventHandling):
 
     def CreateGroup(self, GroupName):
         '''Creates a new custom group.'''
-        groups1 = self._Search('GROUPS', 'CUSTOM')
+        groups1 = self.CustomGroups
         self._DoCommand('CREATE GROUP %s' % GroupName)
-        groups2 = self._Search('GROUPS', 'CUSTOM')
+        groups2 = self.CustomGroups
         for g in groups2:
             if g not in groups1:
                 break

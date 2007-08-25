@@ -20,6 +20,10 @@ class ICommand(object):
         self.Blocking = Blocking
         self.Timeout = Timeout
         self.Reply = u''
+        
+    def __repr__(self):
+        return 'ICommand(Id=%s, Command=%s, Expected=%s, Blocking=%s, Timeout=%s, Reply=%s)' % \
+            (self.Id, repr(self.Command), repr(self.Expected), self.Blocking, self.Timeout, repr(self.Reply))
 
 
 class ISkypeAPIBase(threading.Thread):

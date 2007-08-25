@@ -20,9 +20,9 @@ class ISettings(object):
             return skype
         raise Exception()
 
-    def Avatar(self, Id='1', newVal=''):
+    def Avatar(self, Id='1', Set=None):
         '''Returns/sets user avatar picture.'''
-        self._Skype._Property('AVATAR', Id, newVal)
+        return self._Skype._Property('AVATAR', Id, '', Set)
 
     def RingToneStatus(self, Id='1', Set=None):
         '''Returns/sets ringtone status.'''
@@ -30,7 +30,7 @@ class ISettings(object):
             return self._Skype._Property('RINGTONE', Id, 'STATUS') == 'ON'
         return self._Skype._Property('RINGTONE', Id, 'STATUS', 'ON' if Set else 'OFF')
 
-    def RingTone(self, Id='1', Set):
+    def RingTone(self, Id='1', Set=''):
         '''Sets ringtone.'''
         self._Skype._Property('RINGTONE', Id, '', Set)
 
@@ -63,3 +63,4 @@ class ISettings(object):
                         lambda self, value: self._Skype.Variable('UI_LANGUAGE', value))
     AutoAway = property(lambda self: self._Skype.Variable('AUTOAWAY') == 'ON',
                         lambda self, value: self._Skype.Variable('AUTOAWAY', 'ON' if value else 'OFF'))
+                        
