@@ -35,7 +35,7 @@ class ISkypeAPIBase(threading.Thread):
         self.Protocol = 5
         self.Commands = {}
         self.Handlers = []
-        self.AttachmentStaus = apiAttachUnknown
+        self.AttachmentStatus = apiAttachUnknown
 
     def _NotImplemented(self):
         raise ISkypeAPIError('Functionality not implemented')
