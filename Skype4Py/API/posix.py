@@ -20,12 +20,15 @@ from Skype4Py.enums import *
 from Skype4Py.errors import ISkypeAPIError
 
 
+# some Xlib constants
 PropertyChangeMask = 0x400000
 PropertyNotify = 28
 ClientMessage = 33
 PropertyNewValue = 0
 PropertyDelete = 1
 
+
+# some Xlib structures
 class XClientMessageEvent(Structure):
     _fields_ = [('type', c_int),
                 ('serial', c_ulong),
@@ -35,7 +38,6 @@ class XClientMessageEvent(Structure):
                 ('message_type', c_ulong),
                 ('format', c_int),
                 ('data', c_char * 20)]
-
 
 class XPropertyEvent(Structure):
     _fields_ = [('type', c_int),
@@ -47,13 +49,6 @@ class XPropertyEvent(Structure):
                 ('time', c_int),
                 ('state', c_int)]
 
-class XEvent(Union):
-    _fields_ = [('type', c_int),
-                ('xclient', XClientMessageEvent),
-                ('xproperty', XPropertyEvent),
-                ('padding', c_char * 96)]
-
-
 class XErrorEvent(Structure):
     _fields_ = [('type', c_int),
                 ('display', c_void_p),
@@ -63,15 +58,16 @@ class XErrorEvent(Structure):
                 ('request_code', c_ubyte),
                 ('minor_code', c_ubyte)]
 
+class XEvent(Union):
+    _fields_ = [('type', c_int),
+                ('xclient', XClientMessageEvent),
+                ('xproperty', XPropertyEvent),
+                ('xerror', XErrorEvent),
+                ('padding', c_char * 96)]
 
-XCodes = {0: 'Success',
-          2: 'BadValue',
-          3: 'BadWindow',
-          5: 'BadAtom'}
 
-
+# Xlib error handler type
 XErrorHandler = CFUNCTYPE(c_int, c_void_p, POINTER(XErrorEvent))
-
 
 
 class ISkypeAPI(ISkypeAPIBase):
@@ -144,6 +140,7 @@ class ISkypeAPI(ISkypeAPIBase):
     def _error_handler(self, disp, error):
         # called from within Xlib when error occures
         self.error = error.contents.error_code
+        # stop all pending commands
         for command in self.Commands.values():
             if hasattr(command, '_event'):
                 command._event.set()
@@ -291,10 +288,12 @@ class ISkypeAPI(ISkypeAPIBase):
             timer.start()
 
     def async_cmd_timeout(self, cid):
+        # Called if command doesn't return after specified time.
         if cid in self.Commands:
             del self.Commands[cid]
 
     def notify(self, com):
+        # Called by main loop for received Skype commands.
         if com.startswith(u'#'):
             p = com.find(u' ')
             i = int(com[1:p])
