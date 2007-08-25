@@ -101,6 +101,7 @@ class XSkype(object):
     def _error_handler(self, disp, error):
         # called from within Xlib when error occures
         self.error = error.contents.error_code
+        self.win_skype = None
         return 0
 
     def error_check(self):
