@@ -267,7 +267,7 @@ class ISkypeAPI(ISkypeAPIBase):
         event.xclient.message_type = self.atom_msg_begin
         event.xclient.format = 8
         com = unicode(com).encode('utf-8') + '\x00'
-        for i in xrange(0, len(com) - 1, 20):
+        for i in xrange(0, len(com), 20):
             event.xclient.data = com[i:i+20]
             self.x11.XSendEvent(self.disp, self.win_skype, True, 0, byref(event))
             event.xclient.message_type = self.atom_msg
