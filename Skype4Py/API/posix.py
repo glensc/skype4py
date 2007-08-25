@@ -20,6 +20,12 @@ from Skype4Py.enums import *
 from Skype4Py.errors import ISkypeAPIError
 
 
+PropertyChangeMask = 0x400000
+PropertyNotify = 28
+ClientMessage = 33
+PropertyNewValue = 0
+PropertyDelete = 1
+
 class XClientMessageEvent(Structure):
     _fields_ = [('type', c_int),
                 ('serial', c_ulong),
@@ -31,8 +37,20 @@ class XClientMessageEvent(Structure):
                 ('data', c_char * 20)]
 
 
+class XPropertyEvent(Structure):
+    _fields_ = [('type', c_int),
+                ('serial', c_ulong),
+                ('send_event', c_int),
+                ('display', c_void_p),
+                ('window', c_ulong),
+                ('atom', c_ulong),
+                ('time', c_int),
+                ('state', c_int)]
+
 class XEvent(Union):
-    _fields_ = [('xclient', XClientMessageEvent),
+    _fields_ = [('type', c_int),
+                ('xclient', XClientMessageEvent),
+                ('xproperty', XPropertyEvent),
                 ('padding', c_char * 96)]
 
 
@@ -55,20 +73,19 @@ XCodes = {0: 'Success',
 XErrorHandler = CFUNCTYPE(c_int, c_void_p, POINTER(XErrorEvent))
 
 
-class XSkypeError(Exception):
-    pass
-    
 
-class XSkype(object):
-    '''Lower level interface to send commands to Skype and receive responses.'''
-    
-    def __init__(self, notify):
+class ISkypeAPI(ISkypeAPIBase):
+    def __init__(self, handler):
+        ISkypeAPIBase.__init__(self)
+        self.handler = handler
+        self.AttachmentStatus = apiAttachUnknown
         # initialize Xlib, display, window, atoms
-        self.notify = notify
         libpath = find_library('X11')
         if not libpath:
             raise ImportError('Could not locate X11 library')
         self.x11 = cdll.LoadLibrary(libpath)
+        self.x11.XInitThreads()
+        self.x11.XGetAtomName.restype = c_char_p
         self.error = None
         # callback has to be saved to keep reference to bound method
         self._error_handler_callback = XErrorHandler(self._error_handler)
@@ -76,45 +93,73 @@ class XSkype(object):
         self.x11.XOpenDisplay.restype = c_void_p
         self.disp = self.x11.XOpenDisplay(None)
         if not self.disp:
-            raise XSkypeError('Could not open XDisplay')
-        self.win_skype = None
+            raise ISkypeAPIError('Could not open XDisplay')
         self.win_root = self.x11.XDefaultRootWindow(self.disp)
         self.win_self = self.x11.XCreateSimpleWindow(self.disp, self.win_root,
                                     100, 100, 100, 100, 1, 0, 0)
+        self.x11.XSelectInput(self.disp, self.win_root, PropertyChangeMask)
+        self.win_skype = self.get_skype()
         ctrl = 'SKYPECONTROLAPI_MESSAGE'
         self.atom_msg = self.x11.XInternAtom(self.disp, ctrl, True)
         self.atom_msg_begin = self.x11.XInternAtom(self.disp, ctrl + '_BEGIN', True)
         self.atom_stop_loop = self.x11.XInternAtom(self.disp, 'STOP_LOOP', True)
-
+        
     def __del__(self):
         # close display
-        self.close()
         if hasattr(self, 'x11'):
             if hasattr(self, 'disp'):
+                if hasattr(self, 'win_self'):
+                    self.x11.XDestroyWindow(self.disp, self.win_self)
                 self.x11.XCloseDisplay(self.disp)
 
-    def close(self):
-        # destroy window
-        if hasattr(self, 'win_self'):
-            self.x11.XDestroyWindow(self.disp, self.win_self)
+    def run(self):
+        event = XEvent()
+        data = ''
+        while True:
+            self.x11.XNextEvent(self.disp, byref(event))
+            if event.type == ClientMessage:
+                if event.xclient.message_type == self.atom_msg_begin:
+                    data = event.xclient.data
+                elif event.xclient.message_type == self.atom_msg:
+                    data += event.xclient.data
+                elif event.xclient.message_type == self.atom_stop_loop:
+                    break
+                if len(event.xclient.data) != 20:
+                    if data:
+                        self.notify(data.decode('utf-8'))
+            elif event.type == PropertyNotify:
+                if self.x11.XGetAtomName(self.disp, event.xproperty.atom) == '_SKYPE_INSTANCE':
+                    if event.xproperty.state == PropertyNewValue:
+                        self.win_skype = self.get_skype()
+                        # changing attachment status can cause an event handler to be fired, in
+                        # turn it could try to call Attach() and doing this immediately seems to
+                        # confuse Skype (command '#0 NAME xxx' returns '#0 CONNSTATUS OFFLINE' :D);
+                        # to fix this, we give Skype some time to initialize itself
+                        time.sleep(1.0)
+                        self.SetAttachmentStatus(apiAttachAvailable)
+                    elif event.xproperty.state == PropertyDelete:
+                        self.win_skype = None
+                        self.SetAttachmentStatus(apiAttachNotAvailable)
 
     def _error_handler(self, disp, error):
         # called from within Xlib when error occures
         self.error = error.contents.error_code
-        self.win_skype = None
+        for command in self.Commands.values():
+            if hasattr(command, '_event'):
+                command._event.set()
         return 0
 
     def error_check(self):
-        '''Checks last Xlib error and raises an XSkypeError exception if needed.'''
+        '''Checks last Xlib error and raises an exception if needed.'''
         if self.error != None:
-            error = XSkypeError('X11 error: %s' % XCodes.get(self.error, str(self.error)))
+            if self.error == 3: # BadWindow
+                self.win_skype = None
+                self.SetAttachmentStatus(apiAttachNotAvailable)
+            buf = create_string_buffer(256)
+            self.x11.XGetErrorText(self.disp, self.error, buf, 256)
+            error = ISkypeAPIError('X11 error: %s' % buf.value)
             self.error = None
             raise error
-
-    def discover(self):
-        '''Obtains Skype window ID and stores it for later use.'''
-        self.win_skype = self.get_skype()
-        return bool(self.win_skype)
 
     def get_skype(self):
         '''Returns Skype window ID or None if Skype not running.'''
@@ -130,78 +175,32 @@ class XSkype(object):
         if not fail and self.error == None and format_ret.value == 32 and nitems_ret.value == 1:
             return prop.contents.value
 
-    def send(self, cmd):
-        '''Sends a command to Skype.'''
-        if not self.win_skype:
-            if not self.discover():
-                raise XSkypeError('Cannot connect to Skype')
+    def Close(self):
         event = XEvent()
-        event.xclient.type = 33 # ClientMessage
-        event.xclient.display = self.disp
-        event.xclient.window = self.win_self
-        event.xclient.message_type = self.atom_msg_begin
-        event.xclient.format = 8
-        cmd = unicode(cmd).encode('utf-8') + '\x00'
-        for i in xrange(0, len(cmd) - 1, 20):
-            event.xclient.data = cmd[i:i+20]
-            self.x11.XSendEvent(self.disp, self.win_skype, True, 0, byref(event))
-            event.xclient.message_type = self.atom_msg
-        self.x11.XFlush(self.disp)
-        self.error_check()
-        
-    def loop(self):
-        '''Event handling, has to be run on a separate thread.'''
-        event = XEvent()
-        data = ''
-        while True:
-            self.x11.XNextEvent(self.disp, byref(event))
-            if event.xclient.type == 33: # ClientMessage
-                if event.xclient.message_type == self.atom_msg_begin:
-                    data = event.xclient.data
-                elif event.xclient.message_type == self.atom_msg:
-                    data += event.xclient.data
-                elif event.xclient.message_type == self.atom_stop_loop:
-                    break
-                if len(event.xclient.data) != 20:
-                    self.notify(data.decode('utf-8'))
-
-    def stop_loop(self):
-        '''Breaks event handling loop running on a separate thread.'''
-        event = XEvent()
-        event.xclient.type = 33 # ClientMessage
+        event.xclient.type = ClientMessage
         event.xclient.display = self.disp
         event.xclient.window = self.win_self
         event.xclient.message_type = self.atom_stop_loop
         event.xclient.format = 8
         self.x11.XSendEvent(self.disp, self.win_self, True, 0, byref(event))
         self.x11.XFlush(self.disp)
-
-
-class ISkypeAPI(ISkypeAPIBase):
-    '''Skype4Py API interface based on XSkype (Xlib).'''
-    
-    def __init__(self):
-        ISkypeAPIBase.__init__(self)
-        try:
-            self.skype = XSkype(self.notify)
-        except XSkypeError, error:
-            raise ISkypeAPIError(str(error))
-        
-    def run(self):
-        self.skype.loop()
-
-    def Close(self):
-        self.skype.stop_loop()
         while self.isAlive():
             time.sleep(0.01)
         
     def SetFriendlyName(self, FriendlyName):
         self.FriendlyName = FriendlyName
-        if self.skype_out:
-            self.SendCommand(ICommand(-1, 'NAME %s' % FriendlyName))
+        if self.AttachmentStatus == apiAttachSuccess:
+            # reattach with the new name
+            self.SetAttachmentStatus(apiAttachUnknown)
+            self.Attach(30000)
+
+    def SetAttachmentStatus(self, AttachmentStatus):
+        if AttachmentStatus != self.AttachmentStatus:
+            self.AttachmentStatus = AttachmentStatus
+            self.handler('attach', AttachmentStatus)
 
     def Attach(self, Timeout):
-        if self.skype.win_skype:
+        if self.AttachmentStatus == apiAttachSuccess:
             return
         if not self.isAlive():
             try:
@@ -215,7 +214,8 @@ class ISkypeAPI(ISkypeAPIBase):
             t = threading.Timer(Timeout / 1000.0, ftimeout)
             t.start()
             while self.wait:
-                if self.skype.discover():
+                self.win_skype = self.get_skype()
+                if self.win_skype != None:
                     break
                 else:
                     time.sleep(1.0)
@@ -224,16 +224,16 @@ class ISkypeAPI(ISkypeAPIBase):
         finally:
             t.cancel()
         c = ICommand(-1, 'NAME %s' % self.FriendlyName, '', True, Timeout)
-        self.SendCommand(c)
+        self.SendCommand(c, True)
         if c.Reply != 'OK':
-            self.skype.win_skype = None
-            self.CallHandler('attach', apiAttachRefused)
+            self.win_skype = None
+            self.SetAttachmentStatus(apiAttachRefused)
             return
-        self.SendCommand(ICommand(-1, 'PROTOCOL %s' % self.Protocol))
-        self.CallHandler('attach', apiAttachSuccess)
+        self.SendCommand(ICommand(-1, 'PROTOCOL %s' % self.Protocol), True)
+        self.SetAttachmentStatus(apiAttachSuccess)
 
     def IsRunning(self):
-        return bool(self.skype.get_skype())
+        return bool(self.get_skype())
 
     def Start(self, Minimized=False, Nosplash=False):
         # options are not supported as of Skype 1.4 Beta for Linux
@@ -253,8 +253,8 @@ class ISkypeAPI(ISkypeAPIBase):
             os.kill(int(pid), SIGINT)
             self.skype_in = self.skype_out = None
 
-    def SendCommand(self, Command):
-        if not self.skype.win_skype:
+    def SendCommand(self, Command, Force=False):
+        if self.AttachmentStatus != apiAttachSuccess and not Force:
             self.Attach(Command.Timeout)
         if Command.Id < 0:
             Command.Id = 0
@@ -265,21 +265,30 @@ class ISkypeAPI(ISkypeAPIBase):
         self.CallHandler('send', Command)
         com = u'#%d %s' % (Command.Id, Command.Command)
         if Command.Blocking:
-            Command._event = event = threading.Event()
+            Command._event = bevent = threading.Event()
         else:
             Command._timer = timer = threading.Timer(Command.Timeout / 1000.0, self.async_cmd_timeout, (Command.Id,))
         self.Commands[Command.Id] = Command
-        try:
-            self.skype.send(com)
-            if Command.Blocking:
-                event.wait(Command.Timeout / 1000.0)
-                if not event.isSet():
-                    self.skype.error_check()
-                    raise ISkypeAPIError('Skype command timeout')
-            else:
-                timer.start()
-        except XSkypeError, error:
-            raise ISkypeAPIError(str(error))
+        event = XEvent()
+        event.xclient.type = 33 # ClientMessage
+        event.xclient.display = self.disp
+        event.xclient.window = self.win_self
+        event.xclient.message_type = self.atom_msg_begin
+        event.xclient.format = 8
+        com = unicode(com).encode('utf-8') + '\x00'
+        for i in xrange(0, len(com) - 1, 20):
+            event.xclient.data = com[i:i+20]
+            self.x11.XSendEvent(self.disp, self.win_skype, True, 0, byref(event))
+            event.xclient.message_type = self.atom_msg
+        self.x11.XFlush(self.disp)
+        self.error_check()
+        if Command.Blocking:
+            bevent.wait(Command.Timeout / 1000.0)
+            self.error_check()
+            if not bevent.isSet():
+                raise ISkypeAPIError('Skype command timeout')
+        else:
+            timer.start()
 
     def async_cmd_timeout(self, cid):
         if cid in self.Commands:
@@ -289,17 +298,20 @@ class ISkypeAPI(ISkypeAPIBase):
         if com.startswith(u'#'):
             p = com.find(u' ')
             i = int(com[1:p])
-            command = self.Commands[i]
-            del self.Commands[i]
-            command.Reply = com[p + 1:]
-            if command.Blocking:
-                command._event.set()
-                del command._event
-            else:
-                command._timer.cancel()
-                del command._timer
-            self.CallHandler('rece_api', command.Reply)
-            self.CallHandler('rece', command)
+            try:
+                command = self.Commands[i]
+                del self.Commands[i]
+                command.Reply = com[p + 1:]
+                if command.Blocking:
+                    command._event.set()
+                    del command._event
+                else:
+                    command._timer.cancel()
+                    del command._timer
+                self.handler('rece_api', command.Reply)
+                self.handler('rece', command)
+            except KeyError:
+                self.handler('rece_api', com[p + 1:])
         else:
-            self.CallHandler('rece_api', com)
+            self.handler('rece_api', com)
             

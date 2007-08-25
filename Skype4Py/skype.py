@@ -72,17 +72,12 @@ ISkypeEventHandling = EventHandling([
 
 
 class ISkype(ISkypeEventHandling):
-    # low-level API object shared by all instances
-    _API = None
-
     def __init__(self, Events=None):
         ISkypeEventHandling.__init__(self)
         if Events:
             self._RegisterEvents('default', Events)
 
-        if ISkype._API == None:
-            ISkype._API = ISkypeAPI()
-        ISkype._API.RegisterHandler(self._Handler)
+        self._API = ISkypeAPI(self._Handler)
 
         self._Cache = True
         self.ResetCache()
@@ -96,10 +91,7 @@ class ISkype(ISkypeEventHandling):
         self._Profile = IProfile(self)
 
     def __del__(self):
-        # since ISkypeAPI holds a weakref to our handler, it is gone now and won't be included in the count
-        if ISkype._API.NumOfHandlers() == 0:
-            ISkype._API.Close()
-            ISkype._API = None
+        self._API.Close()
 
     def _Handler(self, mode, arg):
         # low-level API callback
@@ -211,11 +203,9 @@ class ISkype(ISkypeEventHandling):
         elif mode == 'send':
             self._CallEventHandler('Command', arg)
         elif mode == 'attach':
-            if arg != self._AttachmentStatus:
-                self._AttachmentStatus = arg
-                self._CallEventHandler('AttachmentStatus', self._AttachmentStatus)
-                if self._AttachmentStatus == 'REFUSED':
-                    raise ISkypeAPIError('Skype connection refused')
+            self._CallEventHandler('AttachmentStatus', arg)
+            if arg == apiAttachRefused:
+                raise ISkypeAPIError('Skype connection refused')
 
     def _DoCommand(self, com, reply=''):
         command = ICommand(-1, com, reply, True, self.Timeout)
@@ -515,7 +505,7 @@ class ISkype(ISkypeEventHandling):
     Friends = property(lambda self: map(lambda x: IUser(x, self), self._Search('FRIENDS')))
 
     Client = property(lambda self: self._Client)
-    AttachmentStatus = property(lambda self: self._AttachmentStatus)
+    AttachmentStatus = property(lambda self: self._API.AttachmentStatus)
 
     CurrentUserProfile = property(lambda self: self._Profile)
 
