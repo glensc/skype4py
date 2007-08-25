@@ -13,6 +13,7 @@ accompanying LICENSE file for more information.
 
 import threading
 import time
+import weakref
 from ctypes import *
 from Skype4Py.API import *
 from Skype4Py.errors import ISkypeAPIError
@@ -62,10 +63,11 @@ class ISkypeAPI(ISkypeAPIBase):
     Singleton = None
 
     def __new__(cls, *args, **kwargs):
-        if cls.Singleton == None:
-            cls.Singleton = ISkypeAPIBase.__new__(cls)
-            cls.Singleton._init()
-        return cls.Singleton
+        if cls.Singleton == None or cls.Singleton() == None:
+            obj = ISkypeAPIBase.__new__(cls)
+            obj._init()
+            cls.Singleton = weakref.ref(obj)
+        return cls.Singleton()
 
     def __init__(self, handler):
         # called for every instatination
