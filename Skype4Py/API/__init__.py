@@ -10,6 +10,7 @@ accompanying LICENSE file for more information.
 from sys import builtin_module_names
 import threading
 from Skype4Py.utils import *
+from Skype4Py.enums import *
 
 
 class ICommand(object):
@@ -20,7 +21,7 @@ class ICommand(object):
         self.Blocking = Blocking
         self.Timeout = Timeout
         self.Reply = u''
-        
+
     def __repr__(self):
         return 'ICommand(Id=%s, Command=%s, Expected=%s, Blocking=%s, Timeout=%s, Reply=%s)' % \
             (self.Id, repr(self.Command), repr(self.Expected), self.Blocking, self.Timeout, repr(self.Reply))
@@ -34,6 +35,7 @@ class ISkypeAPIBase(threading.Thread):
         self.Protocol = 5
         self.Commands = {}
         self.Handlers = []
+        self.AttachmentStaus = apiAttachUnknown
 
     def _NotImplemented(self):
         raise ISkypeAPIError('Functionality not implemented')
@@ -62,6 +64,11 @@ class ISkypeAPIBase(threading.Thread):
 
     def SetFriendlyName(self, FriendlyName):
         self.FriendlyName = FriendlyName
+
+    def SetAttachmentStatus(self, AttachmentStatus):
+        if AttachmentStatus != self.AttachmentStatus:
+            self.AttachmentStatus = AttachmentStatus
+            self.CallHandler('attach', AttachmentStatus)
 
     def Attach(self, Timeout):
         self._NotImplemented()

@@ -73,8 +73,7 @@ XErrorHandler = CFUNCTYPE(c_int, c_void_p, POINTER(XErrorEvent))
 class ISkypeAPI(ISkypeAPIBase):
     def __init__(self, handler):
         ISkypeAPIBase.__init__(self)
-        self.handler = handler
-        self.AttachmentStatus = apiAttachUnknown
+        self.RegisterHandler(handler)
         # initialize Xlib, display, window, atoms
         libpath = find_library('X11')
         if not libpath:
@@ -99,9 +98,8 @@ class ISkypeAPI(ISkypeAPIBase):
         self.atom_msg = self.x11.XInternAtom(self.disp, ctrl, True)
         self.atom_msg_begin = self.x11.XInternAtom(self.disp, ctrl + '_BEGIN', True)
         self.atom_stop_loop = self.x11.XInternAtom(self.disp, 'STOP_LOOP', True)
-        
+
     def __del__(self):
-        # close display
         if hasattr(self, 'x11'):
             if hasattr(self, 'disp'):
                 if hasattr(self, 'win_self'):
@@ -109,6 +107,7 @@ class ISkypeAPI(ISkypeAPIBase):
                 self.x11.XCloseDisplay(self.disp)
 
     def run(self):
+        # main loop
         event = XEvent()
         data = ''
         while True:
@@ -166,7 +165,7 @@ class ISkypeAPI(ISkypeAPIBase):
         nitems_ret = c_ulong()
         bytes_after_ret = c_ulong()
         prop = pointer(c_ulong())
-        fail = self.x11.XGetWindowProperty(self.disp, self.win_root, skype_inst, 
+        fail = self.x11.XGetWindowProperty(self.disp, self.win_root, skype_inst,
                             0, 1, False, 33, byref(type_ret), byref(format_ret),
                             byref(nitems_ret), byref(bytes_after_ret), byref(prop))
         if not fail and self.error == None and format_ret.value == 32 and nitems_ret.value == 1:
@@ -183,18 +182,13 @@ class ISkypeAPI(ISkypeAPIBase):
         self.x11.XFlush(self.disp)
         while self.isAlive():
             time.sleep(0.01)
-        
+
     def SetFriendlyName(self, FriendlyName):
         self.FriendlyName = FriendlyName
         if self.AttachmentStatus == apiAttachSuccess:
             # reattach with the new name
             self.SetAttachmentStatus(apiAttachUnknown)
             self.Attach(30000)
-
-    def SetAttachmentStatus(self, AttachmentStatus):
-        if AttachmentStatus != self.AttachmentStatus:
-            self.AttachmentStatus = AttachmentStatus
-            self.handler('attach', AttachmentStatus)
 
     def Attach(self, Timeout):
         if self.AttachmentStatus == apiAttachSuccess:
@@ -307,10 +301,10 @@ class ISkypeAPI(ISkypeAPIBase):
                 else:
                     command._timer.cancel()
                     del command._timer
-                self.handler('rece_api', command.Reply)
-                self.handler('rece', command)
+                self.CallHandler('rece_api', command.Reply)
+                self.CallHandler('rece', command)
             except KeyError:
-                self.handler('rece_api', com[p + 1:])
+                self.CallHandler('rece_api', com[p + 1:])
         else:
-            self.handler('rece_api', com)
-            
+            self.CallHandler('rece_api', com)
+
