@@ -282,12 +282,12 @@ class ISkypeAPI(ISkypeAPIBase):
             timer.start()
 
     def async_cmd_timeout(self, cid):
-        # Called if command doesn't return after specified time.
+        # Called if non-blocking command doesn't return after specified time.
         if cid in self.Commands:
             del self.Commands[cid]
 
     def notify(self, com):
-        # Called by main loop for received Skype commands.
+        # Called by main loop for all received Skype commands.
         if com.startswith(u'#'):
             p = com.find(u' ')
             i = int(com[1:p])
