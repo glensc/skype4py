@@ -121,7 +121,7 @@ def EventHandling(events):
 
             _RegisterEvents(info, obj)
                 registers an object as event handler, object should contain methods with names
-                corresponding to event names, a weak reference to the object is stored
+                corresponding to event names
                 info - unique string defining this object
                 obj - object to register
 
@@ -180,13 +180,11 @@ def EventHandling(events):
             handlers = filter(bool, allhandlers)
             if len(allhandlers) != len(handlers):
                 cleanup = True
-            for wh in self._Events.values():
-                h = wh()
-                if h:
-                    if hasattr(h, name):
-                        handlers.append(getattr(h, name))
-                else:
-                    cleanup = True
+            for h in self._Events.values():
+                try:
+                    handlers.append(getattr(h, name))
+                except AttributeError:
+                    pass
             # do the cleanup if needed
             if cleanup:
                 self._CleanupEventHandlers()
@@ -239,7 +237,7 @@ def EventHandling(events):
                 pass
 
         def _RegisterEvents(self, info, obj):
-            self._Events[info] = weakref.ref(obj)
+            self._Events[info] = obj
 
         def _UnregisterEvents(self, info):
             try:
