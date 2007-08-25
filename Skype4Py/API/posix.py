@@ -20,10 +20,6 @@ from Skype4Py.enums import *
 from Skype4Py.errors import ISkypeAPIError
 
 
-import gc
-gc.set_debug(gc.DEBUG_LEAK)
-
-
 class XClientMessageEvent(Structure):
     _fields_ = [('type', c_int),
                 ('serial', c_ulong),
@@ -147,7 +143,7 @@ class XSkype(object):
         cmd = unicode(cmd).encode('utf-8') + '\x00'
         for i in xrange(0, len(cmd) - 1, 20):
             event.xclient.data = cmd[i:i+20]
-            self.x11.XSendEvent(self.disp, self.win_skype, False, 0, byref(event))
+            self.x11.XSendEvent(self.disp, self.win_skype, True, 0, byref(event))
             event.xclient.message_type = self.atom_msg
         self.x11.XFlush(self.disp)
         self.error_check()
@@ -176,7 +172,7 @@ class XSkype(object):
         event.xclient.window = self.win_self
         event.xclient.message_type = self.atom_stop_loop
         event.xclient.format = 8
-        self.x11.XSendEvent(self.disp, self.win_self, False, 0, byref(event))
+        self.x11.XSendEvent(self.disp, self.win_self, True, 0, byref(event))
         self.x11.XFlush(self.disp)
 
 
