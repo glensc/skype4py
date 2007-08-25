@@ -26,7 +26,7 @@ import threading
 
 
 # Skype4Py version
-_version_ = '0.9.28.0'
+_version_ = '0.9.28.1'
 
 
 ISkypeEventHandling = EventHandling([
