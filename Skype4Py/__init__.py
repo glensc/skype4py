@@ -13,6 +13,8 @@ from enums import *
 from errors import *
 
 
+__version__ = '0.9.28.1'
+
 Skype = ISkype
 CallChannelManager = ICallChannelManager
 

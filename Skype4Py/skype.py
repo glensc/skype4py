@@ -25,10 +25,6 @@ from filetransfer import *
 import threading
 
 
-# Skype4Py version
-_version_ = '0.9.28.1'
-
-
 ISkypeEventHandling = EventHandling([
     'Notify', # custom
     'Command',
@@ -466,6 +462,10 @@ class ISkype(ISkypeEventHandling):
         '''Enables API security contexts.'''
         self._API.EnableApiSecurityContext(Context)
 
+    def _GetApiWrapperVersion(self):
+        from Skype4Py import __version__
+        return unicode(__version__)
+
     def _SetTimeout(self, Timeout):
         self._Timeout = Timeout
 
@@ -516,7 +516,7 @@ class ISkype(ISkypeEventHandling):
     MissedCalls = property(lambda self: map(lambda x: ICall(x, self), self._Search('MISSEDCALLS')))
 
     FriendlyName = property(fset=_SetFriendlyName)
-    ApiWrapperVersion = property(lambda self: GetVersion())
+    ApiWrapperVersion = property(_GetApiWrapperVersion)
     SilentMode = property(lambda self: self.Variable('SILENT_MODE') == 'ON',
                           lambda self, value: self.SendCommand(ICommand(-1, 'SET SILENT_MODE %s' % 'ON' if value else 'OFF')))
     Settings = property(lambda self: self._Settings)
@@ -542,7 +542,3 @@ class ISkype(ISkypeEventHandling):
     ActiveFileTransfers = property(lambda self: map(lambda x: IFileTransfer(x, self), self._Search('ACTIVEFILETRANSFERS')))
 
     FocusedContacts = property(lambda self: map(lambda x: IUser(x, self), esplit(chop(self.Variable('CONTACTS_FOCUSED'), 2)[-1])))
-
-
-def GetVersion():
-    return unicode(_version_)
