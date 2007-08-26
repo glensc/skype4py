@@ -83,7 +83,6 @@ class ISkype(ISkypeEventHandling):
         self.ResetCache()
 
         self._Timeout = 30000
-        self._AttachmentStatus = apiAttachUnknown
 
         self._Convert = IConversion(self)
         self._Client = IClient(self)
