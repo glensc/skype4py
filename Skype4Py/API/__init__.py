@@ -96,6 +96,6 @@ class ISkypeAPIBase(threading.Thread):
 if sys.platform[:3] == 'win':
     from windows import ISkypeAPI
 elif sys.platform == 'darwin':
-    from darwin import ISKypeAPI
+    from darwin import ISkypeAPI
 else:
     from posix import ISkypeAPI
