@@ -65,32 +65,35 @@ class ICall(Cached):
     def Transfer(self, Target):
         self._Alter('TRANSFER', Target)
 
-    def InputDevice(self, DeviceType=None, Set=None):
-        if DeviceType == None and Set == None:
-            a, b = self._Property('INPUT').split('=')
-            return a, b[1:-1]
-        elif DeviceType != None and Set != None:
+    def InputDevice(self, DeviceType, Set=None):
+        if Set == None:
+            try:
+                value = dict(map(lambda x: x.split('='), esplit(self._Property('INPUT'), ', ')))[DeviceType]
+            except KeyError:
+                return ''
+            return value[1:-1]
+        else:
             self._Alter('SET_INPUT', '%s=\"%s\"' % (DeviceType, Set))
-        else:
-            raise TypeError('too much or too little arguments specified')
 
-    def OutputDevice(self, DeviceType=None, Set=None):
-        if DeviceType == None and Set == None:
-            a, b = self._Property('OUTPUT').split('=')
-            return a, b[1:-1]
-        elif DeviceType != None and Set != None:
+    def OutputDevice(self, DeviceType, Set=None):
+        if Set == None:
+            try:
+                value = dict(map(lambda x: x.split('='), esplit(self._Property('OUTPUT'), ', ')))[DeviceType]
+            except KeyError:
+                return ''
+            return value[1:-1]
+        else:
             self._Alter('SET_OUTPUT', '%s=\"%s\"' % (DeviceType, Set))
-        else:
-            raise TypeError('too much or too little arguments specified')
 
-    def CaptureMicDevice(self, DeviceType=None, Set=None):
-        if DeviceType == None and Set == None:
-            a, b = self._Property('CAPTURE_MIC').split('=')
-            return a, b[1:-1]
-        elif DeviceType != None and Set != None:
-            self._Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (DeviceType, Set))
+    def CaptureMicDevice(self, DeviceType, Set=None):
+        if Set == None:
+            try:
+                value = dict(map(lambda x: x.split('='), esplit(self._Property('CAPTURE_MIC'), ', ')))[DeviceType]
+            except KeyError:
+                return ''
+            return value[1:-1]
         else:
-            raise TypeError('too much or too little arguments specified')
+            self._Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (DeviceType, Set))
 
     def CanTransfer(self, Target):
         return self._Property('CAN_TRANSFER %s' % Target) == 'TRUE'

@@ -32,7 +32,7 @@ def chop(s, n=1):
 
 
 def quote(s):
-    ''' Adds quotes to string if needed.
+    '''Adds quotes to string if needed.
 
     If s contains spaces, returns the string in quotes (if it contained quotes too, they are
     preceded with backslash. If string doesn't contain spaces, returns the string unchanged.
@@ -44,13 +44,16 @@ def quote(s):
 
 
 def esplit(s, d=None):
+    '''Like s.split(d) but for empty strings returns empty list instead of [''].
+    '''
+    
     if s:
         return s.split(d)
     return []
 
 
 class WeakMethod:
-    ''' Helper class for WeakCallableRef function (see below).
+    '''Helper class for WeakCallableRef function (see below).
     Don't use directly.
     '''
 
@@ -79,7 +82,7 @@ class WeakMethod:
 
 
 def WeakCallableRef(c, callback=None):
-    ''' Creates and returns a new weak reference to a callable object.
+    '''Creates and returns a new weak reference to a callable object.
 
     In contrast to weakref.ref() works on all kinds of callables.
     Parameters are same as for weakref.ref().
@@ -92,7 +95,7 @@ def WeakCallableRef(c, callback=None):
 
 
 def EventHandling(events):
-    ''' Creates and returns a new EventHandling class.
+    '''Creates and returns a new EventHandling class.
 
     Parameters:
         events
@@ -281,7 +284,7 @@ def EventHandling(events):
 
 
 class Cached(object):
-    ''' Base class for cached objects.
+    '''Base class for cached objects.
 
     Every object is identified by an Id specified as first parameter of the constructor.
     Trying to create two objects with same Id yields the same object. Uses weak references
@@ -306,3 +309,4 @@ class Cached(object):
 
     def __copy__(self):
         return self
+        

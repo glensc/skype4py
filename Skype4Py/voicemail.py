@@ -64,31 +64,34 @@ class IVoicemail(Cached):
         self._Property('STATUS', vmsUnplayed)
 
     def InputDevice(self, DeviceType=None, Set=None):
-        if DeviceType == None and Set == None:
-            a, b = self._Property('INPUT').split('=')
-            return a, b[1:-1]
-        elif DeviceType != None and Set != None:
-            self._Alter('SET_INPUT', '%s=\"%s\"' % (DeviceType, Set))
+        if Set == None:
+            try:
+                value = dict(map(lambda x: x.split('='), esplit(self._Property('INPUT'), ', ')))[DeviceType]
+            except KeyError:
+                return ''
+            return value[1:-1]
         else:
-            raise TypeError('too much or too little arguments specified')
+            self._Alter('SET_INPUT', '%s=\"%s\"' % (DeviceType, Set))
 
     def OutputDevice(self, DeviceType=None, Set=None):
-        if DeviceType == None and Set == None:
-            a, b = self._Property('OUTPUT').split('=')
-            return a, b[1:-1]
-        elif DeviceType != None and Set != None:
-            self._Alter('SET_OUTPUT', '%s=\"%s\"' % (DeviceType, Set))
+        if Set == None:
+            try:
+                value = dict(map(lambda x: x.split('='), esplit(self._Property('OUTPUT'), ', ')))[DeviceType]
+            except KeyError:
+                return ''
+            return value[1:-1]
         else:
-            raise TypeError('too much or too little arguments specified')
+            self._Alter('SET_OUTPUT', '%s=\"%s\"' % (DeviceType, Set))
 
     def CaptureMicDevice(self, DeviceType=None, Set=None):
-        if DeviceType == None and Set == None:
-            a, b = self._Property('CAPTURE_MIC').split('=')
-            return a, b[1:-1]
-        elif DeviceType != None and Set != None:
-            self._Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (DeviceType, Set))
+        if Set == None:
+            try:
+                value = dict(map(lambda x: x.split('='), esplit(self._Property('CAPTURE_MIC'), ', ')))[DeviceType]
+            except KeyError:
+                return ''
+            return value[1:-1]
         else:
-            raise TypeError('too much or too little arguments specified')
+            self._Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (DeviceType, Set))
 
     Id = property(lambda self: self._Id)
     Type = property(lambda self: self._Property('TYPE'))
