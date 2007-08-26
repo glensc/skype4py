@@ -63,7 +63,7 @@ class IVoicemail(Cached):
         '''Changes played voicemail status back to unplayed.'''
         self._Property('STATUS', vmsUnplayed)
 
-    def InputDevice(self, DeviceType=None, Set=None):
+    def InputDevice(self, DeviceType, Set=None):
         if Set == None:
             try:
                 value = dict(map(lambda x: x.split('='), esplit(self._Property('INPUT'), ', ')))[DeviceType]
@@ -73,7 +73,7 @@ class IVoicemail(Cached):
         else:
             self._Alter('SET_INPUT', '%s=\"%s\"' % (DeviceType, Set))
 
-    def OutputDevice(self, DeviceType=None, Set=None):
+    def OutputDevice(self, DeviceType, Set=None):
         if Set == None:
             try:
                 value = dict(map(lambda x: x.split('='), esplit(self._Property('OUTPUT'), ', ')))[DeviceType]
@@ -83,7 +83,7 @@ class IVoicemail(Cached):
         else:
             self._Alter('SET_OUTPUT', '%s=\"%s\"' % (DeviceType, Set))
 
-    def CaptureMicDevice(self, DeviceType=None, Set=None):
+    def CaptureMicDevice(self, DeviceType, Set=None):
         if Set == None:
             try:
                 value = dict(map(lambda x: x.split('='), esplit(self._Property('CAPTURE_MIC'), ', ')))[DeviceType]
