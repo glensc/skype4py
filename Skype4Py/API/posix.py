@@ -1,7 +1,5 @@
 '''
-Low level Skype for Linux interface implemented
-using XWindows messaging. Uses direct Xlib calls
-through ctypes module.
+Low level Skype for Linux interface.
 
 Copyright (c) 2007, Arkadiusz Wahlig
 
@@ -15,6 +13,7 @@ from Skype4Py.errors import ISkypeAPIError
 
 
 def ISkypeAPI(handler, **opts):
+    # Decide what transport to use, x11 is the default
     trans = opts.get('Transport', 'x11')
     if trans == 'dbus':
         from posix_dbus import ISkypeAPI
