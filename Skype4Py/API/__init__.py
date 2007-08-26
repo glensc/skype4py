@@ -7,7 +7,7 @@ Distributed under the BSD License, see the
 accompanying LICENSE file for more information.
 '''
 
-from sys import builtin_module_names
+import sys
 import threading
 from Skype4Py.utils import *
 from Skype4Py.enums import *
@@ -93,9 +93,9 @@ class ISkypeAPIBase(threading.Thread):
 
 
 # Select apropriate low-level Skype API module
-if 'posix' in builtin_module_names:
-    from posix import *
-elif 'nt' in builtin_module_names:
-    from nt import *
+if sys.platform[:3] == 'win':
+    from windows import ISkypeAPI
+elif sys.platform == 'darwin':
+    from darwin import ISKypeAPI
 else:
-    raise OSError('OS not supported')
+    from posix import ISkypeAPI

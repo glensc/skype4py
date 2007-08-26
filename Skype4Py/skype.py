@@ -72,12 +72,12 @@ ISkypeEventHandling = EventHandling([
 
 
 class ISkype(ISkypeEventHandling):
-    def __init__(self, Events=None):
+    def __init__(self, Events=None, **Options):
         ISkypeEventHandling.__init__(self)
         if Events:
             self._RegisterEvents('default', Events)
 
-        self._API = ISkypeAPI(self._Handler)
+        self._API = ISkypeAPI(self._Handler, **Options)
 
         self._Cache = True
         self.ResetCache()

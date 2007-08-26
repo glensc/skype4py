@@ -69,7 +69,7 @@ class ISkypeAPI(ISkypeAPIBase):
             cls.Singleton = weakref.ref(obj)
         return cls.Singleton()
 
-    def __init__(self, handler):
+    def __init__(self, handler, **opts):
         # called for every instatination
         self.RegisterHandler(handler)
 
