@@ -110,8 +110,8 @@ class ISkype(ISkypeEventHandling):
                         self._CallEventHandler('CallStatus', o, Value)
                     elif PropName == 'SEEN':
                         self._CallEventHandler('CallSeenStatusChanged', o, Value == 'TRUE')
-                    elif PropName == 'INPUT':
-                        self._CallEventHandler('CallInputStatusChanged', o, Value.startswith('SOUNDCARD='))
+                    elif PropName == 'VAA_INPUT_STATUS':
+                        self._CallEventHandler('CallInputStatusChanged', o, Value == 'TRUE')
                     elif PropName == 'TRANSFER_STATUS':
                         self._CallEventHandler('CallTransferStatusChanged', o, Value)
                 elif ObjectType == 'CHAT':
