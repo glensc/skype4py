@@ -60,24 +60,11 @@ SkypeControlAPIAttach = windll.user32.RegisterWindowMessageA('SkypeControlAPIAtt
 
 
 class ISkypeAPI(ISkypeAPIBase):
-    Singleton = None
-
-    def __new__(cls, *args, **kwargs):
-        if cls.Singleton == None or cls.Singleton() == None:
-            obj = ISkypeAPIBase.__new__(cls)
-            obj._init()
-            cls.Singleton = weakref.ref(obj)
-        return cls.Singleton()
-
     def __init__(self, handler, **opts):
-        # called for every instatination
-        self.RegisterHandler(handler)
-
-    def _init(self):
-        # called only for first instatination
         ISkypeAPIBase.__init__(self)
         self.hwnd = None
         self.Skype = None
+        self.RegisterHandler(handler)
 
     def run(self):
         if not self.CreateWindow():
@@ -179,18 +166,18 @@ class ISkypeAPI(ISkypeAPIBase):
         # window class has to be saved as property to keep reference to self.WinProc
         self.window_class = WNDCLASS(3, WNDPROC(self.WinProc), 0, 0,
                                      windll.kernel32.GetModuleHandleA(None),
-                                     0, 0, 0, None, 'class Skype4Py')
+                                     0, 0, 0, None, 'Skype4Py.%d' % id(self))
 
         wclass = windll.user32.RegisterClassA(byref(self.window_class))
         if wclass == 0:
             return False
 
-        self.hwnd = windll.user32.CreateWindowExA(0, 'class Skype4Py', 'Skype4Py',
+        self.hwnd = windll.user32.CreateWindowExA(0, 'Skype4Py.%d' % id(self), 'Skype4Py',
                                                   0xCF0000, 0x80000000, 0x80000000,
                                                   0x80000000, 0x80000000, None, None,
                                                   self.window_class.hInstance, None)
         if self.hwnd == 0:
-            windll.user32.UnregisterClassA('class Skype4Py', None)
+            windll.user32.UnregisterClassA('Skype4Py.%d' % id(self), None)
             return False
 
         return True
@@ -199,7 +186,7 @@ class ISkypeAPI(ISkypeAPIBase):
         if not windll.user32.DestroyWindow(self.hwnd):
             return False
 
-        if not windll.user32.UnregisterClassA('class Skype4Py', None):
+        if not windll.user32.UnregisterClassA('Skype4Py.%d' % id(self), None):
             return False
 
         return True
