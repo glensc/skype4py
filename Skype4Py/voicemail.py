@@ -17,7 +17,7 @@ class IVoicemail(Cached):
         self._Id = int(Id)
         self._Skype = Skype
 
-    def _Property(self, PropName, SET=None, Cache=True):
+    def _Property(self, PropName, Set=None, Cache=True):
         return self._Skype._Property('VOICEMAIL', self._Id, PropName, Set, Cache)
 
     def _Alter(self, AlterName, Args=None):
