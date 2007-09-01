@@ -17,8 +17,8 @@ class IUser(Cached):
         self._Skype = Skype
         self.Handle = unicode(Handle)
 
-    def _Property(self, PropName, Set=None):
-        return self._Skype._Property('USER', self.Handle, PropName, Set)
+    def _Property(self, PropName, Set=None, Cache=True):
+        return self._Skype._Property('USER', self.Handle, PropName, Set, Cache)
 
     def _GetBirthday(self):
         value = self._Property('BIRTHDAY')
@@ -56,7 +56,7 @@ class IUser(Cached):
         return value
 
     def SaveAvatarToFile(self, Filename, AvatarId='1'):
-        self._Property('AVATAR', Id, Filename)
+        self._Property('AVATAR %s %s' % (AvatarId, Filename), Cache=False)
 
     FullName = property(lambda self: self._Property('FULLNAME'))
     Birthday = property(_GetBirthday)
