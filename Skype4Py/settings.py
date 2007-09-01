@@ -38,10 +38,10 @@ class ISettings(object):
         self._Skype._DoCommand('RESETIDLETIMER')
 
     def LoadAvatarFromFile(self, Filename, AvatarId='1'):
-        self._Skype._Property('AVATAR', Id, '', Filename)
+        self._Skype._Property('AVATAR', AvatarId, '', Filename)
 
     def SaveAvatarToFile(self, Filename, AvatarId='1'):
-        self._Skype._Property('AVATAR', Id, Filename)
+        self._Skype._Property('AVATAR', AvatarId, Filename)
 
     _Skype = property(_GetSkype)
 
@@ -63,4 +63,4 @@ class ISettings(object):
                         lambda self, value: self._Skype.Variable('UI_LANGUAGE', value))
     AutoAway = property(lambda self: self._Skype.Variable('AUTOAWAY') == 'ON',
                         lambda self, value: self._Skype.Variable('AUTOAWAY', 'ON' if value else 'OFF'))
-                        
+
