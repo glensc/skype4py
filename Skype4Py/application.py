@@ -9,7 +9,7 @@ accompanying LICENSE file for more information.
 
 from utils import *
 from user import *
-import time
+import threading
 
 
 class IApplication(Cached):
@@ -33,14 +33,23 @@ class IApplication(Cached):
 
     def Connect(self, Username, WaitConnected=False):
         '''Connects application to user.'''
-        self._Alter('CONNECT', Username)
-        User = IUser(Username, self._Skype)
         if WaitConnected:
-            while User in self.ConnectingUsers:
-                time.sleep(0.01)
-            for i in xrange(10):
-                if Username not in map(lambda x: x.PartnerHandle, self.Streams):
-                    time.sleep(0.01)
+            event = threading.Event()
+            stream = [None]
+            def app_streams(App, Streams):
+                if App == self:
+                    s = filter(lambda x: x.PartnerHandle == Username, Streams)
+                    if s:
+                        stream[0] = s[0]
+                        event.set()
+            app_streams(self, self.Streams)
+            self._Skype.RegisterEventHandler('ApplicationStreams', app_streams)
+            self._Alter('CONNECT', Username)
+            event.wait()
+            self._Skype.UnregisterEventHandler('ApplicationStreams', app_streams)
+            return stream[0]
+        else:
+            self._Alter('CONNECT', Username)
 
     def SendDatagram(self, Text, pStreams=None):
         '''Sends datagram to application streams.'''
