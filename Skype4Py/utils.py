@@ -46,7 +46,7 @@ def quote(s):
 def esplit(s, d=None):
     '''Like s.split(d) but for empty strings returns empty list instead of [''].
     '''
-    
+
     if s:
         return s.split(d)
     return []
@@ -104,33 +104,25 @@ def EventHandling(events):
     Returned class:
         Properties:
             On..., where '...' is one of 'events'
-                allow assigning of an event handler (callable) to an event,
+                allow assigning of a default event handler (callable) to an event,
                 None by default
 
         Metods:
-            _RegisterEventHandler(name, info, target)
+            RegisterEventHandler(name, target)
                 registers a callable as event handler, any number of callables can be
                 assigned to an event, a weak reference to the callable is stored
                 name - event name
-                info - unique string defining this handler, 'On...' properties use 'default',
-                       if None, a unique value will be generated, it will also be returned for
-                       future use with _UnregisterEventHandler()
                 target - callable, event handler
 
-            _UnregisterEventHandler(name, info)
+            UnregisterEventHandler(name, target)
                 unregisteres an event handler
                 name - event name
-                info - same as with _RegisterEventHandler()
+                target - callable, event handler
 
-            _RegisterEvents(info, obj)
+            _SetEventHandlerObj(info, obj)
                 registers an object as event handler, object should contain methods with names
-                corresponding to event names
-                info - unique string defining this object
+                corresponding to event names, only one obj is allowed
                 obj - object to register
-
-            _UnregisterEvents(info)
-                unregisteres an object
-                info - unique string defining this object
 
             _CallEventHandler(name, ...)
                 calls all event handlers defined for given event (name), additional parameters
@@ -138,14 +130,6 @@ def EventHandling(events):
                 separate threads
                 name - event name
                 ... - event handlers parameters
-
-            _CreateEventHandlerInfo(self, name)
-                creates a unique string defining an event handler, can be passed as info to
-                _RegisterEventHandler()
-
-            _CreateEventsInfo(self)
-                creates a unique string defining an object, can be passed as info to
-                _RegisterEvents()
     '''
 
     class EventHandlingBase(object):
@@ -172,36 +156,39 @@ def EventHandling(events):
                     h[0](*h[1], **h[2])
 
         def __init__(self):
-            self._Events = {}
+            self._EventHandlerObj = None
+            self._DefaultEventHandlers = {}
             self._EventHandlers = {}
             self._EventThreads = {}
 
-        def _CallEventHandler(self, name, *args, **kwargs):
+        def _CallEventHandler(self, Event, *args, **kwargs):
             # get list of relevant handlers
-            cleanup = False
-            allhandlers = map(lambda x: x(), self._EventHandlers.get(name, {}).values())
+            allhandlers = map(lambda x: x(), self._EventHandlers.get(Event, []))
             handlers = filter(bool, allhandlers)
             if len(allhandlers) != len(handlers):
-                cleanup = True
-            for h in self._Events.values():
-                try:
-                    handlers.append(getattr(h, name))
-                except AttributeError:
-                    pass
-            # do the cleanup if needed
-            if cleanup:
-                self._CleanupEventHandlers()
+                # cleanup
+                self._EventHandlers[Event] = filter(lambda x: x(), self_EventHandlers[Event])
+            try:
+                h = self._DefaultEventHandlers[Event]()
+                if h:
+                    handlers.append(h)
+            except KeyError:
+                pass
+            try:
+                handlers.append(getattr(self._EventHandlerObj, Event))
+            except AttributeError:
+                pass
             # if no handlers, leave
             if not handlers:
                 return
             # initialize event handling thread if needed
-            if name in self._EventThreads:
-                t = self._EventThreads[name]
+            if Event in self._EventThreads:
+                t = self._EventThreads[Event]
                 t.lock.acquire()
-                if not self._EventThreads[name].isAlive():
-                    t = self._EventThreads[name] = self.EventHandlingThread(name)
+                if not self._EventThreads[Event].isAlive():
+                    t = self._EventThreads[Event] = self.EventHandlingThread(Event)
             else:
-                t = self._EventThreads[name] = self.EventHandlingThread(name)
+                t = self._EventThreads[Event] = self.EventHandlingThread(Event)
             # enqueue handlers in thread
             for h in handlers:
                 t.enqueue(h, args, kwargs)
@@ -211,75 +198,48 @@ def EventHandling(events):
             except:
                 t.start()
 
-        def _GetEventHandler(self, name):
-            try:
-                return self._EventHandlers.get(name, {})['default']()
-            except KeyError:
-                return None
+        def RegisterEventHandler(self, Event, Target):
+            if not callable(Target):
+                raise TypeError('%s is not callable' % repr(Target))
+            if Event not in self._EventHandlers:
+                self._EventHandlers[Event] = []
+            self._EventHandlers[Event].append(WeakCallableRef(Target))
+            return True
 
-        def _SetEventHandler(self, name, target):
-            if target:
-                self._RegisterEventHandler(name, 'default', target)
+        def UnregisterEventHandler(self, Event, Target):
+            for e in self._EventHandlers[Event]:
+                if e() == Target:
+                    self._EventHandlers[Event].remove(e)
+                    return True
+            return False
+
+        def _SetDefaultEventHandler(self, Event, Target):
+            if Target:
+                if not callable(Target):
+                    raise TypeError('%s is not callable' % repr(Target))
+                self._DefaultEventHandlers[Event] = WeakCallableRef(Target)
             else:
-                self._UnregisterEventHandler(name, 'default')
+                try:
+                    del self._DefaultEventHandlers[Event]
+                except KeyError:
+                    pass
 
-        def _RegisterEventHandler(self, name, info, target):
-            if not callable(target):
-                raise TypeError('%s is not callable' % repr(target))
-            if not info:
-                info = self._CreateEventHandlerInfo(name)
-            if name not in self._EventHandlers:
-                self._EventHandlers[name] = {}
-            self._EventHandlers[name][info] = WeakCallableRef(target)
-            return info
-
-        def _UnregisterEventHandler(self, name, info):
+        def _GetDefaultEventHandler(self, Event):
             try:
-                del self._EventHandlers.get(name, {})[info]
+                return self._DefaultEventHandlers[Event]()
             except KeyError:
                 pass
 
-        def _RegisterEvents(self, info, obj):
-            self._Events[info] = obj
+        def _SetEventHandlerObj(self, Obj):
+            self._EventHandlerObj = Obj
 
-        def _UnregisterEvents(self, info):
-            try:
-                del self._Events[info]
-            except KeyError:
-                pass
-
-        def _CleanupEventHandlers(self):
-            dead = []
-            for name in self._EventHandlers:
-                for info in self._EventHandlers[name]:
-                    if handlers[info]() == None:
-                        dead.append((name, info))
-            for name, info in dead:
-                self._UnregisterEventHandler(name, info)
-            dead = []
-            for info in self._Events:
-                if self._Events[info]() == None:
-                    dead.append(info)
-            for info in dead:
-                self._UnregisterEvents(info)
-
-        def _CreateEventHandlerInfo(self, name):
-            i = 1
-            while str(i) in self._EventHandlers.get(name, {}):
-                i += 1
-            return str(i)
-
-        def _CreateEventsInfo(self):
-            i = 1
-            while str(i) in self._Events:
-                i += 1
-            return str(i)
-
-    def make_event(event):
-        return property(lambda self: self._GetEventHandler(event), lambda self, value: self._SetEventHandler(event, value))
+    def make_event(Event):
+        return property(lambda self: self._GetDefaultEventHandler(Event),
+                        lambda self, value: self._SetDefaultEventHandler(Event, value))
 
     for event in events:
-        setattr(EventHandlingBase, 'On' + event, make_event(event))
+        setattr(EventHandlingBase, 'On%s' % event, make_event(event))
+
     return EventHandlingBase
 
 
@@ -309,4 +269,4 @@ class Cached(object):
 
     def __copy__(self):
         return self
-        
+
