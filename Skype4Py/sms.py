@@ -11,8 +11,8 @@ from utils import *
 from enums import *
 
 
-class ISmsChunk(object):
-    def __init__(self, Id, Message):
+class ISmsChunk(Cached):
+    def _Init(self, (Id, Message)):
         self._Id = Id
         self._Message = Message
 
@@ -60,14 +60,14 @@ class ISmsMessage(Cached):
     PriceCurrency = property(lambda self: self._Property('PRICE_CURRENCY'))
     ReplyToNumber = property(lambda self: self._Property('REPLY_TO_NUMBER'),
                              lambda self, value: self._Property('REPLY_TO_NUMBER', value))
-    Targets = property(lambda self: map(lambda x: ISmsTarget(x, self), esplit(self._Property('TARGET_NUMBERS'), ', ')))
+    Targets = property(lambda self: map(lambda x: ISmsTarget((x, self)), esplit(self._Property('TARGET_NUMBERS'), ', ')))
     TargetNumbers = property(lambda self: self._Property('TARGET_NUMBERS'),
                              lambda self, value: self._Property('TARGET_NUMBERS', value))
-    Chunks = property(lambda self: map(lambda x: ISmsChunk(x, self), range(int(chop(self._Property('CHUNKING', Cache=False))[0]))))
+    Chunks = property(lambda self: map(lambda x: ISmsChunk((x, self)), range(int(chop(self._Property('CHUNKING', Cache=False))[0]))))
 
 
-class ISmsTarget(object):
-    def __init__(self, Number, Message):
+class ISmsTarget(Cached):
+    def _Init(self, (Number, Message)):
         self._Number = Number
         self._Message = Message
 
