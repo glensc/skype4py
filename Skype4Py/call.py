@@ -140,9 +140,10 @@ class ICall(Cached):
 
 
 class IParticipant(Cached):
-    def _Init(self, Id, Skype):
+    def _Init(self, (Id, Idx), Skype):
         self._Skype = Skype
-        self._Id, self._Idx = Id
+        self._Id = Id
+        self._Idx = Idx
 
     def _Property(self, Prop):
         reply = self._Skype._Property('CALL', self._Id, 'CONF_PARTICIPANT %d' % self._Idx)
