@@ -45,7 +45,7 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
     def __init__(self, Events=None):
         ICallChannelManagerEventHandling.__init__(self)
         if Events:
-            self._RegisterEvents('default', Events)
+            self._SetEventHandlerObj(Events)
 
         self._Skype = None
         self._CallStatusEventHandler = None
@@ -61,12 +61,14 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
         if self._Application:
             self._Application.Delete()
             self._Application = None
-            self._Skype._UnregisterEventHandler('ApplicationStreams', self._ApplicationStreamsEventHandler)
-            self._Skype._UnregisterEventHandler('ApplicationReceiving', self._ApplicationReceivingEventHandler)
-            self._Skype._UnregisterEventHandler('ApplicationDatagram', self._ApplicationDatagramEventHandler)
+            self._Skype.UnregisterEventHandler('ApplicationStreams', self._OnApplicationStreams)
+            self._Skype.UnregisterEventHandler('ApplicationReceiving', self._OnApplicationReceiving)
+            self._Skype.UnregisterEventHandler('ApplicationDatagram', self._OnApplicationDatagram)
 
     def _OnCallStatus(self, pCall, Status):
         if Status == clsRinging:
+            if self._Application == None:
+                self.CreateApplication()
             self._Application.Connect(pCall.PartnerHandle, True)
             for stream in self._Application.Streams:
                 if stream.PartnerHandle == pCall.PartnerHandle:
@@ -78,6 +80,10 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
                 if ch.Call == pCall:
                     self._Channels.remove(ch)
                     self._CallEventHandler('Channels', self, self._Channels)
+                    try:
+                        ch.Stream.Disconnect()
+                    except ISkypeError:
+                        pass
                     break
 
     def _OnApplicationStreams(self, pApp, pStreams):
@@ -88,7 +94,6 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
                     self._CallEventHandler('Channels', self, self._Channels)
 
     def _OnApplicationReceiving(self, pApp, pStreams):
-        print 'receiving handler', pApp, pStreams
         if pApp == self._Application:
             for ch in self._Channels:
                 if ch.Stream in pStreams:
@@ -106,29 +111,29 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
     def Connect(self, pSkype):
         '''Connects to Skype.'''
         self._Skype = pSkype
-        self._CallStatusEventHandler = self._Skype._RegisterEventHandler('CallStatus', None, self._OnCallStatus)
+        self._Skype.RegisterEventHandler('CallStatus', self._OnCallStatus)
 
     def Disconnect(self):
         '''Disconnects from Skype.'''
-        self._Skype._UnregisterEventHandler('CallStatus', self._CallStatusEventHandler)
+        self._Skype.UnregisterEventHandler('CallStatus', self._OnCallStatus)
         self._Skype = None
 
-    def CreateApplication(self, ApplicationName=''):
+    def CreateApplication(self, ApplicationName=None):
         '''Creates application context.'''
-        if ApplicationName:
+        if ApplicationName != None:
             self.Name = ApplicationName
         self._Application = self._Skype.Application(self.Name)
+        self._Skype.RegisterEventHandler('ApplicationStreams', self._OnApplicationStreams)
+        self._Skype.RegisterEventHandler('ApplicationReceiving', self._OnApplicationReceiving)
+        self._Skype.RegisterEventHandler('ApplicationDatagram', self._OnApplicationDatagram)
         self._Application.Create()
-        self._ApplicationStreamsEventHandler = self._Skype._RegisterEventHandler('ApplicationStreams', None, self._OnApplicationStreams)
-        self._ApplicationReceivingEventHandler = self._Skype._RegisterEventHandler('ApplicationReceiving', None, self._OnApplicationReceiving)
-        self._ApplicationDatagramEventHandler = self._Skype._RegisterEventHandler('ApplicationDatagram', None, self._OnApplicationDatagram)
         self._CallEventHandler('Created')
 
     def _SetChannelType(self, ChannelType):
         self._ChannelType = ChannelType
 
     def _SetName(self, Name):
-        self._Name = Name
+        self._Name = unicode(Name)
 
     Channels = property(lambda self: self._Channels)
     ChannelType = property(lambda self: self._ChannelType, _SetChannelType)
