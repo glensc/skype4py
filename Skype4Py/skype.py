@@ -71,7 +71,7 @@ class ISkype(ISkypeEventHandling):
     def __init__(self, Events=None, **Options):
         ISkypeEventHandling.__init__(self)
         if Events:
-            self._RegisterEvents('default', Events)
+            self._SetEventHandlerObj(Events)
 
         self._API = ISkypeAPI(self._Handler, **Options)
 
@@ -154,7 +154,7 @@ class ISkype(ISkypeEventHandling):
                     elif PropName == 'TARGET_STATUSES':
                         for t in esplit(Value, ', '):
                             number, status = t.split('=')
-                            self._CallEventHandler('SmsTargetStatusChanged', ISmsTarget(number, o), status)
+                            self._CallEventHandler('SmsTargetStatusChanged', ISmsTarget((number, o)), status)
                 elif ObjectType == 'FILETRANSFER':
                     o = IFileTransfer(ObjectId, self)
                     if PropName == 'STATUS':
@@ -291,9 +291,9 @@ class ISkype(ISkypeEventHandling):
         def reply_handler(command):
             if command.Command.startswith('SEARCH USERS'):
                 self._CallEventHandler('AsyncSearchUsersFinished', command.Id, map(lambda x: IUser(x, self), esplit(chop(command.Reply)[-1], ', ')))
-                self._UnregisterEventHandler('Reply', 'AsyncSearchUsers')
+                self.UnregisterEventHandler('Reply', reply_handler)
         command = ICommand(-1, 'SEARCH USERS %s' % Target, 'USERS', False, self.Timeout)
-        self._RegisterEventHandler('Reply', 'AsyncSearchUsers', reply_handler)
+        self.RegisterEventHandler('Reply', reply_handler)
         self.SendCommand(command)
         # return pCookie - search identifier
         return command.Id
@@ -325,10 +325,10 @@ class ISkype(ISkypeEventHandling):
         def userstatus_handler(status):
             if status.upper() == newVal.upper():
                 event.set()
-        self._RegisterEventHandler('UserStatus', 'ChangeUserStatus', userstatus_handler)
+        self.RegisterEventHandler('UserStatus', userstatus_handler)
         self.CurrentUserStatus = newVal
         event.wait()
-        self._UnregisterEventHandler('UserStatus', 'ChangeUserStatus')
+        self.UnregisterEventHandler('UserStatus', userstatus_handler)
 
     def CreateChatWith(self, Username):
         '''Creates a new chat with a single user.'''
