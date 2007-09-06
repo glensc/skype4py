@@ -205,18 +205,19 @@ class ISkypeAPI(ISkypeAPIBase):
             com = com8.decode('utf-8')
             if com.startswith(u'#'):
                 p = com.find(u' ')
-                i = int(com[1:p])
-                command = self.Commands[i]
-                del self.Commands[i]
-                command.Reply = com[p + 1:]
-                if command.Blocking:
-                    command._event.set()
-                    del command._event
+                Command = self.CommandsStackPop(int(com[1:p]))
+                if Command:
+                    Command.Reply = com[p + 1:]
+                    if Command.Blocking:
+                        Command._event.set()
+                        del Command._event
+                    else:
+                        Command._timer.cancel()
+                        del Command._timer
+                    self.CallHandler('rece_api', Command.Reply)
+                    self.CallHandler('rece', Command)
                 else:
-                    command._timer.cancel()
-                    del command._timer
-                self.CallHandler('rece_api', command.Reply)
-                self.CallHandler('rece', command)
+                    self.CallHandler('rece_api', com[p + 1:])
             else:
                 self.CallHandler('rece_api', com)
             return 1
@@ -225,12 +226,7 @@ class ISkypeAPI(ISkypeAPIBase):
     def SendCommand(self, Command):
         if not self.Skype:
             self.Attach(Command.Timeout)
-        if Command.Id < 0:
-            Command.Id = 0
-            while Command.Id in self.Commands:
-                Command.Id += 1
-        if Command.Id in self.Commands:
-            raise ISkypeAPIError('Command Id conflict')
+        self.CommandsStackPush(Command)
         self.CallHandler('send', Command)
         com = u'#%d %s' % (Command.Id, Command.Command)
         com8 = com.encode('utf-8') + '\0'
@@ -238,8 +234,7 @@ class ISkypeAPI(ISkypeAPIBase):
         if Command.Blocking:
             Command._event = event = threading.Event()
         else:
-            Command._timer = timer = threading.Timer(Command.Timeout / 1000.0, self.async_cmd_timeout, (Command.Id,))
-        self.Commands[Command.Id] = Command
+            Command._timer = timer = threading.Timer(Command.Timeout / 1000.0, self.CommandsStackPop, (Command.Id,))
         if windll.user32.SendMessageA(self.Skype, WM_COPYDATA, self.hwnd, byref(copydata)):
             if Command.Blocking:
                 event.wait(Command.Timeout / 1000.0)
@@ -250,6 +245,3 @@ class ISkypeAPI(ISkypeAPIBase):
         else:
             raise ISkypeAPIError('Skype API error, check if Skype wasn\'t closed')
 
-    def async_cmd_timeout(self, cid):
-        if cid in self.Commands:
-            del self.Commands[cid]

@@ -34,6 +34,7 @@ class ISkypeAPIBase(threading.Thread):
         self.FriendlyName = u'Skype4Py'
         self.Protocol = 5
         self.Commands = {}
+        self.CommandsLock = threading.Lock()
         self.Handlers = []
         self.AttachmentStatus = apiAttachUnknown
 
@@ -58,6 +59,28 @@ class ISkypeAPIBase(threading.Thread):
             f = h()
             if f:
                 f(mode, arg)
+
+    def CommandsStackPush(self, Command):
+        self.CommandsLock.acquire()
+        if Command.Id < 0:
+            Command.Id = 0
+            while Command.Id in self.Commands:
+                Command.Id += 1
+        if Command.Id in self.Commands:
+            self.CommandsLock.release()
+            raise ISkypeAPIError('Command Id conflict')
+        self.Commands[Command.Id] = Command
+        self.CommandsLock.release()
+        
+    def CommandsStackPop(self, Id):
+        self.CommandsLock.acquire()
+        try:
+            Command = self.Commands[Id]
+            del self.Commands[Id]
+        except KeyError:
+            Command = None
+        self.CommandsLock.release()
+        return Command
 
     def Close(self):
         pass
