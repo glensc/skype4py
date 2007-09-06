@@ -167,7 +167,7 @@ def EventHandling(events):
             handlers = filter(bool, allhandlers)
             if len(allhandlers) != len(handlers):
                 # cleanup
-                self._EventHandlers[Event] = filter(lambda x: x(), self_EventHandlers[Event])
+                self._EventHandlers[Event] = filter(lambda x: x(), self._EventHandlers[Event])
             try:
                 h = self._DefaultEventHandlers[Event]()
                 if h:
