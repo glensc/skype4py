@@ -188,9 +188,9 @@ class ISkypeAPI(ISkypeAPIBase):
         if self.AttachmentStatus == apiAttachSuccess:
             # reattach with the new name
             self.SetAttachmentStatus(apiAttachUnknown)
-            self.Attach(30000)
+            self.Attach()
 
-    def Attach(self, Timeout):
+    def Attach(self, Timeout=30000, Wait=True):
         if self.AttachmentStatus == apiAttachSuccess:
             return
         if not self.isAlive():
@@ -203,7 +203,8 @@ class ISkypeAPI(ISkypeAPIBase):
             def ftimeout():
                 self.wait = False
             t = threading.Timer(Timeout / 1000.0, ftimeout)
-            t.start()
+            if Wait:
+                t.start()
             while self.wait:
                 self.win_skype = self.get_skype()
                 if self.win_skype != None:

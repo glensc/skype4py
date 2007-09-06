@@ -265,7 +265,7 @@ class ISkype(ISkypeEventHandling):
         '''Connects to Skype API.'''
         try:
             self._API.Protocol = Protocol
-            self._API.Attach(self.Timeout)
+            self._API.Attach(self.Timeout, Wait)
         except ISkypeAPIError:
             self.ResetCache()
             raise

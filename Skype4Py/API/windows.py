@@ -94,7 +94,7 @@ class ISkypeAPI(ISkypeAPIBase):
         if self.Skype:
             self.SendCommand(ICommand(-1, 'NAME %s' % FriendlyName))
 
-    def Attach(self, Timeout):
+    def Attach(self, Timeout=30000, Wait=True):
         if self.Skype:
             return
         if not self.isAlive():
@@ -113,7 +113,8 @@ class ISkypeAPI(ISkypeAPIBase):
         def ftimeout():
             self.Wait = False
         t = threading.Timer(Timeout / 1000, ftimeout)
-        t.start()
+        if Wait:
+            t.start()
         while self.Wait and self.AttachmentStatus not in [apiAttachSuccess, apiAttachRefused]:
             if self.AttachmentStatus == apiAttachPendingAuthorization:
                 # disable the timeout

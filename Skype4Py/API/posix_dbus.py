@@ -74,7 +74,7 @@ class ISkypeAPI(ISkypeAPIBase):
         if self.skype_out:
             self.SendCommand(ICommand(-1, 'NAME %s' % FriendlyName))
 
-    def Attach(self, Timeout):
+    def Attach(self, Timeout=30000, Wait=True):
         if self.skype_out:
             return
         if not self.isAlive():
@@ -87,7 +87,8 @@ class ISkypeAPI(ISkypeAPIBase):
             def ftimeout():
                 self.wait = False
             t = threading.Timer(Timeout / 1000.0, ftimeout)
-            t.start()
+            if Wait:
+                t.start()
             while self.wait:
                 try:
                     self.skype_out = self.bus.get_object('com.Skype.API', '/com/Skype')

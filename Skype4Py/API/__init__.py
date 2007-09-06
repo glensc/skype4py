@@ -71,7 +71,7 @@ class ISkypeAPIBase(threading.Thread):
             raise ISkypeAPIError('Command Id conflict')
         self.Commands[Command.Id] = Command
         self.CommandsLock.release()
-        
+
     def CommandsStackPop(self, Id):
         self.CommandsLock.acquire()
         try:
@@ -93,7 +93,7 @@ class ISkypeAPIBase(threading.Thread):
             self.AttachmentStatus = AttachmentStatus
             self.CallHandler('attach', AttachmentStatus)
 
-    def Attach(self, Timeout):
+    def Attach(self, Timeout=30000, Wait=True):
         self._NotImplemented()
 
     def IsRunning(self):
