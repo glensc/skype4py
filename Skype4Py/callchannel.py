@@ -27,7 +27,7 @@ class ICallChannel(object):
         elif self._Type == cctDatagram:
             self._Stream.SendDatagram(Text)
         else:
-            raise SkypeError(0, 'Cannot send using %s channel type' & repr(self._Type))
+            raise ISkypeError(0, 'Cannot send using %s channel type' & repr(self._Type))
 
     Type = property(lambda self: self._Type)
     Stream = property(lambda self: self._Stream)
