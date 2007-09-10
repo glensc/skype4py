@@ -21,8 +21,10 @@ class ISettings(object):
         raise Exception()
 
     def Avatar(self, Id='1', Set=None):
-        '''Returns/sets user avatar picture.'''
-        return self._Skype._Property('AVATAR', Id, '', Set)
+        '''Sets user avatar picture from file.'''
+        if Set == None:
+            raise TypeError('Argument \'Set\' is mandatory!')
+        self.LoadAvatarFromFile(Set, Id)
 
     def RingToneStatus(self, Id='1', Set=None):
         '''Returns/sets ringtone status.'''
@@ -30,18 +32,22 @@ class ISettings(object):
             return self._Skype._Property('RINGTONE', Id, 'STATUS') == 'ON'
         return self._Skype._Property('RINGTONE', Id, 'STATUS', 'ON' if Set else 'OFF')
 
-    def RingTone(self, Id='1', Set=''):
-        '''Sets ringtone.'''
-        self._Skype._Property('RINGTONE', Id, '', Set)
+    def RingTone(self, Id='1', Set=None):
+        '''Returns/sets ringtone.'''
+        return self._Skype._Property('RINGTONE', Id, '', Set)
 
     def ResetIdleTimer(self):
         self._Skype._DoCommand('RESETIDLETIMER')
 
     def LoadAvatarFromFile(self, Filename, AvatarId='1'):
-        self._Skype._Property('AVATAR', AvatarId, '', Filename)
+        '''Loads user avatar picture from file.'''
+        s = 'AVATAR %s %s' % (AvatarId, Filename)
+        self._Skype._DoCommand('SET %s' % s, s)
 
     def SaveAvatarToFile(self, Filename, AvatarId='1'):
-        self._Skype._Property('AVATAR', AvatarId, Filename)
+        '''Saves user avatar picture to file.'''
+        s = 'AVATAR %s %s' % (AvatarId, Filename)
+        self._Skype._DoCommand('GET %s' % s, s)
 
     _Skype = property(_GetSkype)
 
