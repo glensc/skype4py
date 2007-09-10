@@ -58,14 +58,14 @@ class IChat(Cached):
             topicxml = self._Property('TOPICXML')
             if topicxml:
                 return topicxml
-        except SkypeError:
+        except ISkypeError:
             pass
         return self._Property('TOPIC')
 
     def _SetTopic(self, Topic):
         try:
             self._Alter('SETTOPICXML', Topic)
-        except SkypeError:
+        except ISkypeError:
             self._Alter('SETTOPIC', Topic)
 
     def AcceptAdd(self):
@@ -132,6 +132,11 @@ class IChatMessage(Cached):
     def _Property(self, PropName, Value=None, Cache=True):
         return self._Skype._Property('CHATMESSAGE', self._Id, PropName, Value, Cache)
 
+    def _SetSeen(self, value):
+        if value:
+            self._Property('SEEN', '')
+        raise ISkypeError(0, 'Seen can only be set to True')
+
     Id = property(lambda self: self._Id)
     Timestamp = property(lambda self: float(self._Property('TIMESTAMP')))
     FromHandle = property(lambda self: self._Property('FROM_HANDLE'))
@@ -143,8 +148,7 @@ class IChatMessage(Cached):
                     lambda self, value: self._Property('BODY', value))
     ChatName = property(lambda self: self._Property('CHATNAME'))
     Users = property(lambda self: map(lambda x: IUser(self._Skype, x), esplit(self._Property('USERS'))))
-    Seen = property(lambda self: self._Property('SEEN') == 'TRUE',
-                    lambda self, value: self._Property('SEEN', 'TRUE' if value else 'FALSE'))
+    Seen = property(fset=_SetSeen)
     Chat = property(lambda self: IChat(self.ChatName, self._Skype))
     Sender = property(lambda self: IUser(self.FromHandle, self._Skype))
 
