@@ -56,7 +56,8 @@ class IUser(Cached):
         return value
 
     def SaveAvatarToFile(self, Filename, AvatarId='1'):
-        self._Property('AVATAR %s %s' % (AvatarId, Filename), Cache=False)
+        s = 'USER %s AVATAR %s %s' % (self.Handle, AvatarId, Filename)
+        self._Skype._DoCommand('GET %s' % s, s)
 
     FullName = property(lambda self: self._Property('FULLNAME'))
     Birthday = property(_GetBirthday)
