@@ -135,7 +135,8 @@ class IChatMessage(Cached):
     def _SetSeen(self, value):
         if value:
             self._Property('SEEN', '')
-        raise ISkypeError(0, 'Seen can only be set to True')
+        else:
+            raise ISkypeError(0, 'Seen can only be set to True')
 
     Id = property(lambda self: self._Id)
     Timestamp = property(lambda self: float(self._Property('TIMESTAMP')))
