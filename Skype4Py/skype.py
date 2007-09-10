@@ -313,7 +313,7 @@ class ISkype(ISkypeEventHandling):
         for c in calls2:
             if c not in calls1:
                 return c
-        raise SkypeError(0, 'Placing call failed')
+        raise ISkypeError(0, 'Placing call failed')
 
     def SendMessage(self, Username, Text):
         '''Sends IM message to specified user and returns a new message object.'''
@@ -370,7 +370,7 @@ class ISkype(ISkypeEventHandling):
             if g not in groups1:
                 break
         else:
-            raise SkypeError(0, 'Group creating failed')
+            raise ISkypeError(0, 'Group creating failed')
         return IGroup(g, self)
 
     def DeleteGroup(self, GroupId):
