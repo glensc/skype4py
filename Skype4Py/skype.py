@@ -300,7 +300,17 @@ class ISkype(ISkypeEventHandling):
 
     def PlaceCall(self, *Targets):
         '''Calls specified target(s) and returns a new call object.'''
-        return ICall(chop(self._DoCommand('CALL %s' % ', '.join(Targets)), 2)[1], self)
+        calls = self.ActiveCalls
+        reply = self._DoCommand('CALL %s' % ', '.join(Targets))
+        # Skype for Windows returns the call status which gives us the call Id;
+        if reply.startswith('CALL '):
+            return ICall(chop(reply, 2)[1], self)
+        # On linux we get 'OK' as reply so we search for the new call on
+        # list of active calls.
+        for c in self.ActiveCalls:
+            if c not in calls:
+                return c
+        raise ISkypeError(0, 'Placing call failed')        
 
     def SendMessage(self, Username, Text):
         '''Sends IM message to specified user and returns a new message object.'''
