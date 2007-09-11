@@ -298,22 +298,9 @@ class ISkype(ISkypeEventHandling):
         # return pCookie - search identifier
         return command.Id
 
-    def PlaceCall(self, Target, Target2='', Target3='', Target4=''):
-        '''Calls specified target and returns a new call object.'''
-        com = 'CALL %s' % Target
-        if Target2:
-            com = '%s, %s' % (com, Target2)
-        if Target3:
-            com = '%s, %s' % (com, Target3)
-        if Target4:
-            com = '%s, %s' % (com, Target4)
-        calls1 = self.ActiveCalls
-        self._DoCommand(com)
-        calls2 = self.ActiveCalls
-        for c in calls2:
-            if c not in calls1:
-                return c
-        raise ISkypeError(0, 'Placing call failed')
+    def PlaceCall(self, *Targets):
+        '''Calls specified target(s) and returns a new call object.'''
+        return ICall(chop(self._DoCommand('CALL %s' % ', '.join(Targets)), 2)[1], self)
 
     def SendMessage(self, Username, Text):
         '''Sends IM message to specified user and returns a new message object.'''
@@ -363,15 +350,12 @@ class ISkype(ISkypeEventHandling):
 
     def CreateGroup(self, GroupName):
         '''Creates a new custom group.'''
-        groups1 = self.CustomGroups
+        groups = self.CustomGroups
         self._DoCommand('CREATE GROUP %s' % GroupName)
-        groups2 = self.CustomGroups
-        for g in groups2:
-            if g not in groups1:
-                break
-        else:
-            raise ISkypeError(0, 'Group creating failed')
-        return IGroup(g, self)
+        for g in self.CustomGroups:
+            if g not in groups and g.DisplayName == GroupName:
+                return g
+        raise ISkypeError(0, 'Group creating failed')
 
     def DeleteGroup(self, GroupId):
         '''Deletes a custom group.'''
