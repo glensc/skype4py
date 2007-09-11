@@ -87,9 +87,9 @@ class IClient(object):
         '''Opens authorization dialog.'''
         self.OpenDialog('AUTHORIZATION', Username)
 
-    def OpenDialog(self, Name, Param1='', Param2=''):
+    def OpenDialog(self, Name, *Params):
         '''Open dialog.'''
-        self._Skype._DoCommand('OPEN %s %s %s' % (Name, Param1, Param2))
+        self._Skype._DoCommand('OPEN %s %s' % (Name, ' '.join(Params)))
 
     def OpenVideoTestDialog(self):
         '''Opens video test dialog.'''
