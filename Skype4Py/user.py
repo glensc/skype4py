@@ -135,7 +135,7 @@ class IGroup(Cached):
         for u in self.Users:
             if u.OnlineStatus == olsOnline:
                 online.append(u)
-        return u
+        return online
 
     Id = property(lambda self: self._Id)
     Type = property(lambda self: self._Property('TYPE'))
