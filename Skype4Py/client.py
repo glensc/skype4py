@@ -129,12 +129,15 @@ class IClient(object):
 
     def CreateMenuItem(self, MenuItemId, PluginContext, CaptionText, HintText='', IconPath='', Enabled=True,
                        ContactType=pluginContactTypeAll, MultipleContacts=False):
-        com = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s' % (MenuItemId, str(PluginContext), quote(CaptionText))
+        com = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s ENABLED %s' % (MenuItemId, PluginContext, quote(CaptionText), 'true' if Enabled else 'false')
         if HintText:
             com += ' HINT %s' % quote(HintText)
         if IconPath:
             com += ' ICON %s' % quote(IconPath)
-        com += ' ENABLED %s ENABLE_MULTIPLE_CONTACTS %s' % ('TRUE' if Enabled else 'FALSE', 'TRUE' if MultipleContacts else 'FALSE')
+        if MultipleContacts:
+            com += ' ENABLE_MULTIPLE_CONTACTS true'
+        if PluginContext == pluginContextContact:
+            com += ' CONTACT_TYPE_FILTER %s' % ContactType
         self._Skype._DoCommand(com)
         return IPluginMenuItem(MenuItemId, self._Skype, CaptionText, HintText, Enabled)
 
