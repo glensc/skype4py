@@ -190,7 +190,18 @@ class ISkype(ISkypeEventHandling):
             elif a == 'MENU_ITEM':
                 ObjectId, PropName, Value = chop(b, 2)
                 if PropName == 'CLICKED':
-                    self._CallEventHandler('PluginMenuItemClicked', IPluginMenuItem(ObjectId, self))
+                    i = Value.rfind('CONTEXT ')
+                    if i >= 0:
+                        context = chop(Value[i+8:])[0]
+                        users = []
+                        context_id = u''
+                        if context in [pluginContextContact, pluginContextCall, pluginContextChat]:
+                            users = map(lambda x: IUser(x, self), esplit(Value[:i-1], ', '))
+                        if context in [pluginContextCall, pluginContextChat]:
+                            j = Value.rfind('CONTEXT_ID ')
+                            if j >= 0:
+                                context_id = chop(Value[j+11:])[0]
+                        self._CallEventHandler('PluginMenuItemClicked', IPluginMenuItem(ObjectId, self), users, context, context_id)
             elif a == 'WALLPAPER':
                 self._CallEventHandler('WallpaperChanged', b)
         elif mode == 'rece':
