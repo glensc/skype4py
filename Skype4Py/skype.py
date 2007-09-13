@@ -215,7 +215,7 @@ class ISkype(ISkypeEventHandling):
         return command.Reply
 
     def _Property(self, ObjectType, ObjectId, PropName, Set=None, Cache=True):
-        h = (str(ObjectType).upper(), str(ObjectId), str(PropName).upper())
+        h = (str(ObjectType), str(ObjectId), str(PropName))
         arg = ('%s %s %s' % h).split()
         while '' in arg:
             arg.remove('')
@@ -228,7 +228,7 @@ class ISkype(ISkypeEventHandling):
                     a, b = chop(Value)
                 except ValueError:
                     break
-                if a != arg[0]:
+                if a.lower() != arg[0].lower():
                     break
                 del arg[0]
                 Value = b
@@ -237,7 +237,7 @@ class ISkype(ISkypeEventHandling):
             self._DoCommand('SET %s %s' % (' '.join(arg), unicode(Set)))
 
     def _Alter(self, ObjectType, ObjectId, AlterName, Args=None, Reply=None):
-        com = 'ALTER %s %s %s' % (str(ObjectType).upper(), unicode(ObjectId), str(AlterName).upper())
+        com = 'ALTER %s %s %s' % (str(ObjectType), str(ObjectId), str(AlterName))
         if Reply == None:
             Reply = com
         if Args != None:
@@ -249,7 +249,7 @@ class ISkype(ISkypeEventHandling):
                 a, b = chop(reply)
             except ValueError:
                 break
-            if a != arg[0]:
+            if a.lower() != arg[0].lower():
                 break
             del arg[0]
             reply = b
@@ -310,7 +310,7 @@ class ISkype(ISkypeEventHandling):
         for c in self.ActiveCalls:
             if c not in calls:
                 return c
-        raise ISkypeError(0, 'Placing call failed')        
+        raise ISkypeError(0, 'Placing call failed')
 
     def SendMessage(self, Username, Text):
         '''Sends IM message to specified user and returns a new message object.'''
