@@ -311,19 +311,19 @@ smsTargetStatusDeliveryFailed = 'TARGET_DELIVERY_FAILED'
 
 
 # TPluginContext
-pluginContextUnknown = 'UNKNOWN'
-pluginContextChat = 'CHAT'
-pluginContextCall = 'CALL'
-pluginContextContact = 'CONTACT'
-pluginContextMyself = 'MYSELF'
-pluginContextTools = 'TOOLS'
+pluginContextUnknown = 'unknown'
+pluginContextChat = 'chat'
+pluginContextCall = 'call'
+pluginContextContact = 'contact'
+pluginContextMyself = 'myself'
+pluginContextTools = 'tools'
 
 
 # TPluginContactType
-pluginContactTypeUnknown = 'UNKNOWN'
-pluginContactTypeAll = 'ALL'
-pluginContactTypeSkype = 'SKYPE'
-pluginContactTypeSkypeOut = 'SKYPEOUT'
+pluginContactTypeUnknown = 'unknown'
+pluginContactTypeAll = 'all'
+pluginContactTypeSkype = 'skype'
+pluginContactTypeSkypeOut = 'skypeout'
 
 
 # TFileTransferType
