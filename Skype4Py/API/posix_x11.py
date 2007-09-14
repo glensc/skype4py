@@ -289,7 +289,8 @@ class ISkypeAPI(ISkypeAPIBase):
                 else:
                     Command._timer.cancel()
                     del Command._timer
-                self.CallHandler('rece_api', Command.Reply)
+                if not Command.Command.startswith('GET '):
+                    self.CallHandler('rece_api', Command.Reply)
                 self.CallHandler('rece', Command)
             else:
                 self.CallHandler('rece_api', com[p + 1:])
