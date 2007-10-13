@@ -70,7 +70,7 @@ class ICall(Cached):
             try:
                 value = dict(map(lambda x: x.split('='), esplit(self._Property('INPUT'), ', ')))[DeviceType]
             except KeyError:
-                return ''
+                return u''
             return value[1:-1]
         else:
             self._Alter('SET_INPUT', '%s=\"%s\"' % (DeviceType, Set))
@@ -80,7 +80,7 @@ class ICall(Cached):
             try:
                 value = dict(map(lambda x: x.split('='), esplit(self._Property('OUTPUT'), ', ')))[DeviceType]
             except KeyError:
-                return ''
+                return u''
             return value[1:-1]
         else:
             self._Alter('SET_OUTPUT', '%s=\"%s\"' % (DeviceType, Set))
@@ -90,7 +90,7 @@ class ICall(Cached):
             try:
                 value = dict(map(lambda x: x.split('='), esplit(self._Property('CAPTURE_MIC'), ', ')))[DeviceType]
             except KeyError:
-                return ''
+                return u''
             return value[1:-1]
         else:
             self._Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (DeviceType, Set))
