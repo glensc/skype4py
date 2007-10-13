@@ -21,7 +21,7 @@ class IVoicemail(Cached):
         return self._Skype._Property('VOICEMAIL', self._Id, PropName, Set, Cache)
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype.Alter('VOICEMAIL', self._Id, AlterName, Args)
+        return self._Skype._Alter('VOICEMAIL', self._Id, AlterName, Args)
 
     def Open(self):
         '''Opens voicemail.'''
@@ -68,7 +68,7 @@ class IVoicemail(Cached):
             try:
                 value = dict(map(lambda x: x.split('='), esplit(self._Property('INPUT'), ', ')))[DeviceType]
             except KeyError:
-                return ''
+                return u''
             return value[1:-1]
         else:
             self._Alter('SET_INPUT', '%s=\"%s\"' % (DeviceType, Set))
@@ -78,7 +78,7 @@ class IVoicemail(Cached):
             try:
                 value = dict(map(lambda x: x.split('='), esplit(self._Property('OUTPUT'), ', ')))[DeviceType]
             except KeyError:
-                return ''
+                return u''
             return value[1:-1]
         else:
             self._Alter('SET_OUTPUT', '%s=\"%s\"' % (DeviceType, Set))
@@ -88,7 +88,7 @@ class IVoicemail(Cached):
             try:
                 value = dict(map(lambda x: x.split('='), esplit(self._Property('CAPTURE_MIC'), ', ')))[DeviceType]
             except KeyError:
-                return ''
+                return u''
             return value[1:-1]
         else:
             self._Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (DeviceType, Set))
