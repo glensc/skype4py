@@ -62,6 +62,6 @@ class IProfile(object):
     CallForwardRules = property(lambda self: self._Property('CALL_FORWARD_RULES'), lambda self, value: self._Property('CALL_FORWARD_RULES', value))
     Balance = property(lambda self: int(self._Property('PSTN_BALANCE')))
     BalanceCurrency = property(lambda self: self._Property('PSTN_BALANCE_CURRENCY'))
-    BalanceToText = property(lambda self: self._Property('PSTN_BALANCE_CURRENCY') + ' ' + self._Property('PSTN_BALANCE'))
+    BalanceToText = property(lambda self: u'%s %.2f' % (self._Property('PSTN_BALANCE_CURRENCY'), self._Property('PSTN_BALANCE') / 100))
     IPCountry = property(lambda self: self._Property('IPCOUNTRY'))
     ValidatedSmsNumbers = property(lambda self: self._Property('SMS_VALIDATED_NUMBERS'))
