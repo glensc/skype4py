@@ -348,7 +348,10 @@ class ISkype(ISkypeEventHandling):
 
     def SendVoicemail(self, Username):
         '''Sends voicemail to specified user.'''
-        self._DoCommand('VOICEMAIL %s' % Username)
+        if self._API.Protocol >= 6:
+            self._DoCommand('CALLVOICEMAIL %s' % Username)
+        else:
+            self._DoCommand('VOICEMAIL %s' % Username)
 
     def ClearChatHistory(self):
         '''Clears chat history.'''
