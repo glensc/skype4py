@@ -42,19 +42,19 @@ class ICall(Cached):
 
     def StartVideoSend(self):
         '''Starts video send.'''
-        self._Property('START_VIDEO_SEND', '')
+        self._Alter('START_VIDEO_SEND')
 
     def StopVideoSend(self):
         '''Stops video send.'''
-        self._Property('STOP_VIDEO_SEND', '')
+        self._Alter('STOP_VIDEO_SEND')
 
     def StartVideoReceive(self):
         '''Starts video receive.'''
-        self._Property('START_VIDEO_RECEIVE', '')
+        self._Alter('START_VIDEO_RECEIVE')
 
     def StopVideoReceive(self):
         '''Stops video receive.'''
-        self._Property('STOP_VIDEO_RECEIVE', '')
+        self._Alter('STOP_VIDEO_RECEIVE')
 
     def RedirectToVoicemail(self):
         self._Alter('END', 'REDIRECT_TO_VOICEMAIL')
