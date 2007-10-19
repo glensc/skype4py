@@ -7,55 +7,39 @@ Distributed under the BSD License, see the
 accompanying LICENSE file for more information.
 '''
 
-from enums import *
+import enums
 from errors import *
 import os
+from Languages import *
 
 
 class IConversion(object):
     def __init__(self, Skype):
         self._Language = u''
-        self._Dict = {}
+        self._Module = None
         self._SetLanguage('en')
 
     def _ToText(self, prefix, value):
-        for id_ in self._Dict:
-            value_, txt = self._Dict[id_]
-            if id_.startswith(prefix) and value_ == value:
-                return txt
+        enum = filter(lambda x: x[1] == value, [(x, getattr(enums, x)) for x in filter(lambda x: x.startswith(prefix), dir(enums))])
+        if enum:
+            try:
+                return getattr(self._Module, enum[0][0])
+            except AttributeError:
+                pass
         raise ISkypeError(0, 'Identifier not found')
 
-    def _TextTo(self, prefix, txt):
-        for id_ in self._Dict:
-            value, txt_ = self._Dict[id_]
-            if id_.startswith(prefix) and txt_.lower() == txt.lower():
-                return value
+    def _TextTo(self, prefix, value):
+        enum = filter(lambda x: x[1] == value, [(x, getattr(enums, x)) for x in filter(lambda x: x.startswith(prefix), dir(enums))])
+        if enum:
+            return value
         raise ISkypeError(0, 'Text not found')
 
     def _SetLanguage(self, Language):
-        path = os.path.join(os.path.split(__file__)[0], 'Languages')
         try:
-            f = file(os.path.join(path, Language), 'rb')
-            data = f.read().decode('utf-16')
-            f.close()
-        except:
-            return
-        self._Dict = {}
-        self._Language = unicode(Language)
-        for ln in data.replace('\r\n', '\n').split('\n'):
-            ln = ln.strip()
-            if not ln:
-                continue
-            p = ln.find('=')
-            if p < 0:
-                raise ISkypeError(0, 'Error in language %s: Missing \'=\' char' % Language)
-            id_ = ln[:p].strip()
-            try:
-                value = globals()[id_]
-            except KeyError:
-                raise ISkypeError(0, 'Error in language %s: Unknown identifier' % Language)
-            txt = ln[p + 1:].strip()
-            self._Dict[str(id_)] = value, txt
+            self._Module = __import__('Languages.%s' % str(Language))
+            self._Language = unicode(Language)
+        except ImportError:
+            pass
 
     def OnlineStatusToText(self, status):
         '''Returns online status as text.'''
