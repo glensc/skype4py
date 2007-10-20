@@ -108,7 +108,7 @@ class IGroup(Cached):
         return self._Skype._Property('GROUP', self._Id, PropName, Value, Cache)
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype.Alter('GROUP', self._Id, AlterName, Args)
+        return self._Skype._Alter('GROUP', self._Id, AlterName, Args)
 
     def AddUser(self, Username):
         '''Adds new a user or PSTN number to group.'''
@@ -131,17 +131,13 @@ class IGroup(Cached):
         self._Alter('DECLINE')
 
     def _GetOnlineUsers(self):
-        online = []
-        for u in self.Users:
-            if u.OnlineStatus == olsOnline:
-                online.append(u)
-        return online
+        return tuple(x for x in self.Users if x.OnlineStatus == olsOnline)
 
     Id = property(lambda self: self._Id)
     Type = property(lambda self: self._Property('TYPE'))
     CustomGroupId = property(lambda self: self._Property('CUSTOM_GROUP_ID'))
     DisplayName = property(lambda self: self._Property('DISPLAYNAME'), lambda self, value: self._Property('DISPLAYNAME', value))
-    Users = property(lambda self: map(lambda x: IUser(x, self._Skype), esplit(self._Property('USERS', Cache=False), ', ')))
+    Users = property(lambda self: tuple(IUser(x, self._Skype) for x in esplit(self._Property('USERS', Cache=False), ', ')))
     OnlineUsers = property(_GetOnlineUsers)
     IsVisible = property(lambda self: self._Property('VISIBLE') == 'TRUE')
     IsExpanded = property(lambda self: self._Property('EXPANDED') == 'TRUE')

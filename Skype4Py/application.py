@@ -38,7 +38,7 @@ class IApplication(Cached):
             stream = [None]
             def app_streams(App, Streams):
                 if App == self:
-                    s = filter(lambda x: x.PartnerHandle == Username, Streams)
+                    s = [x for x in Streams if x.PartnerHandle == Username]
                     if s:
                         stream[0] = s[0]
                         event.set()
@@ -59,11 +59,11 @@ class IApplication(Cached):
             s.SendDatagram(Text)
 
     Name = property(lambda self: self._Name)
-    Streams = property(lambda self: map(lambda x: IApplicationStream(x, self), esplit(self._Property('STREAMS'))))
-    ConnectableUsers = property(lambda self: map(lambda x: IUser(x, self._Skype), esplit(self._Property('CONNECTABLE'))))
-    ConnectingUsers = property(lambda self: map(lambda x: IUser(x, self._Skype), esplit(self._Property('CONNECTING'))))
-    SendingStreams = property(lambda self: map(lambda x: IApplicationStream(x.split('=')[0], self), esplit(self._Property('SENDING'))))
-    ReceivedStreams = property(lambda self: map(lambda x: IApplicationStream(x.split('=')[0], self), esplit(self._Property('RECEIVED'))))
+    Streams = property(lambda self: tuple(IApplicationStream(x, self) for x in esplit(self._Property('STREAMS'))))
+    ConnectableUsers = property(lambda self: tuple(IUser(x, self._Skype) for x in esplit(self._Property('CONNECTABLE'))))
+    ConnectingUsers = property(lambda self: tuple(IUser(x, self._Skype) for x in esplit(self._Property('CONNECTING'))))
+    SendingStreams = property(lambda self: tuple(IApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('SENDING'))))
+    ReceivedStreams = property(lambda self: tuple(IApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('RECEIVED'))))
 
 
 class IApplicationStream(Cached):

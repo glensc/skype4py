@@ -66,7 +66,7 @@ class IVoicemail(Cached):
     def InputDevice(self, DeviceType, Set=None):
         if Set == None:
             try:
-                value = dict(map(lambda x: x.split('='), esplit(self._Property('INPUT'), ', ')))[DeviceType]
+                value = dict([x.split('='), esplit(self._Property('INPUT'), ', ')])[DeviceType]
             except KeyError:
                 return u''
             return value[1:-1]
@@ -76,7 +76,7 @@ class IVoicemail(Cached):
     def OutputDevice(self, DeviceType, Set=None):
         if Set == None:
             try:
-                value = dict(map(lambda x: x.split('='), esplit(self._Property('OUTPUT'), ', ')))[DeviceType]
+                value = dict([x.split('='), esplit(self._Property('OUTPUT'), ', ')])[DeviceType]
             except KeyError:
                 return u''
             return value[1:-1]
@@ -86,7 +86,7 @@ class IVoicemail(Cached):
     def CaptureMicDevice(self, DeviceType, Set=None):
         if Set == None:
             try:
-                value = dict(map(lambda x: x.split('='), esplit(self._Property('CAPTURE_MIC'), ', ')))[DeviceType]
+                value = dict([x.split('='), esplit(self._Property('CAPTURE_MIC'), ', ')])[DeviceType]
             except KeyError:
                 return u''
             return value[1:-1]

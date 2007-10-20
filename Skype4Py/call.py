@@ -68,7 +68,7 @@ class ICall(Cached):
     def InputDevice(self, DeviceType, Set=None):
         if Set == None:
             try:
-                value = dict(map(lambda x: x.split('='), esplit(self._Property('INPUT'), ', ')))[DeviceType]
+                value = dict([x.split('=') for x in esplit(self._Property('INPUT'), ', ')])[DeviceType]
             except KeyError:
                 return u''
             return value[1:-1]
@@ -78,7 +78,7 @@ class ICall(Cached):
     def OutputDevice(self, DeviceType, Set=None):
         if Set == None:
             try:
-                value = dict(map(lambda x: x.split('='), esplit(self._Property('OUTPUT'), ', ')))[DeviceType]
+                value = dict([x.split('=') for x in esplit(self._Property('OUTPUT'), ', ')])[DeviceType]
             except KeyError:
                 return u''
             return value[1:-1]
@@ -88,7 +88,7 @@ class ICall(Cached):
     def CaptureMicDevice(self, DeviceType, Set=None):
         if Set == None:
             try:
-                value = dict(map(lambda x: x.split('='), esplit(self._Property('CAPTURE_MIC'), ', ')))[DeviceType]
+                value = dict([x.split('=') for x in esplit(self._Property('CAPTURE_MIC'), ', ')])[DeviceType]
             except KeyError:
                 return u''
             return value[1:-1]
@@ -100,10 +100,7 @@ class ICall(Cached):
 
     def _GetParticipants(self):
         count = int(self._Property('CONF_PARTICIPANTS_COUNT'))
-        parts = []
-        for i in xrange(1, count + 1):
-            parts.append(IParticipant((self._Id, i), self._Skype))
-        return parts
+        return tuple(IParticipant((self._Id, x), self._Skype) for x in xrange(1, count + 1))
 
     Id = property(lambda self: self._Id)
     Timestamp = property(lambda self: float(self._Property('TIMESTAMP')))
@@ -176,18 +173,10 @@ class IConference(Cached):
             c.Finish()
 
     def _GetCalls(self):
-        calls = []
-        for c in self._Skype.Calls():
-            if c.ConferenceId == self._Id:
-                calls.append(c)
-        return calls
+        return tuple(x for x in self._Skype.Calls() if c.ConferenceId == self._Id)
 
     def _GetActiveCalls(self):
-        calls = []
-        for c in self._Skype.ActiveCalls:
-            if c.ConferenceId == self._Id:
-                calls.append(c)
-        return calls
+        return tuple(x for x in self._Skype.ActiveCalls if c.ConferenceId == self._Id)
 
     Id = property(lambda self: self._Id)
     Calls = property(_GetCalls)

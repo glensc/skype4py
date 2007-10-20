@@ -43,7 +43,7 @@ class IChat(Cached):
 
     def AddMembers(self, pMembers):
         '''Adds new members to the chat.'''
-        self._Alter('ADDMEMBERS', ', '.join(map(lambda x: x.Handle, pMembers)))
+        self._Alter('ADDMEMBERS', ', '.join([x.Handle for x in pMembers]))
 
     def Bookmark(self):
         '''Bookmarks the chat.'''
@@ -99,20 +99,20 @@ class IChat(Cached):
     Status = property(lambda self: self._Property('STATUS'))
     Topic = property(_GetTopic, _SetTopic)
     FriendlyName = property(lambda self: self._Property('FRIENDLYNAME'))
-    Posters = property(lambda self: map(lambda x: IUser(x, self._Skype), esplit(self._Property('POSTERS'))))
-    Members = property(lambda self: map(lambda x: IUser(x, self._Skype), esplit(self._Property('MEMBERS'))))
-    ActiveMembers = property(lambda self: map(lambda x: IUser(x, self._Skype), esplit(self._Property('ACTIVEMEMBERS', Cache=False))))
-    Messages = property(lambda self: map(lambda x: IChatMessage(x ,self._Skype), esplit(self._Property('CHATMESSAGES', Cache=False), ', ')))
-    RecentMessages = property(lambda self: map(lambda x: IChatMessage(x, self._Skype), esplit(self._Property('RECENTCHATMESSAGES', Cache=False), ', ')))
+    Posters = property(lambda self: tuple(IUser(x, self._Skype) for x in esplit(self._Property('POSTERS'))))
+    Members = property(lambda self: tuple(IUser(x, self._Skype) for x in esplit(self._Property('MEMBERS'))))
+    ActiveMembers = property(lambda self: tuple(IUser(x, self._Skype) for x in esplit(self._Property('ACTIVEMEMBERS', Cache=False))))
+    Messages = property(lambda self: tuple(IChatMessage(x ,self._Skype) for x in esplit(self._Property('CHATMESSAGES', Cache=False), ', ')))
+    RecentMessages = property(lambda self: tuple(IChatMessage(x, self._Skype) for x in esplit(self._Property('RECENTCHATMESSAGES', Cache=False), ', ')))
     ActivityTimestamp = property(lambda self: float(self._Property('ACTIVITY_TIMESTAMP')))
-    Applicants = property(lambda self: map(lambda x: IUser(x, self._Skype), esplit(self._Property('APPLICANTS'))))
+    Applicants = property(lambda self: tuple(IUser(x, self._Skype) for x in esplit(self._Property('APPLICANTS'))))
     Blob = property(lambda self: self._Property('BLOB'))
     Description = property(lambda self: self._Property('DESCRIPTION'),
                            lambda self, value: self._Property('DESCRIPTION', value))
     DialogPartner = property(lambda self: self._Property('DIALOG_PARTNER'))
     GuideLines = property(lambda self: self._Property('GUIDELINES'),
                           lambda self, value: self._Alter('SETGUIDELINES', value))
-    MemberObjects = property(lambda self: map(lambda x: IChatMember(x, self._Skype), esplit(self._Property('MEMBEROBJECTS'), ', ')))
+    MemberObjects = property(lambda self: tuple(IChatMember(x, self._Skype) for x in esplit(self._Property('MEMBEROBJECTS'), ', ')))
     MyRole = property(lambda self: self._Property('MYROLE'))
     MyStatus = property(lambda self: self._Property('MYSTATUS'))
     Options = property(lambda self: int(self._Property('OPTIONS')),
@@ -148,7 +148,7 @@ class IChatMessage(Cached):
     Body = property(lambda self: self._Property('BODY'),
                     lambda self, value: self._Property('BODY', value))
     ChatName = property(lambda self: self._Property('CHATNAME'))
-    Users = property(lambda self: map(lambda x: IUser(self._Skype, x), esplit(self._Property('USERS'))))
+    Users = property(lambda self: tuple(IUser(self._Skype, x) for x in esplit(self._Property('USERS'))))
     Seen = property(fset=_SetSeen)
     Chat = property(lambda self: IChat(self.ChatName, self._Skype))
     Sender = property(lambda self: IUser(self.FromHandle, self._Skype))

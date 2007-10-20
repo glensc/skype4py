@@ -163,11 +163,11 @@ def EventHandling(events):
 
         def _CallEventHandler(self, Event, *args, **kwargs):
             # get list of relevant handlers
-            allhandlers = map(lambda x: x(), self._EventHandlers.get(Event, []))
+            allhandlers = [x() for x in self._EventHandlers.get(Event, [])]
             handlers = filter(bool, allhandlers)
             if len(allhandlers) != len(handlers):
                 # cleanup
-                self._EventHandlers[Event] = filter(lambda x: x(), self._EventHandlers[Event])
+                self._EventHandlers[Event] = [x for x in self._EventHandlers[Event] if x()]
             try:
                 h = self._DefaultEventHandlers[Event]()
                 if h:

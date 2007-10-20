@@ -10,7 +10,6 @@ accompanying LICENSE file for more information.
 import enums
 from errors import *
 import os
-from Languages import *
 
 
 class IConversion(object):
@@ -20,23 +19,23 @@ class IConversion(object):
         self._SetLanguage('en')
 
     def _ToText(self, prefix, value):
-        enum = filter(lambda x: x[1] == value, [(x, getattr(enums, x)) for x in filter(lambda x: x.startswith(prefix), dir(enums))])
+        enum = [z for z in [(y, getattr(enums, y)) for y in [x for x in dir(enums) if x.startswith(prefix)]] if z[1] == value]
         if enum:
             try:
-                return getattr(self._Module, enum[0][0])
+                return unicode(getattr(self._Module, enum[0][0]))
             except AttributeError:
                 pass
-        raise ISkypeError(0, 'Identifier not found')
+        raise ISkypeError(0, 'Bad identifier')
 
     def _TextTo(self, prefix, value):
-        enum = filter(lambda x: x[1] == value, [(x, getattr(enums, x)) for x in filter(lambda x: x.startswith(prefix), dir(enums))])
+        enum = [z for z in [(y, getattr(enums, y)) for y in [x for x in dir(enums) if x.startswith(prefix)]] if z[1] == value]
         if enum:
-            return value
-        raise ISkypeError(0, 'Text not found')
+            return str(value)
+        raise ISkypeError(0, 'Bad text')
 
     def _SetLanguage(self, Language):
         try:
-            self._Module = __import__('Languages.%s' % str(Language))
+            self._Module = __import__('Languages.%s' % str(Language), globals(), locals(), ['Languages'])
             self._Language = unicode(Language)
         except ImportError:
             pass

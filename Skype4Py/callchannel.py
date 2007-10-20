@@ -75,7 +75,7 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
                     self._Channels.append(ICallChannel(self, pCall, stream, self._ChannelType))
                     self._CallEventHandler('Channels', self, self._Channels)
                     break
-        elif Status in [clsCancelled, clsFailed, clsFinished, clsRefused, clsMissed]:
+        elif Status in (clsCancelled, clsFailed, clsFinished, clsRefused, clsMissed):
             for ch in self._Channels:
                 if ch.Call == pCall:
                     self._Channels.remove(ch)
@@ -135,7 +135,7 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
     def _SetName(self, Name):
         self._Name = unicode(Name)
 
-    Channels = property(lambda self: self._Channels)
+    Channels = property(lambda self: tuple(self._Channels))
     ChannelType = property(lambda self: self._ChannelType, _SetChannelType)
     Name = property(lambda self: self._Name, _SetName)
     Created = property(lambda self: bool(self._Application))
