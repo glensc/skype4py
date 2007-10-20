@@ -24,7 +24,6 @@ setup(name='Skype4Py',
       url='http://skype4py.sourceforge.net',
       license='BSD License',
       platforms=['Windows 2000/XP', 'Linux'],
-      packages=['Skype4Py', 'Skype4Py/API'],
-      package_data={'Skype4Py': ['Languages/??']},
+      packages=['Skype4Py', 'Skype4Py.API', 'Skype4Py.Languages'],
       provides=['Skype4Py']
      )
