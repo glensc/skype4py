@@ -104,6 +104,8 @@ class ISkypeAPI(ISkypeAPIBase):
         self.x11.XCreateSimpleWindow.restype = Window
         self.x11.XDefaultRootWindow.argtypes = (DisplayP,)
         self.x11.XDefaultRootWindow.restype = Window
+        self.x11.XDeleteProperty.argtypes = (DisplayP, Window, Atom)
+        self.x11.XDeleteProperty.restype = None
         self.x11.XDestroyWindow.argtypes = (DisplayP, Window)
         self.x11.XDestroyWindow.restype = None
         self.x11.XFlush.argtypes = (DisplayP,)
