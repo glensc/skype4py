@@ -93,7 +93,7 @@ class ISkypeAPI(ISkypeAPIBase):
         # setup Xlib
         libpath = find_library('X11')
         if not libpath:
-            raise ImportError('Could not locate X11 library')
+            raise ImportError('Could not find X11 library')
         self.x11 = cdll.LoadLibrary(libpath)
 
         # setup Xlib function prototypes
@@ -210,17 +210,16 @@ class ISkypeAPI(ISkypeAPIBase):
     def get_skype(self):
         '''Returns Skype window ID or None if Skype not running.'''
         skype_inst = self.x11.XInternAtom(self.disp, '_SKYPE_INSTANCE', False)
-#(DisplayP, Window, Atom, c_long, c_long, Bool, Atom, AtomP, c_int_p, c_ulong_p, c_ulong_p, POINTER(c_void_p))
         type_ret = Atom()
         format_ret = c_int()
         nitems_ret = c_ulong()
         bytes_after_ret = c_ulong()
-        prop = pointer(Window())
+        winp = pointer(Window())
         fail = self.x11.XGetWindowProperty(self.disp, self.win_root, skype_inst,
                             0, 1, False, 33, byref(type_ret), byref(format_ret),
-                            byref(nitems_ret), byref(bytes_after_ret), byref(prop))
+                            byref(nitems_ret), byref(bytes_after_ret), byref(winp))
         if not fail and self.error == None and format_ret.value == 32 and nitems_ret.value == 1:
-            return prop.contents.value
+            return winp.contents.value
 
     def Close(self):
         event = XEvent()
@@ -282,7 +281,7 @@ class ISkypeAPI(ISkypeAPIBase):
         # options are not supported as of Skype 1.4 Beta for Linux
         if not self.IsRunning():
             import os
-            if os.fork() == 0: # we're child
+            if os.fork() == 0: # we're the child
                 os.setsid()
                 os.execlp('skype')
 
