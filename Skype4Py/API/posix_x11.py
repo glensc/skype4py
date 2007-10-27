@@ -28,35 +28,46 @@ PropertyNewValue = 0
 PropertyDelete = 1
 
 
+# some Xlib types
+DisplayP = c_void_p
+Atom = c_ulong
+AtomP = c_ulong_p
+XID = c_ulong
+Window = XID
+Bool = c_int
+Status = c_int
+Time = c_ulong
+
+
 # some Xlib structures
 class XClientMessageEvent(Structure):
     _fields_ = [('type', c_int),
                 ('serial', c_ulong),
-                ('send_event', c_int),
-                ('display', c_void_p),
-                ('window', c_ulong),
-                ('message_type', c_ulong),
+                ('send_event', Bool),
+                ('display', DisplayP),
+                ('window', Window),
+                ('message_type', Atom),
                 ('format', c_int),
                 ('data', c_char * 20)]
 
 class XPropertyEvent(Structure):
     _fields_ = [('type', c_int),
                 ('serial', c_ulong),
-                ('send_event', c_int),
-                ('display', c_void_p),
-                ('window', c_ulong),
-                ('atom', c_ulong),
-                ('time', c_int),
+                ('send_event', Bool),
+                ('display', DisplayP),
+                ('window', Window),
+                ('atom', Atom),
+                ('time', Time),
                 ('state', c_int)]
 
 class XErrorEvent(Structure):
     _fields_ = [('type', c_int),
-                ('display', c_void_p),
-                ('resourceid', c_ulong),
+                ('display', DisplayP),
                 ('serial', c_ulong),
-                ('error_code', c_ubyte),
-                ('request_code', c_ubyte),
-                ('minor_code', c_ubyte)]
+                ('error_code', c_uchar),
+                ('request_code', c_uchar),
+                ('minor_code', c_uchar),
+                ('resourceid', XID)]
 
 class XEvent(Union):
     _fields_ = [('type', c_int),
@@ -65,27 +76,62 @@ class XEvent(Union):
                 ('xerror', XErrorEvent),
                 ('padding', c_char * 96)]
 
+XEventP = POINTER(XEvent)
+
 
 # Xlib error handler type
-XErrorHandler = CFUNCTYPE(c_int, c_void_p, POINTER(XErrorEvent))
+XErrorHandlerP = CFUNCTYPE(c_int, DisplayP, POINTER(XErrorEvent))
 
 
 class ISkypeAPI(ISkypeAPIBase):
     def __init__(self, handler, **opts):
         ISkypeAPIBase.__init__(self)
         self.RegisterHandler(handler)
-        # initialize Xlib, display, window, atoms
+
+        # setup Xlib
         libpath = find_library('X11')
         if not libpath:
             raise ImportError('Could not locate X11 library')
         self.x11 = cdll.LoadLibrary(libpath)
-        self.x11.XInitThreads()
+
+        # setup Xlib function prototypes
+        self.x11.XCloseDisplay.argtypes = (DisplayP,)
+        self.x11.XCloseDisplay.restype = None
+        self.x11.XCreateSimpleWindow.argtypes = (DisplayP, Window, c_int, c_int, c_uint, c_uint, c_uint, c_ulong, c_ulong)
+        self.x11.XCreateSimpleWindow.restype = Window
+        self.x11.XDefaultRootWindow.argtypes = (DisplayP,)
+        self.x11.XDefaultRootWindow.restype = Window
+        self.x11.XDestroyWindow.argtypes = (DisplayP, Window)
+        self.x11.XDestroyWindow.restype = None
+        self.x11.XFlush.argtypes = (DisplayP,)
+        self.x11.XFlush.restype = None
+        self.x11.XGetAtomName.argtypes = (DisplayP, Atom)
         self.x11.XGetAtomName.restype = c_char_p
+        self.x11.XGetErrorText.argtypes = (DisplayP, c_int, c_char_p, c_int)
+        self.x11.XGetErrorText.restype = None
+        self.x11.XGetWindowProperty.argtypes = (DisplayP, Window, Atom, c_long, c_long, Bool, Atom, AtomP, c_int_p, c_ulong_p, c_ulong_p, POINTER(c_uchar_p))
+        self.x11.XGetWindowProperty.restype = c_int
+        self.x11.XInitThreads.argtypes = ()
+        self.x11.XInitThreads.restype = Status
+        self.x11.XInternAtom.argtypes = (DisplayP, c_char_p, Bool)
+        self.x11.XInternAtom.restype = Atom
+        self.x11.XNextEvent.argtypes = (DisplayP, XEventP)
+        self.x11.XNextEvent.restype = None
+        self.x11.XOpenDisplay.argtypes = (c_char_p,)
+        self.x11.XOpenDisplay.restype = DisplayP
+        self.x11.XSelectInput.argtypes = (DisplayP, Window, c_long)
+        self.x11.XSelectInput.restype = None
+        self.x11.XSendEvent.argtypes = (DisplayP, Window, Bool, c_long, XEventP)
+        self.x11.XSendEvent.restype = None
+        self.x11.XSetErrorHandler.argtypes = (XErrorHandlerP,)
+        self.x11.XSetErrorHandler.restype = None
+
+        # init Xlib
+        self.x11.XInitThreads()
         self.error = None
         # callback has to be saved to keep reference to bound method
-        self._error_handler_callback = XErrorHandler(self._error_handler)
+        self._error_handler_callback = XErrorHandlerP(self._error_handler)
         self.x11.XSetErrorHandler(self._error_handler_callback)
-        self.x11.XOpenDisplay.restype = c_void_p
         self.disp = self.x11.XOpenDisplay(None)
         if not self.disp:
             raise ISkypeAPIError('Could not open XDisplay')
