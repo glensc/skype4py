@@ -29,6 +29,7 @@ PropertyDelete = 1
 
 
 # some Xlib types
+c_ulong_p = POINTER(c_ulong)
 DisplayP = c_void_p
 Atom = c_ulong
 AtomP = c_ulong_p
@@ -37,6 +38,7 @@ Window = XID
 Bool = c_int
 Status = c_int
 Time = c_ulong
+c_int_p = POINTER(c_int)
 
 
 # some Xlib structures
@@ -64,9 +66,9 @@ class XErrorEvent(Structure):
     _fields_ = [('type', c_int),
                 ('display', DisplayP),
                 ('serial', c_ulong),
-                ('error_code', c_uchar),
-                ('request_code', c_uchar),
-                ('minor_code', c_uchar),
+                ('error_code', c_ubyte),
+                ('request_code', c_ubyte),
+                ('minor_code', c_ubyte),
                 ('resourceid', XID)]
 
 class XEvent(Union):
@@ -97,7 +99,8 @@ class ISkypeAPI(ISkypeAPIBase):
         # setup Xlib function prototypes
         self.x11.XCloseDisplay.argtypes = (DisplayP,)
         self.x11.XCloseDisplay.restype = None
-        self.x11.XCreateSimpleWindow.argtypes = (DisplayP, Window, c_int, c_int, c_uint, c_uint, c_uint, c_ulong, c_ulong)
+        self.x11.XCreateSimpleWindow.argtypes = (DisplayP, Window, c_int, c_int, c_uint,
+                c_uint, c_uint, c_ulong, c_ulong)
         self.x11.XCreateSimpleWindow.restype = Window
         self.x11.XDefaultRootWindow.argtypes = (DisplayP,)
         self.x11.XDefaultRootWindow.restype = Window
@@ -109,7 +112,8 @@ class ISkypeAPI(ISkypeAPIBase):
         self.x11.XGetAtomName.restype = c_char_p
         self.x11.XGetErrorText.argtypes = (DisplayP, c_int, c_char_p, c_int)
         self.x11.XGetErrorText.restype = None
-        self.x11.XGetWindowProperty.argtypes = (DisplayP, Window, Atom, c_long, c_long, Bool, Atom, AtomP, c_int_p, c_ulong_p, c_ulong_p, POINTER(c_uchar_p))
+        self.x11.XGetWindowProperty.argtypes = (DisplayP, Window, Atom, c_long, c_long, Bool,
+                Atom, AtomP, c_int_p, c_ulong_p, c_ulong_p, POINTER(POINTER(Window)))
         self.x11.XGetWindowProperty.restype = c_int
         self.x11.XInitThreads.argtypes = ()
         self.x11.XInitThreads.restype = Status
@@ -206,11 +210,12 @@ class ISkypeAPI(ISkypeAPIBase):
     def get_skype(self):
         '''Returns Skype window ID or None if Skype not running.'''
         skype_inst = self.x11.XInternAtom(self.disp, '_SKYPE_INSTANCE', False)
-        type_ret = c_ulong()
+#(DisplayP, Window, Atom, c_long, c_long, Bool, Atom, AtomP, c_int_p, c_ulong_p, c_ulong_p, POINTER(c_void_p))
+        type_ret = Atom()
         format_ret = c_int()
         nitems_ret = c_ulong()
         bytes_after_ret = c_ulong()
-        prop = pointer(c_ulong())
+        prop = pointer(Window())
         fail = self.x11.XGetWindowProperty(self.disp, self.win_root, skype_inst,
                             0, 1, False, 33, byref(type_ret), byref(format_ret),
                             byref(nitems_ret), byref(bytes_after_ret), byref(prop))
