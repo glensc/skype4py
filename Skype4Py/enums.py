@@ -259,11 +259,11 @@ cctReliable = 'RELIABLE'
 
 
 # TApiSecurityContext
-apiContextUnknown = 'UNKNOWN'
-apiContextVoice = 'VOICE'
-apiContextMessaging = 'MESSAGING'
-apiContextAccount = 'ACCOUNT'
-apiContextContacts = 'CONTACTS'
+apiContextUnknown = 0
+apiContextVoice = 1
+apiContextMessaging = 2
+apiContextAccount = 4
+apiContextContacts = 8
 
 
 # TSmsMessageType
