@@ -65,11 +65,11 @@ class XPropertyEvent(Structure):
 class XErrorEvent(Structure):
     _fields_ = [('type', c_int),
                 ('display', DisplayP),
+                ('resourceid', XID),
                 ('serial', c_ulong),
                 ('error_code', c_ubyte),
                 ('request_code', c_ubyte),
-                ('minor_code', c_ubyte),
-                ('resourceid', XID)]
+                ('minor_code', c_ubyte)]
 
 class XEvent(Union):
     _fields_ = [('type', c_int),
@@ -275,7 +275,7 @@ class ISkypeAPI(ISkypeAPIBase):
         self.SetAttachmentStatus(apiAttachSuccess)
 
     def IsRunning(self):
-        return bool(self.get_skype())
+        return self.get_skype() != None
 
     def Start(self, Minimized=False, Nosplash=False):
         # options are not supported as of Skype 1.4 Beta for Linux
@@ -293,7 +293,11 @@ class ISkypeAPI(ISkypeAPIBase):
         fh.close()
         if pid:
             os.kill(int(pid), SIGINT)
-            self.skype_in = self.skype_out = None
+            # Skype sometimes doesn't delete the '_SKYPE_INSTANCE' property
+            skype_inst = self.x11.XInternAtom(self.disp, '_SKYPE_INSTANCE', False)
+            self.x11.XDeleteProperty(self.disp, self.win_root, skype_inst)
+            self.win_skype = None
+            self.SetAttachmentStatus(apiAttachUnknown)
 
     def SendCommand(self, Command, Force=False):
         if self.AttachmentStatus != apiAttachSuccess and not Force:
