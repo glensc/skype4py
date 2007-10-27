@@ -389,7 +389,7 @@ class ISkype(ISkypeEventHandling):
         '''Returns new SMS object.'''
         return ISmsMessage(chop(self._DoCommand('CREATE SMS %s %s' % (MessageType, ', '.join(TargetNumbers))), 2)[1], self)
 
-    def SendSms(self, MessageText, , *TargetNumbers, **Options):
+    def SendSms(self, MessageText, *TargetNumbers, **Options):
         '''Sends a SMS messages.'''
         sms = ISmsMessage(chop(self._DoCommand('CREATE SMS OUTGOING %s' % ', '.join(TargetNumbers)), 2)[1], self)
         sms.Body = MessageText
