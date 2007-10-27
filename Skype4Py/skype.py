@@ -289,9 +289,9 @@ class ISkype(ISkypeEventHandling):
             self.ResetCache()
             raise
 
-    def Command(self, Id, command, Reply='', Block=False, Timeout=30000):
+    def Command(self, Command, Reply=u'', Block=False, Timeout=30000, Id=-1):
         '''Returns a new command object.'''
-        return ICommand(Id, command, Reply, Block, Timeout)
+        return ICommand(Id, Command, Reply, Block, Timeout)
 
     def SearchForUsers(self, Target):
         '''Returns collection of users found as the result of search operation.'''
@@ -327,24 +327,24 @@ class ISkype(ISkypeEventHandling):
         '''Sends IM message to specified user and returns a new message object.'''
         return self.CreateChatWith(Username).SendMessage(Text)
 
-    def ChangeUserStatus(self, newVal):
+    def ChangeUserStatus(self, Val):
         '''Changes current user online status.'''
         event = threading.Event()
         def userstatus_handler(status):
-            if status.upper() == newVal.upper():
+            if status.upper() == Val.upper():
                 event.set()
         self.RegisterEventHandler('UserStatus', userstatus_handler)
-        self.CurrentUserStatus = newVal
+        self.CurrentUserStatus = Val
         event.wait()
         self.UnregisterEventHandler('UserStatus', userstatus_handler)
 
-    def CreateChatWith(self, Username):
-        '''Creates a new chat with a single user.'''
-        return IChat(chop(self._DoCommand('CHAT CREATE %s' % Username), 2)[1], self)
+    def CreateChatWith(self, *Usernames):
+        '''Creates a new chat with a one or more users.'''
+        return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join(Usernames)), 2)[1], self)
 
-    def CreateChatMultiple(self, pMembers):
-        '''Creates a new chat with multiple members.'''
-        return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join([x.Handle for x in pMembers])), 2)[1], self)
+    def CreateChatMultiple(self, Members):
+        '''Creates a new chat with multiple members specified as a list of IUser objects.'''
+        return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join([x.Handle for x in Members])), 2)[1], self)
 
     def SendVoicemail(self, Username):
         '''Sends voicemail to specified user.'''
@@ -385,15 +385,15 @@ class ISkype(ISkypeEventHandling):
         '''Deletes a custom group.'''
         self._DoCommand('DELETE GROUP %s' % GroupId)
 
-    def CreateSms(self, MessageType, TargetNumbers):
+    def CreateSms(self, MessageType, *TargetNumbers):
         '''Returns new SMS object.'''
-        return ISmsMessage(chop(self._DoCommand('CREATE SMS %s %s' % (MessageType, TargetNumbers)), 2)[1], self)
+        return ISmsMessage(chop(self._DoCommand('CREATE SMS %s %s' % (MessageType, ', '.join(TargetNumbers))), 2)[1], self)
 
-    def SendSms(self, TargetNumbers, MessageText, ReplyToNumber=''):
+    def SendSms(self, MessageText, , *TargetNumbers, **Options):
         '''Sends a SMS messages.'''
-        sms = ISmsMessage(chop(self._DoCommand('CREATE SMS OUTGOING %s' % TargetNumbers), 2)[1], self)
+        sms = ISmsMessage(chop(self._DoCommand('CREATE SMS OUTGOING %s' % ', '.join(TargetNumbers)), 2)[1], self)
         sms.Body = MessageText
-        sms.ReplyToNumber = ReplyToNumber
+        sms.__dict__.update(Options)
         sms.Send()
         return sms
 
@@ -407,7 +407,7 @@ class ISkype(ISkypeEventHandling):
 
     def Privilege(self, Name):
         '''Returns current user privilege.'''
-        return self._Property('PRIVILEGE', '', Name) == 'TRUE'
+        return self._Property('PRIVILEGE', '', Name.upper()) == 'TRUE'
 
     def Calls(self, Target=''):
         return tuple(ICall(x, self) for x in self._Search('CALLS', Target))
