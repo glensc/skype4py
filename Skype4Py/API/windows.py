@@ -3,25 +3,23 @@ Low level Skype for Windows interface implemented
 using Windows messaging. Uses direct WinAPI calls
 through ctypes module.
 
-Copyright (c) 2007, Arkadiusz Wahlig
+This module handles the options that you can pass to L{ISkype.__init__} for Windows machines.
 
-All rights reserved.
-
-Distributed under the BSD License, see the
-accompanying LICENSE file for more information.
+No options are currently supported.
 '''
 
 import threading
 import time
 import weakref
 from ctypes import *
-from Skype4Py.API import *
+from Skype4Py.API import ICommand, _ISkypeAPIBase
+from Skype4Py.enums import *
 from Skype4Py.errors import ISkypeAPIError
 
 
 WNDPROC = WINFUNCTYPE(c_long, c_int, c_uint, c_int, c_int)
 
-class WNDCLASS(Structure):
+class _WNDCLASS(Structure):
     _fields_ = [('style', c_uint),
                 ('lpfnWndProc', WNDPROC),
                 ('cbClsExtra', c_int),
@@ -34,7 +32,7 @@ class WNDCLASS(Structure):
                 ('lpszClassName', c_char_p)]
 
 
-class MSG(Structure):
+class _MSG(Structure):
     _fields_ = [('hwnd', c_int),
                 ('message', c_uint),
                 ('wParam', c_int),
@@ -44,24 +42,24 @@ class MSG(Structure):
                 ('pointY', c_long)]
 
 
-class COPYDATASTRUCT(Structure):
+class _COPYDATASTRUCT(Structure):
     _fields_ = [('dwData', POINTER(c_uint)),
                 ('cbData', c_uint),
                 ('lpData', c_char_p)]
-PCOPYDATASTRUCT = POINTER(COPYDATASTRUCT)
+PCOPYDATASTRUCT = POINTER(_COPYDATASTRUCT)
 
-WM_QUIT = 0x12
-WM_COPYDATA = 0x4A
+_WM_QUIT = 0x12
+_WM_COPYDATA = 0x4A
 
-HWND_BROADCAST = 0xFFFF
+_HWND_BROADCAST = 0xFFFF
 
-SkypeControlAPIDiscover = windll.user32.RegisterWindowMessageA('SkypeControlAPIDiscover')
-SkypeControlAPIAttach = windll.user32.RegisterWindowMessageA('SkypeControlAPIAttach')
+_SkypeControlAPIDiscover = windll.user32.RegisterWindowMessageA('SkypeControlAPIDiscover')
+_SkypeControlAPIAttach = windll.user32.RegisterWindowMessageA('SkypeControlAPIAttach')
 
 
-class ISkypeAPI(ISkypeAPIBase):
+class _ISkypeAPI(_ISkypeAPIBase):
     def __init__(self, handler, **opts):
-        ISkypeAPIBase.__init__(self)
+        _ISkypeAPIBase.__init__(self)
         self.hwnd = None
         self.Skype = None
         self.RegisterHandler(handler)
@@ -71,7 +69,7 @@ class ISkypeAPI(ISkypeAPIBase):
             self.hwnd = None
             return
 
-        Msg = MSG()
+        Msg = _MSG()
         pMsg = pointer(Msg)
         while self.hwnd and windll.user32.GetMessageA(pMsg, self.hwnd, 0, 0):
             windll.user32.TranslateMessage(pMsg)
@@ -84,7 +82,7 @@ class ISkypeAPI(ISkypeAPIBase):
         # if there are no active handlers
         if self.NumOfHandlers() == 0:
             if self.hwnd:
-                windll.user32.PostMessageA(self.hwnd, WM_QUIT, 0, 0)
+                windll.user32.PostMessageA(self.hwnd, _WM_QUIT, 0, 0)
                 while self.hwnd:
                     time.sleep(0.01)
             self.Skype = None
@@ -105,7 +103,7 @@ class ISkypeAPI(ISkypeAPIBase):
             # wait till the thread initializes
             while not self.hwnd:
                 time.sleep(0.01)
-        if not windll.user32.SendMessageTimeoutA(HWND_BROADCAST, SkypeControlAPIDiscover,
+        if not windll.user32.SendMessageTimeoutA(_HWND_BROADCAST, _SkypeControlAPIDiscover,
                                                  self.hwnd, None, 2, 5000, None):
             raise ISkypeAPIError('Could not broadcast Skype discover message')
         # wait (with timeout) till the WindProc() attaches
@@ -121,7 +119,7 @@ class ISkypeAPI(ISkypeAPIBase):
                 t.cancel()
             elif self.AttachmentStatus == apiAttachAvailable:
                 # rebroadcast
-                if not windll.user32.SendMessageTimeoutA(HWND_BROADCAST, SkypeControlAPIDiscover,
+                if not windll.user32.SendMessageTimeoutA(_HWND_BROADCAST, _SkypeControlAPIDiscover,
                                                          self.hwnd, None, 2, 5000, None):
                     raise ISkypeAPIError('Could not broadcast Skype discover message')
             time.sleep(0.01)
@@ -165,9 +163,9 @@ class ISkypeAPI(ISkypeAPIBase):
 
     def CreateWindow(self):
         # window class has to be saved as property to keep reference to self.WinProc
-        self.window_class = WNDCLASS(3, WNDPROC(self.WinProc), 0, 0,
-                                     windll.kernel32.GetModuleHandleA(None),
-                                     0, 0, 0, None, 'Skype4Py.%d' % id(self))
+        self.window_class = _WNDCLASS(3, WNDPROC(self.WinProc), 0, 0,
+                                      windll.kernel32.GetModuleHandleA(None),
+                                      0, 0, 0, None, 'Skype4Py.%d' % id(self))
 
         wclass = windll.user32.RegisterClassA(byref(self.window_class))
         if wclass == 0:
@@ -193,14 +191,14 @@ class ISkypeAPI(ISkypeAPIBase):
         return True
 
     def WinProc(self, hwnd, uMsg, wParam, lParam):
-        if uMsg == SkypeControlAPIAttach:
+        if uMsg == _SkypeControlAPIAttach:
             if lParam == apiAttachSuccess:
                 self.Skype = wParam
             elif lParam in [apiAttachRefused, apiAttachNotAvailable, apiAttachAvailable]:
                 self.Skype = None
             self.SetAttachmentStatus(lParam)
             return 1
-        elif uMsg == WM_COPYDATA and wParam == self.Skype and lParam:
+        elif uMsg == _WM_COPYDATA and wParam == self.Skype and lParam:
             copydata = cast(lParam, PCOPYDATASTRUCT).contents
             com8 = copydata.lpData[:copydata.cbData - 1]
             com = com8.decode('utf-8')
@@ -232,12 +230,12 @@ class ISkypeAPI(ISkypeAPIBase):
         self.CallHandler('send', Command)
         com = u'#%d %s' % (Command.Id, Command.Command)
         com8 = com.encode('utf-8') + '\0'
-        copydata = COPYDATASTRUCT(None, len(com8), com8)
+        copydata = _COPYDATASTRUCT(None, len(com8), com8)
         if Command.Blocking:
             Command._event = event = threading.Event()
         else:
             Command._timer = timer = threading.Timer(Command.Timeout / 1000.0, self.CommandsStackPop, (Command.Id,))
-        if windll.user32.SendMessageA(self.Skype, WM_COPYDATA, self.hwnd, byref(copydata)):
+        if windll.user32.SendMessageA(self.Skype, _WM_COPYDATA, self.hwnd, byref(copydata)):
             if Command.Blocking:
                 event.wait(Command.Timeout / 1000.0)
                 if not event.isSet():

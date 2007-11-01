@@ -3,29 +3,27 @@ Low level Skype for Linux interface implemented
 using XWindows messaging. Uses direct Xlib calls
 through ctypes module.
 
-Copyright (c) 2007, Arkadiusz Wahlig
+This module handles the options that you can pass to L{ISkype.__init__} for Linux machines
+when the transport is set to X11.
 
-All rights reserved.
-
-Distributed under the BSD License, see the
-accompanying LICENSE file for more information.
+No further options are currently supported.
 '''
 
 import threading
 from ctypes import *
 from ctypes.util import find_library
 import time
-from Skype4Py.API import *
+from Skype4Py.API import ICommand, _ISkypeAPIBase
 from Skype4Py.enums import *
 from Skype4Py.errors import ISkypeAPIError
 
 
 # some Xlib constants
-PropertyChangeMask = 0x400000
-PropertyNotify = 28
-ClientMessage = 33
-PropertyNewValue = 0
-PropertyDelete = 1
+_PropertyChangeMask = 0x400000
+_PropertyNotify = 28
+_ClientMessage = 33
+_PropertyNewValue = 0
+_PropertyDelete = 1
 
 
 # some Xlib types
@@ -42,7 +40,7 @@ c_int_p = POINTER(c_int)
 
 
 # some Xlib structures
-class XClientMessageEvent(Structure):
+class _XClientMessageEvent(Structure):
     _fields_ = [('type', c_int),
                 ('serial', c_ulong),
                 ('send_event', Bool),
@@ -52,7 +50,7 @@ class XClientMessageEvent(Structure):
                 ('format', c_int),
                 ('data', c_char * 20)]
 
-class XPropertyEvent(Structure):
+class _XPropertyEvent(Structure):
     _fields_ = [('type', c_int),
                 ('serial', c_ulong),
                 ('send_event', Bool),
@@ -62,7 +60,7 @@ class XPropertyEvent(Structure):
                 ('time', Time),
                 ('state', c_int)]
 
-class XErrorEvent(Structure):
+class _XErrorEvent(Structure):
     _fields_ = [('type', c_int),
                 ('display', DisplayP),
                 ('resourceid', XID),
@@ -71,23 +69,23 @@ class XErrorEvent(Structure):
                 ('request_code', c_ubyte),
                 ('minor_code', c_ubyte)]
 
-class XEvent(Union):
+class _XEvent(Union):
     _fields_ = [('type', c_int),
-                ('xclient', XClientMessageEvent),
-                ('xproperty', XPropertyEvent),
-                ('xerror', XErrorEvent),
+                ('xclient', _XClientMessageEvent),
+                ('xproperty', _XPropertyEvent),
+                ('xerror', _XErrorEvent),
                 ('padding', c_char * 96)]
 
-XEventP = POINTER(XEvent)
+XEventP = POINTER(_XEvent)
 
 
 # Xlib error handler type
-XErrorHandlerP = CFUNCTYPE(c_int, DisplayP, POINTER(XErrorEvent))
+XErrorHandlerP = CFUNCTYPE(c_int, DisplayP, POINTER(_XErrorEvent))
 
 
-class ISkypeAPI(ISkypeAPIBase):
+class _ISkypeAPI(_ISkypeAPIBase):
     def __init__(self, handler, **opts):
-        ISkypeAPIBase.__init__(self)
+        _ISkypeAPIBase.__init__(self)
         self.RegisterHandler(handler)
 
         # setup Xlib
@@ -144,7 +142,7 @@ class ISkypeAPI(ISkypeAPIBase):
         self.win_root = self.x11.XDefaultRootWindow(self.disp)
         self.win_self = self.x11.XCreateSimpleWindow(self.disp, self.win_root,
                                     100, 100, 100, 100, 1, 0, 0)
-        self.x11.XSelectInput(self.disp, self.win_root, PropertyChangeMask)
+        self.x11.XSelectInput(self.disp, self.win_root, _PropertyChangeMask)
         self.win_skype = self.get_skype()
         ctrl = 'SKYPECONTROLAPI_MESSAGE'
         self.atom_msg = self.x11.XInternAtom(self.disp, ctrl, True)
@@ -160,11 +158,11 @@ class ISkypeAPI(ISkypeAPIBase):
 
     def run(self):
         # main loop
-        event = XEvent()
+        event = _XEvent()
         data = ''
         while True:
             self.x11.XNextEvent(self.disp, byref(event))
-            if event.type == ClientMessage:
+            if event.type == _ClientMessage:
                 if event.xclient.message_type == self.atom_msg_begin:
                     data = event.xclient.data
                 elif event.xclient.message_type == self.atom_msg:
@@ -174,9 +172,9 @@ class ISkypeAPI(ISkypeAPIBase):
                 if len(event.xclient.data) != 20:
                     if data:
                         self.notify(data.decode('utf-8'))
-            elif event.type == PropertyNotify:
+            elif event.type == _PropertyNotify:
                 if self.x11.XGetAtomName(self.disp, event.xproperty.atom) == '_SKYPE_INSTANCE':
-                    if event.xproperty.state == PropertyNewValue:
+                    if event.xproperty.state == _PropertyNewValue:
                         self.win_skype = self.get_skype()
                         # changing attachment status can cause an event handler to be fired, in
                         # turn it could try to call Attach() and doing this immediately seems to
@@ -184,7 +182,7 @@ class ISkypeAPI(ISkypeAPIBase):
                         # to fix this, we give Skype some time to initialize itself
                         time.sleep(1.0)
                         self.SetAttachmentStatus(apiAttachAvailable)
-                    elif event.xproperty.state == PropertyDelete:
+                    elif event.xproperty.state == _PropertyDelete:
                         self.win_skype = None
                         self.SetAttachmentStatus(apiAttachNotAvailable)
 
@@ -224,8 +222,8 @@ class ISkypeAPI(ISkypeAPIBase):
             return winp.contents.value
 
     def Close(self):
-        event = XEvent()
-        event.xclient.type = ClientMessage
+        event = _XEvent()
+        event.xclient.type = _ClientMessage
         event.xclient.display = self.disp
         event.xclient.window = self.win_self
         event.xclient.message_type = self.atom_stop_loop
@@ -311,8 +309,8 @@ class ISkypeAPI(ISkypeAPIBase):
             Command._event = bevent = threading.Event()
         else:
             Command._timer = timer = threading.Timer(Command.Timeout / 1000.0, self.CommandsStackPop, (Command.Id,))
-        event = XEvent()
-        event.xclient.type = 33 # ClientMessage
+        event = _XEvent()
+        event.xclient.type = _ClientMessage
         event.xclient.display = self.disp
         event.xclient.window = self.win_self
         event.xclient.message_type = self.atom_msg_begin

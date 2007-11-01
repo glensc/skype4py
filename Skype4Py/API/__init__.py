@@ -1,10 +1,11 @@
 '''
-Copyright (c) 2007, Arkadiusz Wahlig
+Low-level Skype API definitions.
 
-All rights reserved.
-
-Distributed under the BSD License, see the
-accompanying LICENSE file for more information.
+This module imports one of the:
+  - L{Skype4Py.API.darwin}
+  - L{Skype4Py.API.posix}
+  - L{Skype4Py.API.windows}
+submodules based on the platform.
 '''
 
 import sys
@@ -14,20 +15,50 @@ from Skype4Py.enums import *
 
 
 class ICommand(object):
+    '''Represents an API command. Use L{ISkype.Command} to instatinate.
+
+    To send a command to Skype, use L{ISkype.SendCommand}.
+    '''
+
     def __init__(self, Id, Command, Expected=u'', Blocking=False, Timeout=30000):
+        '''Use L{ISkype.Command} to instatinate the object instead.
+        '''
+
         self.Id = Id
+        '''Command Id.
+        @type: int'''
+
         self.Command = unicode(Command)
+        '''Command string.
+        @type: unicode'''
+
         self.Expected = unicode(Expected)
+        '''Expected reply.
+        @type: unicode'''
+
         self.Blocking = Blocking
+        '''If set to True, L{ISkype.SendCommand} will block until the reply is received.
+        @type: bool'''
+
         self.Timeout = Timeout
+        '''Timeout in milliseconds if Blocking=True.
+        @type: int'''
+
         self.Reply = u''
+        '''Reply after the command has been sent and Skype has replied.
+        @type: unicode'''
 
     def __repr__(self):
+        '''Returns a string representing the command with all its parameters.
+
+        @return: Representation string.
+        @rtype: str
+        '''
         return 'ICommand(Id=%s, Command=%s, Expected=%s, Blocking=%s, Timeout=%s, Reply=%s)' % \
             (self.Id, repr(self.Command), repr(self.Expected), self.Blocking, self.Timeout, repr(self.Reply))
 
 
-class ISkypeAPIBase(threading.Thread):
+class _ISkypeAPIBase(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.setDaemon(True)
@@ -117,8 +148,8 @@ class ISkypeAPIBase(threading.Thread):
 
 # Select apropriate low-level Skype API module
 if sys.platform[:3] == 'win':
-    from windows import ISkypeAPI
+    from windows import _ISkypeAPI
 elif sys.platform == 'darwin':
-    from darwin import ISkypeAPI
+    from darwin import _ISkypeAPI
 else:
-    from posix import ISkypeAPI
+    from posix import _ISkypeAPI

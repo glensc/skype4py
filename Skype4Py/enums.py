@@ -1,16 +1,14 @@
 '''
-Copyright (c) 2007, Arkadiusz Wahlig
+All Skype4Py constants. Access them at the Skype4Py package level::
+    import Skype4Py
 
-All rights reserved.
-
-Distributed under the BSD License, see the
-accompanying LICENSE file for more information.
+    status = Skype4Py.apiAttachUnknown
 '''
 
 from utils import *
 
 
-# TAttachmentStatus
+#{ Attachment status
 apiAttachUnknown = -1
 apiAttachSuccess = 0
 apiAttachPendingAuthorization = 1
@@ -19,7 +17,7 @@ apiAttachNotAvailable = 3
 apiAttachAvailable = 0x8001
 
 
-# TConnectionStatus
+#{ Connection status
 conUnknown = 'UNKNOWN'
 conOffline = 'OFFLINE'
 conConnecting = 'CONNECTING'
@@ -27,7 +25,7 @@ conPausing = 'PAUSING'
 conOnline = 'ONLINE'
 
 
-# TUserStatus
+#{ User status
 cusUnknown = 'UNKNOWN'
 cusOffline = 'OFFLINE'
 cusOnline = 'ONLINE'
@@ -39,7 +37,7 @@ cusLoggedOut = 'LOGGEDOUT'
 cusSkypeMe = 'SKYPEME'
 
 
-# TCallFailureReason
+#{ Call failure reason
 cfrUnknown = -1
 cfrMiscError = 1
 cfrUserDoesNotExist = 2
@@ -55,7 +53,7 @@ cfrNotAuthorizedByRecipient = 11
 cfrSoundRecordingError = 12
 
 
-# TCallStatus
+#{ Call status
 clsUnknown = 'NOT_AVAILABLE'
 clsUnplaced = 'UNPLACED'
 clsRouting = 'ROUTING'
@@ -82,7 +80,7 @@ clsTransferring = 'TRANSFERRING'
 clsTransferred = 'TRANSFERRED'
 
 
-# TCallType
+#{ Call type
 cltUnknown = 'UNKNOWN'
 cltIncomingPSTN = 'INCOMING_PSTN'
 cltOutgoingPSTN = 'OUTGOING_PSTN'
@@ -90,14 +88,14 @@ cltIncomingP2P = 'INCOMING_P2P'
 cltOutgoingP2P = 'OUTGOING_P2P'
 
 
-# TCallHistory
+#{ Call history
 chsAllCalls = 'ALL'
 chsMissedCalls = 'MISSED'
 chsIncomingCalls = 'INCOMING'
 chsOutgoingCalls = 'OUTGOING'
 
 
-# TCallVideoStatus
+#{ Call video status
 cvsUnknown = 'UNKNOWN'
 cvsNone = 'VIDEO_NONE'
 cvsSendEnabled = 'VIDEO_SEND_ENABLED'
@@ -105,7 +103,7 @@ cvsReceiveEnabled = 'VIDEO_RECV_ENABLED'
 cvsBothEnabled = 'VIDEO_BOTH_ENABLED'
 
 
-# TCallVideoSendStatus
+#{ Call video send status
 vssUnknown = 'UNKNOWN'
 vssNotAvailable = 'NOT_AVAILABLE'
 vssAvailable = 'AVAILABLE'
@@ -116,14 +114,14 @@ vssStopping = 'STOPPING'
 vssPaused = 'PAUSED'
 
 
-# TCallIoDeviceType
+#{ Call IO device type
 callIoDeviceTypeUnknown = 'UNKNOWN'
 callIoDeviceTypeSoundcard = 'SOUNDCARD'
 callIoDeviceTypePort = 'PORT'
 callIoDeviceTypeFile = 'FILE'
 
 
-# TChatMessageType
+#{ Chat message type
 cmeUnknown = 'UNKNOWN'
 cmeCreatedChatWith = 'CREATEDCHATWITH'
 cmeSawMembers = 'SAWMEMBERS'
@@ -143,7 +141,7 @@ cmeSetGuidelines = 'SETGUIDELINES'
 cmeJoinedAsApplicant = 'JOINEDASAPPLICANT'
 
 
-# TChatMessageStatus
+#{ Chat message status
 cmsUnknown = 'UNKNOWN'
 cmsSending = 'SENDING'
 cmsSent = 'SENT'
@@ -151,13 +149,13 @@ cmsReceived = 'RECEIVED'
 cmsRead = 'READ'
 
 
-# TUserSex
+#{ User sex
 usexUnknown = 'UNKNOWN'
 usexMale = 'MALE'
 usexFemale = 'FEMALE'
 
 
-# TBuddyStatus
+#{ Buddy status
 budUnknown = -1
 budNeverBeenFriend = 0
 budDeletedFriend = 1
@@ -165,7 +163,7 @@ budPendingAuthorization = 2
 budFriend = 3
 
 
-# TOnlineStatus
+#{ Online status
 olsUnknown = 'UNKNOWN'
 olsOffline = 'OFFLINE'
 olsOnline = 'ONLINE'
@@ -177,7 +175,7 @@ olsSkypeOut = 'SKYPEOUT'
 olsSkypeMe = 'SKYPEME'
 
 
-# TChatLeaveReason
+#{ Chat leave reason
 leaUnknown = ''
 leaUserNotFound = 'USER_NOT_FOUND'
 leaUserIncapable = 'USER_INCAPABLE'
@@ -187,7 +185,7 @@ leaAddDeclined = 'ADD_DECLINED'
 leaUnsubscribe = 'UNSUBSCRIBE'
 
 
-# TChatStatus
+#{ Chat status
 chsUnknown = 'UNKNOWN'
 chsLegacyDialog = 'LEGACY_DIALOG'
 chsDialog = 'DIALOG'
@@ -196,7 +194,7 @@ chsMultiSubscribed = 'MULTI_SUBSCRIBED'
 chsUnsubscribed = 'UNSUBSCRIBED'
 
 
-# TVoicemailType
+#{ Voicemail type
 vmtUnknown = 'UNKNOWN'
 vmtIncoming = 'INCOMING'
 vmtDefaultGreeting = 'DEFAULT_GREETING'
@@ -204,7 +202,7 @@ vmtCustomGreeting = 'CUSTOM_GREETING'
 vmtOutgoing = 'OUTGOING'
 
 
-# TVoicemailStatus
+#{ Voicemail status
 vmsUnknown = 'UNKNOWN'
 vmsNotDownloaded = 'NOTDOWNLOADED'
 vmsDownloading = 'DOWNLOADING'
@@ -221,7 +219,7 @@ vmsDeleting = 'DELETING'
 vmsFailed = 'FAILED'
 
 
-# TVoicemailFailureReason
+#{ Voicemail failure reason
 vmrUnknown = 'UNKNOWN'
 vmrNoError = 'NOERROR'
 vmrMiscError = 'MISC_ERROR'
@@ -234,7 +232,7 @@ vmrRecordingError = 'RECORDING_ERROR'
 vmrPlaybackError = 'PLAYBACK_ERROR'
 
 
-# TGroupType
+#{ Group type
 grpUnknown = 'UNKNOWN'
 grpCustomGroup = 'CUSTOM_GROUP'
 grpAllUsers = 'ALL_USERS'
@@ -252,13 +250,13 @@ grpSharedGroup = 'SHARED_GROUP'
 grpProposedSharedGroup = 'PROPOSED_SHARED_GROUP'
 
 
-# TCallChannelType
+#{ Call channel type
 cctUnknown = 'UNKNOWN'
 cctDatagram = 'DATAGRAM'
 cctReliable = 'RELIABLE'
 
 
-# TApiSecurityContext
+#{ API security context
 apiContextUnknown = 0
 apiContextVoice = 1
 apiContextMessaging = 2
@@ -266,7 +264,7 @@ apiContextAccount = 4
 apiContextContacts = 8
 
 
-# TSmsMessageType
+#{ SMS message type
 smsMessageTypeUnknown = 'UNKNOWN'
 smsMessageTypeIncoming = 'INCOMING'
 smsMessageTypeOutgoing = 'OUTGOING'
@@ -274,7 +272,7 @@ smsMessageTypeCCRequest = 'CONFIRMATION_CODE_REQUEST'
 smsMessageTypeCCSubmit = 'CONFRIMATION_CODE_SUBMIT'
 
 
-# TSmsMessageStatus
+#{ SMS message status
 smsMessageStatusUnknown = 'UNKNOWN'
 smsMessageStatusReceived = 'RECEIVED'
 smsMessageStatusRead = 'READ'
@@ -286,7 +284,7 @@ smsMessageStatusSomeTargetsFailed = 'SOME_TARGETS_FAILED'
 smsMessageStatusFailed = 'FAILED'
 
 
-# TSmsFailureReason
+#{ SMS failure reason
 smsFailureReasonUnknown = 'UNKNOWN'
 smsFailureReasonMiscError = 'MISC_ERROR'
 smsFailureReasonServerConnectFailed = 'SERVER_CONNECT_FAILED'
@@ -299,7 +297,7 @@ smsFailureReasonNodeBlocked = 'NODE_BLOCKED'
 smsFailureReasonNoSenderIdCapability = 'NO_SENDERID_CAPABILITY'
 
 
-# TSmsTargetStatus
+#{ SMS target status
 smsTargetStatusUnknown = 'UNKNOWN'
 smsTargetStatusUndefined = 'TARGET_UNDEFINED'
 smsTargetStatusAnalyzing = 'TARGET_ANALYZING'
@@ -310,7 +308,7 @@ smsTargetStatusDeliverySuccessful = 'TARGET_DELIVERY_SUCCESSFUL'
 smsTargetStatusDeliveryFailed = 'TARGET_DELIVERY_FAILED'
 
 
-# TPluginContext
+#{ Plug-in context
 pluginContextUnknown = 'unknown'
 pluginContextChat = 'chat'
 pluginContextCall = 'call'
@@ -319,19 +317,19 @@ pluginContextMyself = 'myself'
 pluginContextTools = 'tools'
 
 
-# TPluginContactType
+#{ Plug-in contact type
 pluginContactTypeUnknown = 'unknown'
 pluginContactTypeAll = 'all'
 pluginContactTypeSkype = 'skype'
 pluginContactTypeSkypeOut = 'skypeout'
 
 
-# TFileTransferType
+#{ File transfer type
 fileTransferTypeIncoming = 'INCOMING'
 fileTransferTypeOutgoing = 'OUTGOING'
 
 
-# TFileTransferStatus
+#{ File transfer status
 fileTransferStatusNew = 'NEW'
 fileTransferStatusConnecting = 'CONNECTING'
 fileTransferStatusWaitingForAccept = 'WAITING_FOR_ACCEPT'
@@ -344,7 +342,7 @@ fileTransferStatusCompleted = 'COMPLETED'
 fileTransferStatusFailed = 'FAILED'
 
 
-# TFileTransferFailureReason
+#{ File transfer failure reason
 fileTransferFailureReasonSenderNotAuthorized = 'SENDER_NOT_AUTHORIZED'
 fileTransferFailureReasonRemotelyCancelled = 'REMOTELY_CANCELLED'
 fileTransferFailureReasonFailedRead = 'FAILED_READ'
@@ -355,7 +353,7 @@ fileTransferFailureReasonRemoteDoesNotSupportFT = 'REMOTE_DOES_NOT_SUPPORT_FT'
 fileTransferFailureReasonRemoteOfflineTooLong = 'REMOTE_OFFLINE_TOO_LONG'
 
 
-# TChatMemberRole
+#{ Chat member role
 chatMemberRoleUnknown = 'UNKNOWN'
 chatMemberRoleCreator = 'CREATOR'
 chatMemberRoleMaster = 'MASTER'
@@ -365,7 +363,7 @@ chatMemberRoleListener = 'LISTENER'
 chatMemberRoleApplicant = 'APPLICANT'
 
 
-# TChatMyStatus
+#{ My chat status
 chatStatusUnknown = 'UNKNOWN'
 chatStatusConnecting = 'CONNECTING'
 chatStatusWaitingRemoteAccept = 'WAITING_REMOTE_ACCEPT'
@@ -381,7 +379,7 @@ chatStatusBanned = 'BANNED'
 chatStatusRetryConnecting = 'RETRY_CONNECTING'
 
 
-# TChatOptions
+#{ Chat options
 chatOptionJoiningEnabled = 1
 chatOptionJoinersBecomeApplicants = 2
 chatOptionJoinersBecomeListeners = 4
@@ -390,7 +388,7 @@ chatOptionUsersAreListeners = 16
 chatOptionTopicAndPictureLockedForUsers = 32
 
 
-# TChatType
+#{ Chat type
 chatTypeUnknown = 'UNKNOWN'
 chatTypeDialog = 'DIALOG'
 chatTypeLegacyDialog = 'LEGACY_DIALOG'

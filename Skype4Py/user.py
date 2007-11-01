@@ -10,6 +10,7 @@ accompanying LICENSE file for more information.
 from utils import *
 from enums import *
 import time
+import sys
 
 
 class IUser(Cached):
@@ -20,10 +21,26 @@ class IUser(Cached):
     def _Property(self, PropName, Set=None, Cache=True):
         return self._Skype._Property('USER', self.Handle, PropName, Set, Cache)
 
+    def SaveAvatarToFile(self, Filename, AvatarId='1'):
+        s = 'USER %s AVATAR %s %s' % (self.Handle, AvatarId, Filename.decode(sys.getfilesystemencoding()))
+        self._Skype._DoCommand('GET %s' % s, s)
+
+    def _GetFullName(self):
+        return self._Property('FULLNAME')
+
+    FullName = property(_GetFullName)
+
     def _GetBirthday(self):
         value = self._Property('BIRTHDAY')
         if len(value) == 8:
             return time.mktime((int(value[:4]), int(value[4:6]), int(value[6:]), 0, 0, 0, -1, -1, -1))
+
+    Birthday = property(_GetBirthday)
+
+    def _GetSex(self):
+        return self._Property('SEX')
+
+    Sex = property(_GetSex)
 
     def _GetCountry(self):
         value = self._Property('COUNTRY')
@@ -31,6 +48,90 @@ class IUser(Cached):
             if self._Skype.Protocol >= 4:
                 value = chop(value)[-1]
         return value
+
+    Country = property(_GetCountry)
+
+    def _GetProvince(self):
+        return self._Property('PROVINCE')
+
+    Province = property(_GetProvince)
+
+    def _GetCity(self):
+        return self._Property('CITY')
+
+    City = property(_GetCity)
+
+    def _GetPhoneHome(self):
+        return self._Property('PHONE_HOME')
+
+    PhoneHome = property(_GetPhoneHome)
+
+    def _GetPhoneOffice(self):
+        return self._Property('PHONE_OFFICE')
+
+    PhoneOffice = property(_GetPhoneOffice)
+
+    def _GetPhoneMobile(self):
+        return self._Property('PHONE_MOBILE')
+
+    PhoneMobile = property(_GetPhoneMobile)
+
+    def _GetHomepage(self):
+        return self._Property('HOMEPAGE')
+
+    Homepage = property(_GetHomepage)
+
+    def _GetAbout(self):
+        return self._Property('ABOUT')
+
+    About = property(_GetAbout)
+
+    def _GetHasCallEquipment(self):
+        return self._Property('HASCALLEQUIPMENT') == 'TRUE'
+
+    HasCallEquipment = property(_GetHasCallEquipment)
+
+    def _GetBuddyStatus(self):
+        return int(self._Property('BUDDYSTATUS'))
+
+    def _SetBuddyStatus(self, value):
+        self._Property('BUDDYSTATUS', int(value))
+
+    BuddyStatus = property(_GetBuddyStatus, _SetBuddyStatus)
+
+    def _GetIsAuthorized(self):
+        return self._Property('ISAUTHORIZED') == 'TRUE'
+
+    def _SetIsAuthorized(self, value):
+        self._Property('ISAUTHORIZED', 'TRUE' if value else 'FALSE')
+
+    IsAuthorized = property(_GetIsAuthorized, _SetIsAuthorized)
+
+    def _GetIsBlocked(self):
+        return self._Property('ISBLOCKED') == 'TRUE'
+
+    def _SetIsBlocked(self, value):
+        self._Property('ISBLOCKED', 'TRUE' if value else 'FALSE')
+
+    IsBlocked = property(_GetIsBlocked, _SetIsBlocked)
+
+    def _GetDisplayName(self):
+        return self._Property('DISPLAYNAME')
+
+    def _SetDisplayName(self, value):
+        self._Property('DISPLAYNAME', value)
+
+    DisplayName = property(_GetDisplayName, _SetDisplayName)
+
+    def _GetOnlineStatus(self):
+        return self._Property('ONLINESTATUS')
+
+    OnlineStatus = property(_GetOnlineStatus)
+
+    def _GetLastOnline(self):
+        return float(self._Property('LASTONLINETIMESTAMP'))
+
+    LastOnline = property(_GetLastOnline)
 
     def _GetCountryCode(self):
         if self._Skype.Protocol < 4:
@@ -40,12 +141,54 @@ class IUser(Cached):
             value = chop(value)[0]
         return value
 
+    CountryCode = property(_GetCountryCode)
+
+    def _GetReceivedAuthRequest(self):
+        return self._Property('RECEIVEDAUTHREQUEST')
+
+    ReceivedAuthRequest = property(_GetReceivedAuthRequest)
+
+    def _GetSpeedDial(self):
+        return self._Property('SPEEDDIAL')
+
+    def _SetSpeedDial(self, value):
+        self._Property('SPEEDDIAL', value)
+
+    SpeedDial = property(_GetSpeedDial, _SetSpeedDial)
+
+    def _GetCanLeaveVoicemail(self):
+        return self._Property('CAN_LEAVE_VM') == 'TRUE'
+
+    CanLeaveVoicemail = property(_GetCanLeaveVoicemail)
+
+    def _GetMoodText(self):
+        return self._Property('MOOD_TEXT')
+
+    MoodText = property(_GetMoodText)
+
+    def _GetAliases(self):
+        return self._Property('ALIASES').split()
+
+    Aliases = property(_GetAliases)
+
+    def _GetTimezone(self):
+        return int(self._Property('TIMEZONE'))
+
+    Timezone = property(_GetTimezone)
+
+    def _GetIsCallForwardActive(self):
+        return self._Property('IS_CF_ACTIVE') == 'TRUE'
+
+    IsCallForwardActive = property(_GetIsCallForwardActive)
+
     def _GetLanguage(self):
         value = self._Property('LANGUAGE')
         if value:
             if self._Skype.Protocol >= 4:
                 value = chop(value)[-1]
         return value
+
+    Language = property(_GetLanguage)
 
     def _GetLanguageCode(self):
         if self._Skype.Protocol < 4:
@@ -55,48 +198,32 @@ class IUser(Cached):
             value = chop(value)[0]
         return value
 
-    def SaveAvatarToFile(self, Filename, AvatarId='1'):
-        s = 'USER %s AVATAR %s %s' % (self.Handle, AvatarId, Filename)
-        self._Skype._DoCommand('GET %s' % s, s)
-
-    FullName = property(lambda self: self._Property('FULLNAME'))
-    Birthday = property(_GetBirthday)
-    Sex = property(lambda self: self._Property('SEX'))
-    Country = property(_GetCountry)
-    Province = property(lambda self: self._Property('PROVINCE'))
-    City = property(lambda self: self._Property('CITY'))
-    PhoneHome = property(lambda self: self._Property('PHONE_HOME'))
-    PhoneOffice = property(lambda self: self._Property('PHONE_OFFICE'))
-    PhoneMobile = property(lambda self: self._Property('PHONE_MOBILE'))
-    Homepage = property(lambda self: self._Property('HOMEPAGE'))
-    About = property(lambda self: self._Property('ABOUT'))
-    HasCallEquipment = property(lambda self: self._Property('HASCALLEQUIPMENT') == 'TRUE')
-    BuddyStatus = property(lambda self: int(self._Property('BUDDYSTATUS')),
-                           lambda self, value: self._Property('BUDDYSTATUS', int(value)))
-    IsAuthorized = property(lambda self: self._Property('ISAUTHORIZED') == 'TRUE',
-                            lambda self, value: self._Property('ISAUTHORIZED', 'TRUE' if value else 'FALSE'))
-    IsBlocked = property(lambda self: self._Property('ISBLOCKED') == 'TRUE',
-                         lambda self, value: self._Property('ISBLOCKED', 'TRUE' if value else 'FALSE'))
-    DisplayName = property(lambda self: self._Property('DISPLAYNAME'),
-                           lambda self, value: self._Property('DISPLAYNAME', value))
-    OnlineStatus = property(lambda self: self._Property('ONLINESTATUS'))
-    LastOnline = property(lambda self: float(self._Property('LASTONLINETIMESTAMP')))
-    CountryCode = property(_GetCountryCode)
-    ReceivedAuthRequest = property(lambda self: self._Property('RECEIVEDAUTHREQUEST'))
-    SpeedDial = property(lambda self: self._Property('SPEEDDIAL'),
-                         lambda self, value: self._Property('SPEEDDIAL', value))
-    CanLeaveVoicemail = property(lambda self: self._Property('CAN_LEAVE_VM') == 'TRUE')
-    MoodText = property(lambda self: self._Property('MOOD_TEXT'))
-    Aliases = property(lambda self: self._Property('ALIASES').split())
-    Timezone = property(lambda self: int(self._Property('TIMEZONE')))
-    IsCallForwardActive = property(lambda self: self._Property('IS_CF_ACTIVE') == 'TRUE')
-    Language = property(_GetLanguage)
     LanguageCode = property(_GetLanguageCode)
-    IsVideoCapable = property(lambda self: self._Property('IS_VIDEO_CAPABLE') == 'TRUE')
-    NumberOfAuthBuddies = property(lambda self: int(self._Property('NROF_AUTHED_BUDDIES')))
-    RichMoodText = property(lambda self: self._Property('RICH_MOOD_TEXT'))
-    IsSkypeOutContact = property(lambda self: self.OnlineStatus == olsSkypeOut)
-    IsVoicemailCapable = property(lambda self: self._Property('IS_VOICEMAIL_CAPABLE') == 'TRUE')
+
+    def _GetIsVideoCapable(self):
+        return self._Property('IS_VIDEO_CAPABLE') == 'TRUE'
+
+    IsVideoCapable = property(_GetIsVideoCapable)
+
+    def _GetNumberOfAuthBuddies(self):
+        return int(self._Property('NROF_AUTHED_BUDDIES'))
+
+    NumberOfAuthBuddies = property(_GetNumberOfAuthBuddies)
+
+    def _GetRichMoodText(self):
+        return self._Property('RICH_MOOD_TEXT')
+
+    RichMoodText = property(_GetRichMoodText)
+
+    def _GetIsSkypeOutContact(self):
+        return self.OnlineStatus == olsSkypeOut
+
+    IsSkypeOutContact = property(_GetIsSkypeOutContact)
+
+    def _GetIsVoicemailCapable(self):
+        return self._Property('IS_VOICEMAIL_CAPABLE') == 'TRUE'
+
+    IsVoicemailCapable = property(_GetIsVoicemailCapable)
 
 
 class IGroup(Cached):
@@ -130,14 +257,45 @@ class IGroup(Cached):
         '''Decline a shared group.'''
         self._Alter('DECLINE')
 
+    def _GetId(self):
+        return self._Id
+
+    Id = property(_GetId)
+
+    def _GetType(self):
+        return self._Property('TYPE')
+
+    Type = property(_GetType)
+
+    def _GetCustomGroupId(self):
+        return self._Property('CUSTOM_GROUP_ID')
+
+    CustomGroupId = property(_GetCustomGroupId)
+
+    def _GetDisplayName(self):
+        return self._Property('DISPLAYNAME')
+
+    def _SetDisplayName(self, value):
+        self._Property('DISPLAYNAME', value)
+
+    DisplayName = property(_GetDisplayName, _SetDisplayName)
+
+    def _GetUsers(self):
+        return tuple(IUser(x, self._Skype) for x in esplit(self._Property('USERS', Cache=False), ', '))
+
+    Users = property(_GetUsers)
+
     def _GetOnlineUsers(self):
         return tuple(x for x in self.Users if x.OnlineStatus == olsOnline)
 
-    Id = property(lambda self: self._Id)
-    Type = property(lambda self: self._Property('TYPE'))
-    CustomGroupId = property(lambda self: self._Property('CUSTOM_GROUP_ID'))
-    DisplayName = property(lambda self: self._Property('DISPLAYNAME'), lambda self, value: self._Property('DISPLAYNAME', value))
-    Users = property(lambda self: tuple(IUser(x, self._Skype) for x in esplit(self._Property('USERS', Cache=False), ', ')))
     OnlineUsers = property(_GetOnlineUsers)
-    IsVisible = property(lambda self: self._Property('VISIBLE') == 'TRUE')
-    IsExpanded = property(lambda self: self._Property('EXPANDED') == 'TRUE')
+
+    def _GetIsVisible(self):
+        return self._Property('VISIBLE') == 'TRUE'
+
+    IsVisible = property(_GetIsVisible)
+
+    def _GetIsExpanded(self):
+        return self._Property('EXPANDED') == 'TRUE'
+
+    IsExpanded = property(_GetIsExpanded)

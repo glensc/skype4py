@@ -93,12 +93,47 @@ class IVoicemail(Cached):
         else:
             self._Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (DeviceType, Set))
 
-    Id = property(lambda self: self._Id)
-    Type = property(lambda self: self._Property('TYPE'))
-    PartnerHandle = property(lambda self: self._Property('PARTNER_HANDLE'))
-    PartnerDisplayName = property(lambda self: self._Property('PARTNER_DISPNAME'))
-    Status = property(lambda self: self._Property('STATUS'))
-    FailureReason = property(lambda self: self._Property('FAILUREREASON'))
-    Timestamp = property(lambda self: float(self._Property('TIMESTAMP')))
-    Duration = property(lambda self: int(self._Property('DURATION')))
-    AllowedDuration = property(lambda self: int(self._Property('ALLOWED_DURATION')))
+    def _GetId(self):
+        return self._Id
+
+    Id = property(_GetId)
+
+    def _GetType(self):
+        return self._Property('TYPE')
+
+    Type = property(_GetType)
+
+    def _GetPartnerHandle(self):
+        return self._Property('PARTNER_HANDLE')
+
+    PartnerHandle = property(_GetPartnerHandle)
+
+    def _GetPartnerDisplayName(self):
+        return self._Property('PARTNER_DISPNAME')
+
+    PartnerDisplayName = property(_GetPartnerDisplayName)
+
+    def _GetStatus(self):
+        return self._Property('STATUS')
+
+    Status = property(_GetStatus)
+
+    def _GetFailureReason(self):
+        return self._Property('FAILUREREASON')
+
+    FailureReason = property(_GetFailureReason)
+
+    def _GetTimestamp(self):
+        return float(self._Property('TIMESTAMP'))
+
+    Timestamp = property(_GetTimestamp)
+
+    def _GetDuration(self):
+        return int(self._Property('DURATION'))
+
+    Duration = property(_GetDuration)
+
+    def _GetAllowedDuration(self):
+        return int(self._Property('ALLOWED_DURATION'))
+
+    AllowedDuration = property(_GetAllowedDuration)

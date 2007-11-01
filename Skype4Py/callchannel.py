@@ -29,21 +29,47 @@ class ICallChannel(object):
         else:
             raise ISkypeError(0, 'Cannot send using %s channel type' & repr(self._Type))
 
-    Type = property(lambda self: self._Type)
-    Stream = property(lambda self: self._Stream)
-    Manager = property(lambda self: self._Manager)
-    Call = property(lambda self: self._Call)
+    def _GetType(self):
+        return self._Type
+
+    Type = property(_GetType)
+
+    def _GetStream(self):
+        return self._Stream
+
+    Stream = property(_GetStream)
+
+    def _GetManager(self):
+        return self._Manager
+
+    Manager = property(_GetManager)
+
+    def _GetCall(self):
+        return self._Call
+
+    Call = property(_GetCall)
 
 
-ICallChannelManagerEventHandling = EventHandling([
-    'Channels',
-    'Message',
-    'Created'])
+class ICallChannelManager(EventHandlingBase):
+    '''
+    @ivar OnChannels: Event handler; prototype same as L{ICallChannelManagerEvents.Channels}.
 
+    Type: callable
+    @type OnChannels: callable
 
-class ICallChannelManager(ICallChannelManagerEventHandling):
+    @ivar OnMessage: Event handler; prototype same as L{ICallChannelManagerEvents.Message}.
+
+    Type: callable
+    @type OnMessage: callable
+
+    @ivar OnCreated: Event handler; prototype same as L{ICallChannelManagerEvents.Created}.
+
+    Type: callable
+    @type OnCreated: callable
+    '''
+
     def __init__(self, Events=None):
-        ICallChannelManagerEventHandling.__init__(self)
+        EventHandlingBase.__init__(self)
         if Events:
             self._SetEventHandlerObj(Events)
 
@@ -129,23 +155,53 @@ class ICallChannelManager(ICallChannelManagerEventHandling):
         self._Application.Create()
         self._CallEventHandler('Created')
 
+    def _GetChannels(self):
+        return tuple(self._Channels)
+
+    Channels = property(_GetChannels)
+
+    def _GetChannelType(self):
+        return self._ChannelType
+
     def _SetChannelType(self, ChannelType):
         self._ChannelType = ChannelType
+
+    ChannelType = property(_GetChannelType, _SetChannelType)
+
+    def _GetName(self):
+        return self._Name
 
     def _SetName(self, Name):
         self._Name = unicode(Name)
 
-    Channels = property(lambda self: tuple(self._Channels))
-    ChannelType = property(lambda self: self._ChannelType, _SetChannelType)
-    Name = property(lambda self: self._Name, _SetName)
-    Created = property(lambda self: bool(self._Application))
+    Name = property(_GetName, _SetName)
+
+    def _GetCreated(self):
+        return bool(self._Application)
+
+    Created = property(_GetCreated)
+
+
+class ICallChannelManagerEvents(object):
+    def Channels(self):
+        pass
+    def Message(self):
+        pass
+    def Created(self):
+        pass
+
+
+ICallChannelManager._AddEvents(ICallChannelManagerEvents)
 
 
 class ICallChannelMessage(object):
     def __init__(self, Text):
         self._Text = Text
 
+    def _GetText(self):
+        return self._Text
+
     def _SetText(self, Text):
         self._Text = Text
 
-    Text = property(lambda self: self._Text, _SetText)
+    Text = property(_GetText, _SetText)

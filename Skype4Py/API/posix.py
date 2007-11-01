@@ -1,24 +1,25 @@
 '''
 Low level Skype for Linux interface.
 
-Copyright (c) 2007, Arkadiusz Wahlig
+This module handles the options that you can pass to L{ISkype.__init__} for Linux machines.
+The options include:
 
-All rights reserved.
+@newfield option: Option, Options
 
-Distributed under the BSD License, see the
-accompanying LICENSE file for more information.
+@option: C{Transport} (str) - Transport to use, either 'dbus' or 'x11'. If not specified, 'x11' is used.
+Based on this option, the control is passed to either L{Skype4Py.API.posix_dbus} or L{Skype4Py.API.posix_x11}
+submodules which may specify further options.
 '''
 
 from Skype4Py.errors import ISkypeAPIError
 
 
-def ISkypeAPI(handler, **opts):
-    # Decide what transport to use, x11 is the default
+def _ISkypeAPI(handler, **opts):
     trans = opts.get('Transport', 'x11')
     if trans == 'dbus':
-        from posix_dbus import ISkypeAPI
+        from posix_dbus import _ISkypeAPI
     elif trans == 'x11':
-        from posix_x11 import ISkypeAPI
+        from posix_x11 import _ISkypeAPI
     else:
         raise ISkypeAPIError('Unknown transport: %s' % trans)
-    return ISkypeAPI(handler, **opts)
+    return _ISkypeAPI(handler, **opts)

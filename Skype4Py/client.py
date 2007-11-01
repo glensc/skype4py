@@ -11,6 +11,7 @@ from enums import *
 from errors import *
 from utils import *
 import weakref
+import sys
 
 
 class IClient(object):
@@ -127,13 +128,13 @@ class IClient(object):
         self._Skype._DoCommand('CREATE EVENT %s CAPTION %s HINT %s' % (EventId, quote(Caption), quote(Hint)))
         return IPluginEvent(EventId, self._Skype)
 
-    def CreateMenuItem(self, MenuItemId, PluginContext, CaptionText, HintText='', IconPath='', Enabled=True,
+    def CreateMenuItem(self, MenuItemId, PluginContext, CaptionText, HintText=u'', IconPath='', Enabled=True,
                        ContactType=pluginContactTypeAll, MultipleContacts=False):
         com = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s ENABLED %s' % (MenuItemId, PluginContext, quote(CaptionText), 'true' if Enabled else 'false')
         if HintText:
             com += ' HINT %s' % quote(HintText)
         if IconPath:
-            com += ' ICON %s' % quote(IconPath)
+            com += ' ICON %s' % quote(IconPath.decode(sys.getfilesystemencoding()))
         if MultipleContacts:
             com += ' ENABLE_MULTIPLE_CONTACTS true'
         if PluginContext == pluginContextContact:
@@ -146,9 +147,18 @@ class IClient(object):
 
     _Skype = property(_GetSkype)
 
-    IsRunning = property(lambda self: self._Skype._API.IsRunning())
-    Wallpaper = property(lambda self: self._Skype.Variable('WALLPAPER'),
-                         lambda self, value: self._Skype.Variable('WALLPAPER', value))
+    def _GetIsRunning(self):
+        return self._Skype._API.IsRunning()
+
+    IsRunning = property(_GetIsRunning)
+
+    def _GetWallpaper(self):
+        return self._Skype.Variable('WALLPAPER')
+
+    def _SetWallpaper(self, value):
+        self._Skype.Variable('WALLPAPER', value)
+
+    Wallpaper = property(_GetWallpaper, _SetWallpaper)
 
 
 class IPluginEvent(Cached):
@@ -159,7 +169,11 @@ class IPluginEvent(Cached):
     def Delete(self):
         self._Skype._DoCommand('DELETE EVENT %s' % self._Id)
 
-    Id = property(lambda self: self._Id)
+    def _GetId(self):
+        return self._Id
+
+    Id = property(_GetId)
+
 
 
 class IPluginMenuItem(Cached):
@@ -183,8 +197,31 @@ class IPluginMenuItem(Cached):
     def Delete(self):
         self._Skype._DoCommand('DELETE MENU_ITEM %s' % self._Id)
 
-    Id = property(lambda self: self._Id)
-    Caption = property(lambda self: self._Property('CAPTION'), lambda self, value: self._Property('CAPTION', value))
-    Hint = property(lambda self: self._Property('HINT'), lambda self, value: self._Property('HINT', value))
-    Enabled = property(lambda self: self._Property('ENABLED') == 'TRUE',
-                       lambda self, value: self._Property('ENABLED', 'TRUE' if value else 'FALSE'))
+    def _GetId(self):
+        return self._Id
+
+    Id = property(_GetId)
+
+    def _GetCaption(self):
+        return self._Property('CAPTION')
+
+    def _SetCaption(self, value):
+        self._Property('CAPTION', value)
+
+    Caption = property(_GetCaption, _SetCaption)
+
+    def _GetHint(self):
+        return self._Property('HINT')
+
+    def _SetHint(self, value):
+        self._Property('HINT', value)
+
+    Hint = property(_GetHint, _SetHint)
+
+    def _GetEnabled(self):
+        return self._Property('ENABLED') == 'TRUE'
+
+    def _SetEnabled(self, value):
+        self._Property('ENABLED', 'TRUE' if value else 'FALSE')
+
+    Enabled = property(_GetEnabled, _SetEnabled)

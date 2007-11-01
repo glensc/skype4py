@@ -13,20 +13,24 @@ from errors import *
 
 
 class ICall(Cached):
+    '''Represents a call.'''
+
     def _Init(self, Id, Skype):
         self._Skype = Skype
         self._Id = int(Id)
 
-    def _Property(self, PropName, Set=None):
-        return self._Skype._Property('CALL', self._Id, PropName, Set)
+    def _Property(self, PropName, Set=None, Cache=True):
+        return self._Skype._Property('CALL', self._Id, PropName, Set, Cache)
 
     def _Alter(self, AlterName, Args=None):
         return self._Skype._Alter('CALL', self._Id, AlterName, Args)
 
     def Hold(self):
+        '''Puts the call on hold.'''
         self._Property('STATUS', 'ONHOLD')
 
     def Finish(self):
+        '''Finishes the call.'''
         self._Property('STATUS', 'FINISHED')
 
     def Answer(self):
@@ -38,6 +42,11 @@ class ICall(Cached):
         self.Answer()
 
     def Join(self, Id):
+        '''Joins a conference.
+
+        @param Id: Conference Id. Get it from L{IConference.Id}.
+        @type Id: int
+        '''
         self._Property('JOIN_CONFERENCE', Id)
 
     def StartVideoSend(self):
@@ -57,15 +66,32 @@ class ICall(Cached):
         self._Alter('STOP_VIDEO_RECEIVE')
 
     def RedirectToVoicemail(self):
+        '''Redirects a call to voicemail.'''
         self._Alter('END', 'REDIRECT_TO_VOICEMAIL')
 
     def Forward(self):
+        '''Forwards a call.'''
         self._Alter('END', 'FORWARD_CALL')
 
-    def Transfer(self, Target):
+    def Transfer(self, *Targets):
+        '''Transfers a call to one or more contacts or phone numbers.
+
+        @param Targets: one or more phone numbers or Skypenames the call is beeing transferred to.
+        @type Targets: unicode
+        @see: L{CanTransfer}
+        '''
         self._Alter('TRANSFER', Target)
 
     def InputDevice(self, DeviceType, Set=None):
+        '''Queries or sets the sound input device.
+
+        @param DeviceType: Sound input device type.
+        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>}
+        @param Set: Value the device should be set to or None if the value should be queried.
+        @type Set: unicode or None
+        @return: Device value if Set=None, None otherwise.
+        @rtype: unicode or None
+        '''
         if Set == None:
             try:
                 value = dict([x.split('=') for x in esplit(self._Property('INPUT'), ', ')])[DeviceType]
@@ -76,6 +102,15 @@ class ICall(Cached):
             self._Alter('SET_INPUT', '%s=\"%s\"' % (DeviceType, Set))
 
     def OutputDevice(self, DeviceType, Set=None):
+        '''Queries or sets the sound output device.
+
+        @param DeviceType: Sound output device type.
+        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>}
+        @param Set: Value the device should be set to or None if the value should be queried.
+        @type Set: unicode or None
+        @return: Device value if Set=None, None otherwise.
+        @rtype: unicode or None
+        '''
         if Set == None:
             try:
                 value = dict([x.split('=') for x in esplit(self._Property('OUTPUT'), ', ')])[DeviceType]
@@ -86,6 +121,15 @@ class ICall(Cached):
             self._Alter('SET_OUTPUT', '%s=\"%s\"' % (DeviceType, Set))
 
     def CaptureMicDevice(self, DeviceType, Set=None):
+        '''Queries or sets the mic capture device.
+
+        @param DeviceType: Mic capture device type.
+        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>}
+        @param Set: Value the device should be set to or None if the value should be queried.
+        @type Set: unicode or None
+        @return: Device value if Set=None, None otherwise.
+        @rtype: unicode or None
+        '''
         if Set == None:
             try:
                 value = dict([x.split('=') for x in esplit(self._Property('CAPTURE_MIC'), ', ')])[DeviceType]
@@ -96,44 +140,171 @@ class ICall(Cached):
             self._Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (DeviceType, Set))
 
     def CanTransfer(self, Target):
+        '''Queries if a call can be transferred to a contact or phone number.
+
+        @param Target: Skypename or phone number the call is to be transfered to.
+        @type Target: unicode
+        @return: True if call can be transfered, False otherwise.
+        @rtype: bool
+        '''
         return self._Property('CAN_TRANSFER %s' % Target) == 'TRUE'
+
+    def _GetId(self):
+        return self._Id
+
+    Id = property(_GetId)
+
+    def _GetTimestamp(self):
+        return float(self._Property('TIMESTAMP'))
+
+    Timestamp = property(_GetTimestamp)
+
+    def _GetPartnerHandle(self):
+        return self._Property('PARTNER_HANDLE')
+
+    PartnerHandle = property(_GetPartnerHandle)
+
+    def _GetPartnerDisplayName(self):
+        return self._Property('PARTNER_DISPNAME')
+
+    PartnerDisplayName = property(_GetPartnerDisplayName)
+
+    def _GetConferenceId(self):
+        return int(self._Property('CONF_ID'))
+
+    ConferenceId = property(_GetConferenceId)
+
+    def _GetType(self):
+        return self._Property('TYPE')
+
+    Type = property(_GetType)
+
+    def _GetStatus(self):
+        return self._Property('STATUS')
+
+    def _SetStatus(self, value):
+        self._Property('STATUS', str(value))
+
+    Status = property(_GetStatus, _SetStatus)
+
+    def _GetFailureReason(self):
+        return int(self._Property('FAILUREREASON'))
+
+    FailureReason = property(_GetFailureReason)
+
+    def _GetSubject(self):
+        return self._Property('SUBJECT')
+
+    Subject = property(_GetSubject)
+
+    def _GetPstnNumber(self):
+        return self._Property('PSTN_NUMBER')
+
+    PstnNumber = property(_GetPstnNumber)
+
+    def _GetDuration(self):
+        return int(self._Property('DURATION', Cache=False))
+
+    Duration = property(_GetDuration)
+
+    def _GetPstnStatus(self):
+        return self._Property('PSTN_STATUS')
+
+    PstnStatus = property(_GetPstnStatus)
+
+    def _GetSeen(self):
+        return self._Property('SEEN') == 'TRUE'
+
+    def _SetSeen(self, value):
+        self._Property('SEEN', 'TRUE' if value else 'FALSE')
+
+    Seen = property(_GetSeen, _SetSeen)
+
+    def _SetDTMF(self, value):
+        self._Property('DTMF', value)
+
+    DTMF = property(fset=_SetDTMF)
 
     def _GetParticipants(self):
         count = int(self._Property('CONF_PARTICIPANTS_COUNT'))
         return tuple(IParticipant((self._Id, x), self._Skype) for x in xrange(1, count + 1))
 
-    Id = property(lambda self: self._Id)
-    Timestamp = property(lambda self: float(self._Property('TIMESTAMP')))
-    PartnerHandle = property(lambda self: self._Property('PARTNER_HANDLE'))
-    PartnerDisplayName = property(lambda self: self._Property('PARTNER_DISPNAME'))
-    ConferenceId = property(lambda self: int(self._Property('CONF_ID')))
-    Type = property(lambda self: self._Property('TYPE'))
-    Status = property(lambda self: self._Property('STATUS'),
-                      lambda self, value: self._Property('STATUS', str(value)))
-    FailureReason = property(lambda self: int(self._Property('FAILUREREASON')))
-    Subject = property(lambda self: self._Property('SUBJECT'))
-    PstnNumber = property(lambda self: self._Property('PSTN_NUMBER'))
-    Duration = property(lambda self: int(self._Property('DURATION')))
-    PstnStatus = property(lambda self: self._Property('PSTN_STATUS'))
-    Seen = property(lambda self: self._Property('SEEN') == 'TRUE',
-                    lambda self, value: self._Property('SEEN', 'TRUE' if value else 'FALSE'))
-    DTMF = property(fset=lambda self, value: self._Property('DTMF', value))
     Participants = property(_GetParticipants)
-    VmDuration = property(lambda self: int(self._Property('VM_DURATION')))
-    VmAllowedDuration = property(lambda self: int(self._Property('VM_ALLOWED_DURATION')))
-    VideoStatus = property(lambda self: self._Property('VIDEO_STATUS'))
-    VideoSendStatus = property(lambda self: self._Property('VIDEO_SEND_STATUS'))
-    VideoReceiveStatus = property(lambda self: self._Property('VIDEO_RECEIVE_STATUS'))
-    Rate = property(lambda self: int(self._Property('RATE')))
-    RateCurrency = property(lambda self: self._Property('RATE_CURRENCY'))
-    RatePrecision = property(lambda self: int(self._Property('RATE_PRECISION')))
-    InputStatus = property(lambda self: self._Property('VAA_INPUT_STATUS') == 'TRUE')
-    ForwardedBy = property(lambda self: self._Property('FORWARDED_BY'))
-    TransferStatus = property(lambda self: self._Property('TRANSFER_STATUS'))
-    TransferActive = property(lambda self: self._Property('TRANSFER_ACTIVE') == 'TRUE')
-    TransferredBy = property(lambda self: self._Property('TRANSFERRED_BY'))
-    TransferredTo = property(lambda self: self._Property('TRANSFERRED_TO'))
-    TargetIdentify = property(lambda self: self._Property('TARGET_IDENTIFY'))
+
+    def _GetVmDuration(self):
+        return int(self._Property('VM_DURATION'))
+
+    VmDuration = property(_GetVmDuration)
+
+    def _GetVmAllowedDuration(self):
+        return int(self._Property('VM_ALLOWED_DURATION'))
+
+    VmAllowedDuration = property(_GetVmAllowedDuration)
+
+    def _GetVideoStatus(self):
+        return self._Property('VIDEO_STATUS')
+
+    VideoStatus = property(_GetVideoStatus)
+
+    def _GetVideoSendStatus(self):
+        return self._Property('VIDEO_SEND_STATUS')
+
+    VideoSendStatus = property(_GetVideoSendStatus)
+
+    def _GetVideoReceiveStatus(self):
+        return self._Property('VIDEO_RECEIVE_STATUS')
+
+    VideoReceiveStatus = property(_GetVideoReceiveStatus)
+
+    def _GetRate(self):
+        return int(self._Property('RATE'))
+
+    Rate = property(_GetRate)
+
+    def _GetRateCurrency(self):
+        return self._Property('RATE_CURRENCY')
+
+    RateCurrency = property(_GetRateCurrency)
+
+    def _GetRatePrecision(self):
+        return int(self._Property('RATE_PRECISION'))
+
+    RatePrecision = property(_GetRatePrecision)
+
+    def _GetInputStatus(self):
+        return self._Property('VAA_INPUT_STATUS') == 'TRUE'
+
+    InputStatus = property(_GetInputStatus)
+
+    def _GetForwardedBy(self):
+        return self._Property('FORWARDED_BY')
+
+    ForwardedBy = property(_GetForwardedBy)
+
+    def _GetTransferStatus(self):
+        return self._Property('TRANSFER_STATUS')
+
+    TransferStatus = property(_GetTransferStatus)
+
+    def _GetTransferActive(self):
+        return self._Property('TRANSFER_ACTIVE') == 'TRUE'
+
+    TransferActive = property(_GetTransferActive)
+
+    def _GetTransferredBy(self):
+        return self._Property('TRANSFERRED_BY')
+
+    TransferredBy = property(_GetTransferredBy)
+
+    def _GetTransferredTo(self):
+        return self._Property('TRANSFERRED_TO')
+
+    TransferredTo = property(_GetTransferredTo)
+
+    def _GetTargetIdentify(self):
+        return self._Property('TARGET_IDENTIFY')
+
+    TargetIdentify = property(_GetTargetIdentify)
 
 
 class IParticipant(Cached):
@@ -146,10 +317,25 @@ class IParticipant(Cached):
         reply = self._Skype._Property('CALL', self._Id, 'CONF_PARTICIPANT %d' % self._Idx)
         return chop(reply, 7)[Prop]
 
-    Handle = property(lambda self: self._Property(4))
-    DisplayName = property(lambda self: self._Property(7))
-    CallType = property(lambda self: self._Property(5))
-    CallStatus = property(lambda self: self._Property(6))
+    def _GetHandle(self):
+        return self._Property(4)
+
+    Handle = property(_GetHandle)
+
+    def _GetDisplayName(self):
+        return self._Property(7)
+
+    DisplayName = property(_GetDisplayName)
+
+    def _GetCallType(self):
+        return self._Property(5)
+
+    CallType = property(_GetCallType)
+
+    def _GetCallStatus(self):
+        return self._Property(6)
+
+    CallStatus = property(_GetCallStatus)
 
 
 class IConference(Cached):
@@ -172,12 +358,17 @@ class IConference(Cached):
         for c in self._GetCalls():
             c.Finish()
 
+    def _GetId(self):
+        return self._Id
+
+    Id = property(_GetId)
+
     def _GetCalls(self):
         return tuple(x for x in self._Skype.Calls() if c.ConferenceId == self._Id)
+
+    Calls = property(_GetCalls)
 
     def _GetActiveCalls(self):
         return tuple(x for x in self._Skype.ActiveCalls if c.ConferenceId == self._Id)
 
-    Id = property(lambda self: self._Id)
-    Calls = property(_GetCalls)
     ActiveCalls = property(_GetActiveCalls)

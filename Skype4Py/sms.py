@@ -16,16 +16,28 @@ class ISmsChunk(Cached):
         self._Id = Id
         self._Message = Message
 
+    def _GetId(self):
+        return self._Id
+
+    Id = property(_GetId)
+
     def _GetCharactersLeft(self):
         count, left = map(int, chop(self._Message._Property('CHUNKING', Cache=False)))
         if self._Id == count - 1:
             return left
         return 0
 
-    Id = property(lambda self: self._Id)
     CharactersLeft = property(_GetCharactersLeft)
-    Text = property(lambda self: self._Message._Property('CHUNK %s' % self._Id))
-    Message = property(lambda self: self._Message)
+
+    def _GetText(self):
+        return self._Message._Property('CHUNK %s' % self._Id)
+
+    Text = property(_GetText)
+
+    def _GetMessage(self):
+        return self._Message
+
+    Message = property(_GetMessage)
 
 
 class ISmsMessage(Cached):
@@ -47,23 +59,89 @@ class ISmsMessage(Cached):
         '''Deletes the message.'''
         self._Skype._DoCommand('DELETE SMS %s' % self._Id)
 
-    Id = property(lambda self: self._Id)
-    Body = property(lambda self: self._Property('BODY'), lambda self, value: self._Property('BODY', value))
-    Type = property(lambda self: self._Property('TYPE'))
-    Status = property(lambda self: self._Property('STATUS'))
-    FailureReason = property(lambda self: self._Property('FAILUREREASON'))
-    IsFailedUnseen = property(lambda self: self._Property('IS_FAILED_UNSEEN') == 'TRUE')
-    Seen = property(fset=lambda self, value: self._Property('SEEN', 'TRUE' if value else 'FALSE'))
-    Timestamp = property(lambda self: float(self._Property('TIMESTAMP')))
-    Price = property(lambda self: int(self._Property('PRICE')))
-    PricePrecision = property(lambda self: int(self._Property('PRICE_PRECISION')))
-    PriceCurrency = property(lambda self: self._Property('PRICE_CURRENCY'))
-    ReplyToNumber = property(lambda self: self._Property('REPLY_TO_NUMBER'),
-                             lambda self, value: self._Property('REPLY_TO_NUMBER', value))
-    Targets = property(lambda self: tuple(ISmsTarget((x, self)) for x in esplit(self._Property('TARGET_NUMBERS'), ', ')))
-    TargetNumbers = property(lambda self: self._Property('TARGET_NUMBERS'),
-                             lambda self, value: self._Property('TARGET_NUMBERS', value))
-    Chunks = property(lambda self: tuple(ISmsChunk((x, self)) for x in range(int(chop(self._Property('CHUNKING', Cache=False))[0]))))
+    def _GetId(self):
+        return self._Id
+
+    Id = property(_GetId)
+
+    def _GetBody(self):
+        return self._Property('BODY')
+
+    def _SetBody(self, value):
+        self._Property('BODY', value)
+
+    Body = property(_GetBody, _SetBody)
+
+    def _GetType(self):
+        return self._Property('TYPE')
+
+    Type = property(_GetType)
+
+    def _GetStatus(self):
+        return self._Property('STATUS')
+
+    Status = property(_GetStatus)
+
+    def _GetFailureReason(self):
+        return self._Property('FAILUREREASON')
+
+    FailureReason = property(_GetFailureReason)
+
+    def _GetIsFailedUnseen(self):
+        return self._Property('IS_FAILED_UNSEEN') == 'TRUE'
+
+    IsFailedUnseen = property(_GetIsFailedUnseen)
+
+    def _SetSeen(self, value):
+        self._Property('SEEN', 'TRUE' if value else 'FALSE')
+
+    Seen = property(fset=_SetSeen)
+
+    def _GetTimestamp(self):
+        return float(self._Property('TIMESTAMP'))
+
+    Timestamp = property(_GetTimestamp)
+
+    def _GetPrice(self):
+        return int(self._Property('PRICE'))
+
+    Price = property(_GetPrice)
+
+    def _GetPricePrecision(self):
+        return int(self._Property('PRICE_PRECISION'))
+
+    PricePrecision = property(_GetPricePrecision)
+
+    def _GetPriceCurrency(self):
+        return self._Property('PRICE_CURRENCY')
+
+    PriceCurrency = property(_GetPriceCurrency)
+
+    def _GetReplyToNumber(self):
+        return self._Property('REPLY_TO_NUMBER')
+
+    def _SetReplyToNumber(self, value):
+        self._Property('REPLY_TO_NUMBER', value)
+
+    ReplyToNumber = property(_GetReplyToNumber, _SetReplyToNumber)
+
+    def _GetTargets(self):
+        return tuple(ISmsTarget((x, self)) for x in esplit(self._Property('TARGET_NUMBERS'), ', '))
+
+    Targets = property(_GetTargets)
+
+    def _GetTargetNumbers(self):
+        return self._Property('TARGET_NUMBERS')
+
+    def _SetTargetNumbers(self, value):
+        self._Property('TARGET_NUMBERS', value)
+
+    TargetNumbers = property(_GetTargetNumbers, _SetTargetNumbers)
+
+    def _GetChunks(self):
+        return tuple(ISmsChunk((x, self)) for x in range(int(chop(self._Property('CHUNKING', Cache=False))[0])))
+
+    Chunks = property(_GetChunks)
 
 
 class ISmsTarget(Cached):
@@ -71,12 +149,20 @@ class ISmsTarget(Cached):
         self._Number = Number
         self._Message = Message
 
+    def _GetNumber(self):
+        return self._Number
+
+    Number = property(_GetNumber)
+
+    def _GetMessage(self):
+        return self._Message
+
+    Message = property(_GetMessage)
+
     def _GetStatus(self):
         for t in esplit(self._Message._Property('TARGET_STATUSES'), ', '):
             number, status = t.split('=')
             if number == self._Number:
                 return status
 
-    Number = property(lambda self: self._Number)
-    Message = property(lambda self: self._Message)
     Status = property(_GetStatus)

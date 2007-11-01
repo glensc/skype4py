@@ -2,22 +2,29 @@
 Low level Skype for Linux interface implemented
 using python-dbus package.
 
-Copyright (c) 2007, Arkadiusz Wahlig
+This module handles the options that you can pass to L{ISkype.__init__} for Linux machines
+when the transport is set to DBus.
 
-All rights reserved.
-
-Distributed under the BSD License, see the
-accompanying LICENSE file for more information.
+No further options are currently supported.
 '''
 
 import threading
 import time
-import dbus, dbus.mainloop.glib, dbus.service
-import gobject
 import weakref
-from Skype4Py.API import *
+from Skype4Py.API import ICommand, _ISkypeAPIBase
 from Skype4Py.enums import *
 from Skype4Py.errors import ISkypeAPIError
+
+
+try:
+    import dbus, dbus.mainloop.glib, dbus.service
+    import gobject
+except ImportError:
+    import sys
+    if sys.argv == ['(imported)']:
+        # we get here if we're building docs on windows, to let the module
+        # import without exceptions, we import our faked dbus and gobject modules
+        from _faked_dbus import dbus, gobject
 
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
@@ -34,17 +41,17 @@ class _SkypeNotify(dbus.service.Object):
         self.notify(com)
 
 # Note:
-# ISkypeAPI class is a singleton so every new instance of Skype4Py.Skype
+# _ISkypeAPI class is a singleton so every new instance of Skype4Py.skype.ISkype
 # uses the same interface to Skype. In future, if there is a way to access
 # more simultaneously running Skype clients, the singletone pattern may be
 # removed.
 
-class ISkypeAPI(ISkypeAPIBase):
+class _ISkypeAPI(_ISkypeAPIBase):
     Singleton = None
 
     def __new__(cls, *args, **kwargs):
         if cls.Singleton == None or cls.Singleton() == None:
-            obj = ISkypeAPIBase.__new__(cls)
+            obj = _ISkypeAPIBase.__new__(cls)
             obj._init()
             cls.Singleton = weakref.ref(obj)
         return cls.Singleton()
@@ -55,7 +62,7 @@ class ISkypeAPI(ISkypeAPIBase):
 
     def _init(self):
         # called only for first instatination
-        ISkypeAPIBase.__init__(self)
+        _ISkypeAPIBase.__init__(self)
         self.loop = None
         self.skype_in = self.skype_out = None
         self.bus = dbus.SessionBus()

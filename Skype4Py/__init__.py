@@ -1,10 +1,53 @@
 '''
-Copyright (c) 2007, Arkadiusz Wahlig
+Welcome
+=======
 
-All rights reserved.
+Welcome to Skype4Py API reference guide.
 
-Distributed under the BSD License, see the
-accompanying LICENSE file for more information.
+
+Usage
+=====
+
+This is the package that you should import in your scripts. You won't need to import any submodules.
+Everything you may need will be available at the package level. This includes:
+
+  - C{Skype4Py.Skype = L{Skype4Py.skype.ISkype}}
+  - C{Skype4Py.CallChannelManager = L{Skype4Py.callchannel.ICallChannelManager}}
+  - C{Skype4Py.* = L{Skype4Py.enums}.*}
+  - C{Skype4Py.SkypeError = L{Skype4Py.errors.ISkypeError}}
+  - C{Skype4Py.SkypeAPIError = L{Skype4Py.errors.ISkypeAPIError}}
+
+The first two are the only classes that you will be instatinating directly. Calling their methods/properties
+will give you the access to instances of all other classes, you won't have to instatinate them yourself.
+
+Every Skype4Py script instatinates the C{Skype4Py.Skype} class at least once. That's what you want to do
+first in your script. Then follow the L{Skype4Py.skype.ISkype} reference to see where you can get from
+there.
+
+
+Example
+=======
+
+This short example connects to Skype client and prints the user's full name and the names of all the
+contacts from the contacts list::
+
+    import Skype4Py
+
+    skype = Skype4Py.Skype()
+
+    # Connects Skype object to Skype client
+    skype.Attach()
+
+    print 'Your full name:', skype.CurrentUser.FullName
+    print 'Your contacts:'
+    for user in skype.Friends:
+        print '    ', user.FullName
+
+@author: U{Arkadiusz Wahlig<yak@nokix.pasjagsm.pl>}
+@requires: Python 2.5+
+@see: U{The Skype4Py webpage<https://developer.skype.com/wiki/Skype4Py>}
+@license: BSD License (see the accompanying LICENSE file for more information)
+@copyright: S{copy} 2007 Arkadiusz Wahlig
 '''
 
 from skype import *
@@ -14,6 +57,7 @@ from errors import *
 
 
 __version__ = '0.9.28.5'
+'''The version of Skype4Py.'''
 
 Skype = ISkype
 CallChannelManager = ICallChannelManager

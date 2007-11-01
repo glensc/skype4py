@@ -33,24 +33,17 @@ class IConversion(object):
             return str(value)
         raise ISkypeError(0, 'Bad text')
 
-    def _SetLanguage(self, Language):
-        try:
-            self._Module = __import__('Languages.%s' % str(Language), globals(), locals(), ['Languages'])
-            self._Language = unicode(Language)
-        except ImportError:
-            pass
-
-    def OnlineStatusToText(self, status):
+    def OnlineStatusToText(self, Status):
         '''Returns online status as text.'''
-        return self._ToText('ols', status)
+        return self._ToText('ols', Status)
 
     def TextToOnlineStatus(self, Text):
         '''Returns online status code.'''
         return self._TextTo('ols', Text)
 
-    def BuddyStatusToText(self, status):
+    def BuddyStatusToText(self, Status):
         '''Returns buddy status as text.'''
-        return self._ToText('bud', status)
+        return self._ToText('bud', Status)
 
     def TextToBuddyStatus(self, Text):
         '''Returns buddy status code.'''
@@ -64,9 +57,9 @@ class IConversion(object):
         '''Returns call status code.'''
         return self._TextTo('cls', Text)
 
-    def CallTypeToText(self, CallType):
+    def CallTypeToText(self, Type):
         '''Returns call type as text.'''
-        return self._ToText('clt', CallType)
+        return self._ToText('clt', Type)
 
     def TextToCallType(self, Text):
         '''Returns call type code.'''
@@ -88,43 +81,44 @@ class IConversion(object):
         return self._ToText('con', Text)
 
     def UserStatusToText(self, Status):
+        '''Returns user status as text.'''
         return self._ToText('cus', Status)
 
     def TextToUserStatus(self, Text):
         '''Returns user status code.'''
         return self._TextTo('cus', Text)
 
-    def CallFailureReasonToText(self, reason):
+    def CallFailureReasonToText(self, Reason):
         '''Returns failure reason as text.'''
-        return self._ToText('cfr', reason)
+        return self._ToText('cfr', Reason)
 
-    def AttachmentStatusToText(self, status):
+    def AttachmentStatusToText(self, Status):
         '''Returns attachment status as text.'''
-        return self._ToText('api', status)
+        return self._ToText('api', Status)
 
-    def ChatLeaveReasonToText(self, reason):
+    def ChatLeaveReasonToText(self, Reason):
         '''Returns leave reason as text.'''
-        return self._ToText('lea', reason)
+        return self._ToText('lea', Reason)
 
-    def ChatStatusToText(self, status):
+    def ChatStatusToText(self, Status):
         '''Returns chatr status as text.'''
-        return self._ToText('chs', status)
+        return self._ToText('chs', Status)
 
-    def VoicemailTypeToText(self, type_):
+    def VoicemailTypeToText(self, Type):
         '''Returns voicemail type as text.'''
-        return self._ToText('vmt', type_)
+        return self._ToText('vmt', Type)
 
-    def VoicemailStatusToText(self, status):
+    def VoicemailStatusToText(self, Status):
         '''Returns voicemail status as text.'''
-        return self._ToText('vms', status)
+        return self._ToText('vms', Status)
 
     def TextToVoicemailStatus(self, Text):
         '''Returns voicemail status code.'''
         return self._TextTo('vms', Text)
 
-    def VoicemailFailureReasonToText(self, reason):
+    def VoicemailFailureReasonToText(self, Reason):
         '''Returns voicemail failure reason as text.'''
-        return self._ToText('vmr', reason)
+        return self._ToText('vmr', Reason)
 
     def ChatMessageStatusToText(self, Status):
         '''Returns message status as text.'''
@@ -162,16 +156,26 @@ class IConversion(object):
         '''Returns call video send status as text.'''
         return self._ToText('vss', Status)
 
-    def SmsMessageStatusToText(self, status):
+    def SmsMessageStatusToText(self, Status):
         '''Returns SMS message status as text.'''
-        return self._ToText('smsMessageStatus', status)
+        return self._ToText('smsMessageStatus', Status)
 
-    def SmsMessageTypeToText(self, type_):
+    def SmsMessageTypeToText(self, Type):
         '''Returns SMS message type as text.'''
-        return self._ToText('smsMessageType', type_)
+        return self._ToText('smsMessageType', Type)
 
-    def SmsTargetStatusToText(self, status):
+    def SmsTargetStatusToText(self, Status):
         '''Returns SMS target status as text.'''
-        return self._ToText('smsTargetStatus', status)
+        return self._ToText('smsTargetStatus', Status)
 
-    Language = property(lambda self: self._Language, _SetLanguage)
+    def _GetLanguage(self):
+        return self._Language
+
+    def _SetLanguage(self, Language):
+        try:
+            self._Module = __import__('Languages.%s' % str(Language), globals(), locals(), ['Languages'])
+            self._Language = unicode(Language)
+        except ImportError:
+            pass
+
+    Language = property(_GetLanguage, _SetLanguage)
