@@ -9,6 +9,7 @@ accompanying LICENSE file for more information.
 
 import weakref
 import sys
+from utils import *
 
 
 class ISettings(object):
@@ -31,7 +32,7 @@ class ISettings(object):
         '''Returns/sets ringtone status.'''
         if Set == None:
             return self._Skype._Property('RINGTONE', Id, 'STATUS') == 'ON'
-        return self._Skype._Property('RINGTONE', Id, 'STATUS', 'ON' if Set else 'OFF')
+        return self._Skype._Property('RINGTONE', Id, 'STATUS', cndexp(Set, 'ON', 'OFF'))
 
     def RingTone(self, Id='1', Set=None):
         '''Returns/sets ringtone.'''

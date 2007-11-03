@@ -130,7 +130,7 @@ class IClient(object):
 
     def CreateMenuItem(self, MenuItemId, PluginContext, CaptionText, HintText=u'', IconPath='', Enabled=True,
                        ContactType=pluginContactTypeAll, MultipleContacts=False):
-        com = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s ENABLED %s' % (MenuItemId, PluginContext, quote(CaptionText), 'true' if Enabled else 'false')
+        com = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s ENABLED %s' % (MenuItemId, PluginContext, quote(CaptionText), cndexp(Enabled, 'true', 'false'))
         if HintText:
             com += ' HINT %s' % quote(HintText)
         if IconPath:
@@ -186,7 +186,7 @@ class IPluginMenuItem(Cached):
         if Hint != None:
             self._CacheDict['HINT'] = unicode(Hint)
         if Enabled != None:
-            self._CacheDict['ENABLED'] = u'TRUE' if Enabled else u'FALSE'
+            self._CacheDict['ENABLED'] = cndexp(Enabled, u'TRUE', u'FALSE')
 
     def _Property(self, PropName, Set=None):
         if Set == None:
@@ -222,6 +222,6 @@ class IPluginMenuItem(Cached):
         return self._Property('ENABLED') == 'TRUE'
 
     def _SetEnabled(self, value):
-        self._Property('ENABLED', 'TRUE' if value else 'FALSE')
+        self._Property('ENABLED', cndexp(value, 'TRUE', 'FALSE'))
 
     Enabled = property(_GetEnabled, _SetEnabled)

@@ -167,7 +167,7 @@ class IProfile(object):
         return self._Property('CALL_APPLY_CF') == 'TRUE'
 
     def _SetCallApplyCF(self, value):
-        self._Property('CALL_APPLY_CF', 'TRUE' if value else 'FALSE')
+        self._Property('CALL_APPLY_CF', cndexp(value, 'TRUE', 'FALSE'))
 
     CallApplyCF = property(_GetCallApplyCF, _SetCallApplyCF)
 
@@ -175,7 +175,7 @@ class IProfile(object):
         return self._Property('CALL_SEND_TO_VM') == 'TRUE'
 
     def _SetCallSendToVM(self, value):
-        self._Property('CALL_SEND_TO_VM', 'TRUE' if value else 'FALSE')
+        self._Property('CALL_SEND_TO_VM', cndexp(value, 'TRUE', 'FALSE'))
 
     CallSendToVM = property(_GetCallSendToVM, _SetCallSendToVM)
 

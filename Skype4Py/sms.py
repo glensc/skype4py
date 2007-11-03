@@ -93,7 +93,7 @@ class ISmsMessage(Cached):
     IsFailedUnseen = property(_GetIsFailedUnseen)
 
     def _SetSeen(self, value):
-        self._Property('SEEN', 'TRUE' if value else 'FALSE')
+        self._Property('SEEN', cndexp(value, 'TRUE', 'FALSE'))
 
     Seen = property(fset=_SetSeen)
 

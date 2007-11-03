@@ -1,15 +1,13 @@
 '''
-Welcome
-=======
-
-Welcome to Skype4Py API reference guide.
-
+Reference Guide
+===============
 
 Usage
-=====
+-----
 
-This is the package that you should import in your scripts. You won't need to import any submodules.
-Everything you may need will be available at the package level. This includes:
+C{Skype4Py} is the package that you should import in your scripts to be able to access Skype.
+You won't need to import any submodules. Everything you may need will be available at the
+package level. This includes:
 
   - C{Skype4Py.Skype = L{Skype4Py.skype.ISkype}}
   - C{Skype4Py.CallChannelManager = L{Skype4Py.callchannel.ICallChannelManager}}
@@ -25,8 +23,8 @@ first in your script. Then follow the L{Skype4Py.skype.ISkype} reference to see 
 there.
 
 
-Example
-=======
+Quick example
+-------------
 
 This short example connects to Skype client and prints the user's full name and the names of all the
 contacts from the contacts list::

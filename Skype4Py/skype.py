@@ -1023,7 +1023,7 @@ class ISkype(EventHandlingBase):
         return self.Variable('MUTE') == 'ON'
 
     def _SetMute(self, value):
-        self.Variable('MUTE', 'ON' if value else 'OFF')
+        self.Variable('MUTE', cndexp(value, 'ON', 'OFF'))
 
     Mute = property(_GetMute, _SetMute)
     '''Queries/sets the mute status of the Skype client.
@@ -1164,7 +1164,7 @@ class ISkype(EventHandlingBase):
         return self.Variable('SILENT_MODE') == 'ON'
 
     def _SetSilentMode(self, value):
-        self.SendCommand(ICommand(-1, 'SET SILENT_MODE %s' % 'ON' if value else 'OFF'))
+        self.SendCommand(ICommand(-1, 'SET SILENT_MODE %s' % cndexp(value, 'ON', 'OFF')))
 
     SilentMode = property(_GetSilentMode, _SetSilentMode)
     '''Returns/sets Skype silent mode status.

@@ -103,7 +103,7 @@ class IUser(Cached):
         return self._Property('ISAUTHORIZED') == 'TRUE'
 
     def _SetIsAuthorized(self, value):
-        self._Property('ISAUTHORIZED', 'TRUE' if value else 'FALSE')
+        self._Property('ISAUTHORIZED', cndexp(value, 'TRUE', 'FALSE'))
 
     IsAuthorized = property(_GetIsAuthorized, _SetIsAuthorized)
 
@@ -111,7 +111,7 @@ class IUser(Cached):
         return self._Property('ISBLOCKED') == 'TRUE'
 
     def _SetIsBlocked(self, value):
-        self._Property('ISBLOCKED', 'TRUE' if value else 'FALSE')
+        self._Property('ISBLOCKED', cndexp(value, 'TRUE', 'FALSE'))
 
     IsBlocked = property(_GetIsBlocked, _SetIsBlocked)
 
