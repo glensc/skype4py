@@ -5,7 +5,12 @@ using python-dbus package.
 This module handles the options that you can pass to L{ISkype.__init__} for Linux machines
 when the transport is set to DBus.
 
-No further options are currently supported.
+@newfield option: Option, Options
+
+@option Bus: DBus bus object as returned by python-dbus package.
+If not specified, private session bus is used.
+@option MainLoop: DBus mainloop object. If not specified, default DBus mainloop is used.
+@option BusName: Skype DBus bus name. Defaults to 'com.Skype.API'.
 '''
 
 import threading
@@ -17,65 +22,74 @@ from Skype4Py.errors import ISkypeAPIError
 
 
 try:
-    import dbus, dbus.mainloop.glib, dbus.service
-    import gobject
+    import dbus, dbus.service
 except ImportError:
     import sys
     if sys.argv == ['(imported)']:
         # we get here if we're building docs on windows, to let the module
-        # import without exceptions, we import our faked dbus and gobject modules
-        from _faked_dbus import dbus, gobject
+        # import without exceptions, we import our faked dbus module
+        from _faked_dbus import dbus
 
 
-dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-gobject.threads_init()
+### TODO:
+### Monitor com.Skype.API bus name owner and set AttachmentStatus accordingly (apiAttachAvailable, apiAttachUnavailable), here's how:
+# bus = dbus.SessionBus()
+# def callback(owned, old_owner, new_owner):
+#     api_available = (new_owner != '')
+# match = bus.add_signal_receiver(callback, 'NameOwnerChanged', 'org.freedesktop.DBus', 'org.freedesktop.DBus', '/org/freedesktop/DBus', arg0='com.Skype.API')
 
 
-class _SkypeNotify(dbus.service.Object):
-    def __init__(self, bus, notify):
-        dbus.service.Object.__init__(self, bus, '/com/Skype/Client', bus_name='com.Skype.API')
+class _SkypeNotifyCallback(dbus.service.Object):
+    '''DBus object which exports a Notify method. This will be called by Skype for all
+    notifications with the notification string as a parameter. The Notify method of this
+    class calls in turn the callable passed to the constructor.
+    '''
+    
+    def __init__(self, bus, bus_name, notify):
+        dbus.service.Object.__init__(self, bus, '/com/Skype/Client', bus_name=bus_name)
         self.notify = notify
 
     @dbus.service.method(dbus_interface='com.Skype.API')
     def Notify(self, com):
+        '''Exported Notify method.
+        '''
+        
         self.notify(com)
 
-# Note:
-# _ISkypeAPI class is a singleton so every new instance of Skype4Py.skype.ISkype
-# uses the same interface to Skype. In future, if there is a way to access
-# more simultaneously running Skype clients, the singletone pattern may be
-# removed.
 
 class _ISkypeAPI(_ISkypeAPIBase):
-    Singleton = None
-
-    def __new__(cls, *args, **kwargs):
-        if cls.Singleton == None or cls.Singleton() == None:
-            obj = _ISkypeAPIBase.__new__(cls)
-            obj._init()
-            cls.Singleton = weakref.ref(obj)
-        return cls.Singleton()
-
     def __init__(self, handler, **opts):
-        # called for every instatination
-        self.RegisterHandler(handler)
-
-    def _init(self):
-        # called only for first instatination
         _ISkypeAPIBase.__init__(self)
-        self.loop = None
+        self.RegisterHandler(handler)
         self.skype_in = self.skype_out = None
-        self.bus = dbus.SessionBus()
+        self.bus = opts.pop('Bus', None)
+        try:
+            mainloop = opts.pop('MainLoop')
+            if self.bus != None:
+                raise TypeError('Bus and MainLoop cannot be used at the same time!')
+        except KeyError:
+            import dbus.mainloop.glib
+            import gobject
+            gobject.threads_init()
+            dbus.mainloop.glib.threads_init()
+            mainloop = dbus.mainloop.glib.DBusGMainLoop()
+            self.mainloop = gobject.MainLoop()
+        if self.bus == None:
+            self.bus = dbus.SessionBus(private=True, mainloop=mainloop)
+        self.bus_name = opts.pop('BusName', 'com.Skype.API')
+        if opts:
+            raise TypeError('Unexpected parameters: %s' % ', '.join(opts.keys()))
 
     def run(self):
-        self.loop = gobject.MainLoop()
-        self.loop.run()
+        if hasattr(self, 'mainloop'):
+            print 'running loop'
+            self.mainloop.run()
 
     def Close(self):
-        if self.loop:
-            self.loop.quit()
+        if hasattr(self, 'mainloop'):
+            self.mainloop.quit()
         self.skype_in = self.skype_out = None
-
+       
     def SetFriendlyName(self, FriendlyName):
         self.FriendlyName = FriendlyName
         if self.skype_out:
@@ -84,11 +98,10 @@ class _ISkypeAPI(_ISkypeAPIBase):
     def Attach(self, Timeout=30000, Wait=True):
         if self.skype_out:
             return
-        if not self.isAlive():
-            try:
-                self.start()
-            except AssertionError:
-                raise ISkypeAPIError('Skype API closed')
+        try:
+            self.start()
+        except AssertionError:
+            pass
         try:
             self.wait = True
             def ftimeout():
@@ -98,8 +111,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 t.start()
             while self.wait:
                 try:
-                    self.skype_out = self.bus.get_object('com.Skype.API', '/com/Skype')
-                    self.skype_in = _SkypeNotify(self.bus, self.notify)
+                    self.skype_out = self.bus.get_object(self.bus_name, '/com/Skype')
+                    self.skype_in = _SkypeNotifyCallback(self.bus, self.bus_name, self.notify)
                 except dbus.DBusException:
                     time.sleep(1.0)
                 else:
@@ -108,8 +121,6 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 raise ISkypeAPIError('Skype attach timeout')
         finally:
             t.cancel()
-        while not self.loop:
-            time.sleep(0.01)
         c = ICommand(-1, 'NAME %s' % self.FriendlyName, '', True, Timeout)
         self.SendCommand(c)
         if c.Reply != 'OK':
@@ -121,7 +132,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
 
     def IsRunning(self):
         try:
-            self.bus.get_object('com.Skype.API', '/com/Skype')
+            self.bus.get_object(self.bus_name, '/com/Skype')
             return True
         except dbus.DBusException:
             return False

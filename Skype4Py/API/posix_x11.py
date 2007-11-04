@@ -88,6 +88,10 @@ class _ISkypeAPI(_ISkypeAPIBase):
         _ISkypeAPIBase.__init__(self)
         self.RegisterHandler(handler)
 
+        # check options
+        if opts:
+            raise TypeError('Unexpected parameters: %s' % ', '.join(opts.keys()))
+
         # setup Xlib
         libpath = find_library('X11')
         if not libpath:

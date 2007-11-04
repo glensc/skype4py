@@ -16,9 +16,13 @@ from Skype4Py.API import ICommand, _ISkypeAPIBase
 from Skype4Py.enums import *
 from Skype4Py.errors import ISkypeAPIError
 
-
-WNDPROC = WINFUNCTYPE(c_long, c_int, c_uint, c_int, c_int)
-
+try:
+    WNDPROC = WINFUNCTYPE(c_long, c_int, c_uint, c_int, c_int)
+except NameError:
+    # This will allow importing of this module on non-Windows machines. It won't work
+    # of course but this will allow building documentation on any platform.
+    WNDPROC = c_void_p
+    
 class _WNDCLASS(Structure):
     _fields_ = [('style', c_uint),
                 ('lpfnWndProc', WNDPROC),
@@ -53,16 +57,18 @@ _WM_COPYDATA = 0x4A
 
 _HWND_BROADCAST = 0xFFFF
 
-_SkypeControlAPIDiscover = windll.user32.RegisterWindowMessageA('SkypeControlAPIDiscover')
-_SkypeControlAPIAttach = windll.user32.RegisterWindowMessageA('SkypeControlAPIAttach')
 
 
 class _ISkypeAPI(_ISkypeAPIBase):
     def __init__(self, handler, **opts):
         _ISkypeAPIBase.__init__(self)
+        if opts:
+            raise TypeError('Unexpected parameters: %s' % ', '.join(opts.keys()))
         self.hwnd = None
         self.Skype = None
         self.RegisterHandler(handler)
+        self._SkypeControlAPIDiscover = windll.user32.RegisterWindowMessageA('SkypeControlAPIDiscover')
+        self._SkypeControlAPIAttach = windll.user32.RegisterWindowMessageA('SkypeControlAPIAttach')
 
     def run(self):
         if not self.CreateWindow():
@@ -103,7 +109,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
             # wait till the thread initializes
             while not self.hwnd:
                 time.sleep(0.01)
-        if not windll.user32.SendMessageTimeoutA(_HWND_BROADCAST, _SkypeControlAPIDiscover,
+        if not windll.user32.SendMessageTimeoutA(_HWND_BROADCAST, self._SkypeControlAPIDiscover,
                                                  self.hwnd, None, 2, 5000, None):
             raise ISkypeAPIError('Could not broadcast Skype discover message')
         # wait (with timeout) till the WindProc() attaches
@@ -119,7 +125,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 t.cancel()
             elif self.AttachmentStatus == apiAttachAvailable:
                 # rebroadcast
-                if not windll.user32.SendMessageTimeoutA(_HWND_BROADCAST, _SkypeControlAPIDiscover,
+                if not windll.user32.SendMessageTimeoutA(_HWND_BROADCAST, self._SkypeControlAPIDiscover,
                                                          self.hwnd, None, 2, 5000, None):
                     raise ISkypeAPIError('Could not broadcast Skype discover message')
             time.sleep(0.01)
@@ -191,7 +197,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         return True
 
     def WinProc(self, hwnd, uMsg, wParam, lParam):
-        if uMsg == _SkypeControlAPIAttach:
+        if uMsg == self._SkypeControlAPIAttach:
             if lParam == apiAttachSuccess:
                 self.Skype = wParam
             elif lParam in [apiAttachRefused, apiAttachNotAvailable, apiAttachAvailable]:

@@ -9,13 +9,15 @@ The options include:
 @option: C{Transport} (str) - Transport to use, either 'dbus' or 'x11'. If not specified, 'x11' is used.
 Based on this option, the control is passed to either L{Skype4Py.API.posix_dbus} or L{Skype4Py.API.posix_x11}
 submodules which may specify further options.
+
+Please look in the appropriate modules for additional options and important notes.
 '''
 
 from Skype4Py.errors import ISkypeAPIError
 
 
 def _ISkypeAPI(handler, **opts):
-    trans = opts.get('Transport', 'x11')
+    trans = opts.pop('Transport', 'x11')
     if trans == 'dbus':
         from posix_dbus import _ISkypeAPI
     elif trans == 'x11':
