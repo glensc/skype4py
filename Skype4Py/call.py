@@ -261,15 +261,25 @@ class ICall(Cached):
 
     Rate = property(_GetRate)
 
+    def _GetRatePrecision(self):
+        return int(self._Property('RATE_PRECISION'))
+
+    RatePrecision = property(_GetRatePrecision)
+
     def _GetRateCurrency(self):
         return self._Property('RATE_CURRENCY')
 
     RateCurrency = property(_GetRateCurrency)
 
-    def _GetRatePrecision(self):
-        return int(self._Property('RATE_PRECISION'))
+    def _GetRateValue(self):
+        return float(self._Property('RATE')) / (10 ** float(self._Property('RATE_PRECISION')))
 
-    RatePrecision = property(_GetRatePrecision)
+    RateValue = property(_GetRateValue)
+
+    def _GetRateToText(self):
+        return (u'%s %.2f' % (self.RateCurrency, self.RateValue)).strip()
+
+    RateToText = property(_GetRateToText)
 
     def _GetInputStatus(self):
         return self._Property('VAA_INPUT_STATUS') == 'TRUE'

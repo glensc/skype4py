@@ -197,8 +197,13 @@ class IProfile(object):
 
     BalanceCurrency = property(_GetBalanceCurrency)
 
+    def _GetBalanceValue(self):
+        return float(self._Property('PSTN_BALANCE')) / 100
+
+    BalanceValue = property(_GetBalanceValue)
+
     def _GetBalanceToText(self):
-        return u'%s %.2f' % (self.BalanceCurrency, self.Balance / 100)
+        return (u'%s %.2f' % (self.BalanceCurrency, self.BalanceValue)).strip()
 
     BalanceToText = property(_GetBalanceToText)
 

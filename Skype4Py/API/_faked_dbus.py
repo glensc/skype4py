@@ -10,4 +10,3 @@ class dbus(object):
         @staticmethod
         def method(*args, **kwargs):
             return lambda *args, **kwargs: None
-

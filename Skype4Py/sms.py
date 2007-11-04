@@ -117,6 +117,16 @@ class ISmsMessage(Cached):
 
     PriceCurrency = property(_GetPriceCurrency)
 
+    def _GetPriceValue(self):
+        return float(self._Property('PRICE')) / (10 ** float(self._Property('PRICE_PRECISION')))
+
+    PriceValue = property(_GetPriceValue)
+
+    def _GetPriceToText(self):
+        return (u'%s %.2f' % (self.PriceCurrency, self.PriceValue)).strip()
+
+    PriceToText = property(_GetPriceToText)
+
     def _GetReplyToNumber(self):
         return self._Property('REPLY_TO_NUMBER')
 
