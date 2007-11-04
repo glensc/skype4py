@@ -19,6 +19,7 @@ import weakref
 from Skype4Py.API import ICommand, _ISkypeAPIBase
 from Skype4Py.enums import *
 from Skype4Py.errors import ISkypeAPIError
+from Skype4Py.utils import cndexp
 
 
 try:
@@ -51,9 +52,6 @@ class _SkypeNotifyCallback(dbus.service.Object):
 
     @dbus.service.method(dbus_interface='com.Skype.API.Client')
     def Notify(self, com):
-        '''Exported Notify method.
-        '''
-        
         self.notify(unicode(com))
 
 
@@ -61,7 +59,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
     def __init__(self, handler, **opts):
         _ISkypeAPIBase.__init__(self)
         self.RegisterHandler(handler)
-        self.skype_in = self.skype_out = None
+        self.skype_in = self.skype_out = self.dbus_name_owner_watch = None
         self.bus = opts.pop('Bus', None)
         try:
             mainloop = opts.pop('MainLoop')
@@ -89,6 +87,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
         if hasattr(self, 'mainloop'):
             self.mainloop.quit()
         self.skype_in = self.skype_out = None
+        self.bus.remove_signal_receiver(self.dbus_name_owner_watch)
+        self.dbus_name_owner_watch = None
        
     def SetFriendlyName(self, FriendlyName):
         self.FriendlyName = FriendlyName
@@ -121,6 +121,12 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 raise ISkypeAPIError('Skype attach timeout')
         finally:
             t.cancel()
+        self.dbus_name_owner_watch = self.bus.add_signal_receiver(self.dbus_name_owner_changed,
+            'NameOwnerChanged', 
+            'org.freedesktop.DBus', 
+            'org.freedesktop.DBus', 
+            '/org/freedesktop/DBus', 
+            arg0='com.Skype.API')
         c = ICommand(-1, 'NAME %s' % self.FriendlyName, '', True, Timeout)
         self.SendCommand(c)
         if c.Reply != 'OK':
@@ -197,4 +203,9 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 self.CallHandler('rece_api', com[p + 1:])
         else:
             self.CallHandler('rece_api', com)
+
+    def dbus_name_owner_changed(self, owned, old_owner, new_owner):
+        self.SetAttachmentStatus(cndexp(new_owner == '',
+            apiAttachNotAvailable,
+            apiAttachAvailable))
 
