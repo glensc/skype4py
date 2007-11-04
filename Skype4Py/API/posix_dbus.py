@@ -45,16 +45,16 @@ class _SkypeNotifyCallback(dbus.service.Object):
     class calls in turn the callable passed to the constructor.
     '''
     
-    def __init__(self, bus, bus_name, notify):
-        dbus.service.Object.__init__(self, bus, '/com/Skype/Client', bus_name=bus_name)
+    def __init__(self, bus, notify):
+        dbus.service.Object.__init__(self, bus, '/com/Skype/Client')
         self.notify = notify
 
-    @dbus.service.method(dbus_interface='com.Skype.API')
+    @dbus.service.method(dbus_interface='com.Skype.API.Client')
     def Notify(self, com):
         '''Exported Notify method.
         '''
         
-        self.notify(com)
+        self.notify(unicode(com))
 
 
 class _ISkypeAPI(_ISkypeAPIBase):
@@ -112,7 +112,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
             while self.wait:
                 try:
                     self.skype_out = self.bus.get_object(self.bus_name, '/com/Skype')
-                    self.skype_in = _SkypeNotifyCallback(self.bus, self.bus_name, self.notify)
+                    self.skype_in = _SkypeNotifyCallback(self.bus, self.notify)
                 except dbus.DBusException:
                     time.sleep(1.0)
                 else:
