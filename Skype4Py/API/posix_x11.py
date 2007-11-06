@@ -20,6 +20,7 @@ from Skype4Py.errors import ISkypeAPIError
 
 # 64bit systems support
 c_int = c_long
+c_uint = c_ulong
 
 
 # some Xlib constants
