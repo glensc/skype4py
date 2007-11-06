@@ -18,11 +18,6 @@ from Skype4Py.enums import *
 from Skype4Py.errors import ISkypeAPIError
 
 
-# 64bit systems support
-c_int = c_long
-c_uint = c_ulong
-
-
 # some Xlib constants
 _PropertyChangeMask = 0x400000
 _PropertyNotify = 28
@@ -45,41 +40,91 @@ c_int_p = POINTER(c_int)
 
 
 # some Xlib structures
-class _XClientMessageEvent(Structure):
-    _fields_ = [('type', c_int),
-                ('serial', c_ulong),
-                ('send_event', Bool),
-                ('display', DisplayP),
-                ('window', Window),
-                ('message_type', Atom),
-                ('format', c_int),
-                ('data', c_char * 20)]
+if sizeof(c_long) == 8:
+    # 64 bit machines
 
-class _XPropertyEvent(Structure):
-    _fields_ = [('type', c_int),
-                ('serial', c_ulong),
-                ('send_event', Bool),
-                ('display', DisplayP),
-                ('window', Window),
-                ('atom', Atom),
-                ('time', Time),
-                ('state', c_int)]
+    class _XClientMessageEvent(Structure):
+        _fields_ = [('type', c_int),
+                    ('pad0', c_int),
+                    ('serial', c_ulong),
+                    ('send_event', Bool),
+                    ('pad1', c_int),
+                    ('display', DisplayP),
+                    ('window', Window),
+                    ('message_type', Atom),
+                    ('format', c_int),
+                    ('pad2', c_int),
+                    ('data', c_char * 20)]
 
-class _XErrorEvent(Structure):
-    _fields_ = [('type', c_int),
-                ('display', DisplayP),
-                ('resourceid', XID),
-                ('serial', c_ulong),
-                ('error_code', c_ubyte),
-                ('request_code', c_ubyte),
-                ('minor_code', c_ubyte)]
+    class _XPropertyEvent(Structure):
+        _fields_ = [('type', c_int),
+                    ('pad0', c_int),
+                    ('serial', c_ulong),
+                    ('send_event', Bool),
+                    ('pad1', c_int),
+                    ('display', DisplayP),
+                    ('window', Window),
+                    ('atom', Atom),
+                    ('time', Time),
+                    ('state', c_int),
+                    ('pad2', c_int)]
 
-class _XEvent(Union):
-    _fields_ = [('type', c_int),
-                ('xclient', _XClientMessageEvent),
-                ('xproperty', _XPropertyEvent),
-                ('xerror', _XErrorEvent),
-                ('pad', c_long * 24)]
+    class _XErrorEvent(Structure):
+        _fields_ = [('type', c_int),
+                    ('pad0', c_int),
+                    ('display', DisplayP),
+                    ('resourceid', XID),
+                    ('serial', c_ulong),
+                    ('error_code', c_ubyte),
+                    ('request_code', c_ubyte),
+                    ('minor_code', c_ubyte)]
+
+    class _XEvent(Union):
+        _fields_ = [('type', c_int),
+                    ('xclient', _XClientMessageEvent),
+                    ('xproperty', _XPropertyEvent),
+                    ('xerror', _XErrorEvent),
+                    ('pad', c_long * 24)]
+
+else:
+    # 32 bit machines
+
+    class _XClientMessageEvent(Structure):
+        _fields_ = [('type', c_int),
+                    ('serial', c_ulong),
+                    ('send_event', Bool),
+                    ('display', DisplayP),
+                    ('window', Window),
+                    ('message_type', Atom),
+                    ('format', c_int),
+                    ('data', c_char * 20)]
+
+    class _XPropertyEvent(Structure):
+        _fields_ = [('type', c_int),
+                    ('serial', c_ulong),
+                    ('send_event', Bool),
+                    ('display', DisplayP),
+                    ('window', Window),
+                    ('atom', Atom),
+                    ('time', Time),
+                    ('state', c_int)]
+
+    class _XErrorEvent(Structure):
+        _fields_ = [('type', c_int),
+                    ('display', DisplayP),
+                    ('resourceid', XID),
+                    ('serial', c_ulong),
+                    ('error_code', c_ubyte),
+                    ('request_code', c_ubyte),
+                    ('minor_code', c_ubyte)]
+
+    class _XEvent(Union):
+        _fields_ = [('type', c_int),
+                    ('xclient', _XClientMessageEvent),
+                    ('xproperty', _XPropertyEvent),
+                    ('xerror', _XErrorEvent),
+                    ('pad', c_long * 24)]
+
 
 XEventP = POINTER(_XEvent)
 
