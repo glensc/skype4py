@@ -73,7 +73,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 mainloop = dbus.mainloop.glib.DBusGMainLoop()
                 self.mainloop = gobject.MainLoop()
         if self.bus == None:
-            self.bus = dbus.SessionBus(private=True, mainloop=mainloop)
+            from dbus import SessionBus
+            self.bus = SessionBus(private=True, mainloop=mainloop)
         if opts:
             raise TypeError('Unexpected parameters: %s' % ', '.join(opts.keys()))
 
