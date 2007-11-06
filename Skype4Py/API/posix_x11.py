@@ -39,11 +39,13 @@ Time = c_ulong
 c_int_p = POINTER(c_int)
 
 
-# some Xlib structures
-if sizeof(c_long) == 8:
-    # 64 bit machines
+# is this a 64 bit platform?
+m64 = (sizeof(c_long) == 8)
 
-    class _XClientMessageEvent(Structure):
+
+# some Xlib structures
+class _XClientMessageEvent(Structure):
+    if m64:
         _fields_ = [('type', c_int),
                     ('pad0', c_int),
                     ('serial', c_ulong),
@@ -55,8 +57,18 @@ if sizeof(c_long) == 8:
                     ('format', c_int),
                     ('pad2', c_int),
                     ('data', c_char * 20)]
+    else:
+        _fields_ = [('type', c_int),
+                    ('serial', c_ulong),
+                    ('send_event', Bool),
+                    ('display', DisplayP),
+                    ('window', Window),
+                    ('message_type', Atom),
+                    ('format', c_int),
+                    ('data', c_char * 20)]
 
-    class _XPropertyEvent(Structure):
+class _XPropertyEvent(Structure):
+    if m64:
         _fields_ = [('type', c_int),
                     ('pad0', c_int),
                     ('serial', c_ulong),
@@ -68,38 +80,7 @@ if sizeof(c_long) == 8:
                     ('time', Time),
                     ('state', c_int),
                     ('pad2', c_int)]
-
-    class _XErrorEvent(Structure):
-        _fields_ = [('type', c_int),
-                    ('pad0', c_int),
-                    ('display', DisplayP),
-                    ('resourceid', XID),
-                    ('serial', c_ulong),
-                    ('error_code', c_ubyte),
-                    ('request_code', c_ubyte),
-                    ('minor_code', c_ubyte)]
-
-    class _XEvent(Union):
-        _fields_ = [('type', c_int),
-                    ('xclient', _XClientMessageEvent),
-                    ('xproperty', _XPropertyEvent),
-                    ('xerror', _XErrorEvent),
-                    ('pad', c_long * 24)]
-
-else:
-    # 32 bit machines
-
-    class _XClientMessageEvent(Structure):
-        _fields_ = [('type', c_int),
-                    ('serial', c_ulong),
-                    ('send_event', Bool),
-                    ('display', DisplayP),
-                    ('window', Window),
-                    ('message_type', Atom),
-                    ('format', c_int),
-                    ('data', c_char * 20)]
-
-    class _XPropertyEvent(Structure):
+    else:
         _fields_ = [('type', c_int),
                     ('serial', c_ulong),
                     ('send_event', Bool),
@@ -109,7 +90,17 @@ else:
                     ('time', Time),
                     ('state', c_int)]
 
-    class _XErrorEvent(Structure):
+class _XErrorEvent(Structure):
+    if m64:
+        _fields_ = [('type', c_int),
+                    ('pad0', c_int),
+                    ('display', DisplayP),
+                    ('resourceid', XID),
+                    ('serial', c_ulong),
+                    ('error_code', c_ubyte),
+                    ('request_code', c_ubyte),
+                    ('minor_code', c_ubyte)]
+    else:
         _fields_ = [('type', c_int),
                     ('display', DisplayP),
                     ('resourceid', XID),
@@ -118,13 +109,19 @@ else:
                     ('request_code', c_ubyte),
                     ('minor_code', c_ubyte)]
 
-    class _XEvent(Union):
+class _XEvent(Union):
+    if m64:
         _fields_ = [('type', c_int),
                     ('xclient', _XClientMessageEvent),
                     ('xproperty', _XPropertyEvent),
                     ('xerror', _XErrorEvent),
                     ('pad', c_long * 24)]
-
+    else:
+        _fields_ = [('type', c_int),
+                    ('xclient', _XClientMessageEvent),
+                    ('xproperty', _XPropertyEvent),
+                    ('xerror', _XErrorEvent),
+                    ('pad', c_long * 24)]
 
 XEventP = POINTER(_XEvent)
 
