@@ -75,18 +75,15 @@ class IVoicemail(Cached):
         '''
         if Set == None: # get
             args = args2dict(self._Property('INPUT', Cache=False))
-            try:
-                if DeviceType == None: # get device type
-                    return tuple(map(str, args.keys()))
-                elif DeviceType == callIoDeviceTypePort:
-                    return int(args[DeviceType])
-                elif DeviceType == callIoDeviceTypeFile:
-                    return args[DeviceType].encode(sys.getfilesystemencoding())
-                else:
-                    return args[DeviceType]
-            except KeyError:
-                return None
-        elif DeviceType != None:
+            for t in args:
+                if t == callIoDeviceTypePort:
+                    args[t] = int(args[t])
+                elif t == callIoDeviceTypeFile:
+                    args[t] = args[t].encode(sys.getfilesystemencoding())
+            if DeviceType == None: # get active devices
+                return args
+            return args.get(DeviceType, None)
+        elif DeviceType != None: # set
             self._Alter('SET_INPUT', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
         else:
             raise TypeError('DeviceType must be specified if Set is used')
@@ -103,18 +100,15 @@ class IVoicemail(Cached):
         '''
         if Set == None: # get
             args = args2dict(self._Property('OUTPUT', Cache=False))
-            try:
-                if DeviceType == None: # get device type
-                    return tuple(map(str, args.keys()))
-                elif DeviceType == callIoDeviceTypePort:
-                    return int(args[DeviceType])
-                elif DeviceType == callIoDeviceTypeFile:
-                    return args[DeviceType].encode(sys.getfilesystemencoding())
-                else:
-                    return args[DeviceType]
-            except KeyError:
-                return None
-        elif DeviceType != None:
+            for t in args:
+                if t == callIoDeviceTypePort:
+                    args[t] = int(args[t])
+                elif t == callIoDeviceTypeFile:
+                    args[t] = args[t].encode(sys.getfilesystemencoding())
+            if DeviceType == None: # get active devices
+                return args
+            return args.get(DeviceType, None)
+        elif DeviceType != None: # set
             self._Alter('SET_OUTPUT', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
         else:
             raise TypeError('DeviceType must be specified if Set is used')
@@ -131,18 +125,15 @@ class IVoicemail(Cached):
         '''
         if Set == None: # get
             args = args2dict(self._Property('CAPTURE_MIC', Cache=False))
-            try:
-                if DeviceType == None: # get device type
-                    return tuple(map(str, args.keys()))
-                elif DeviceType == callIoDeviceTypePort:
-                    return int(args[DeviceType])
-                elif DeviceType == callIoDeviceTypeFile:
-                    return args[DeviceType].encode(sys.getfilesystemencoding())
-                else:
-                    return args[DeviceType]
-            except KeyError:
-                return None
-        elif DeviceType != None:
+            for t in args:
+                if t == callIoDeviceTypePort:
+                    args[t] = int(args[t])
+                elif t == callIoDeviceTypeFile:
+                    args[t] = args[t].encode(sys.getfilesystemencoding())
+            if DeviceType == None: # get active devices
+                return args
+            return args.get(DeviceType, None)
+        elif DeviceType != None: # set
             self._Alter('SET_CAPTURE_MIC', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
         else:
             raise TypeError('DeviceType must be specified if Set is used')
