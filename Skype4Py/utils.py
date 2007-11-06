@@ -194,11 +194,12 @@ class _EventHandlingThread(threading.Thread):
     def run(self):
         while True:
             try:
-                self.lock.acquire()
-                h = self.queue[0]
-                del self.queue[0]
-            except IndexError:
-                break
+                try:
+                    self.lock.acquire()
+                    h = self.queue[0]
+                    del self.queue[0]
+                except IndexError:
+                    break
             finally:
                 self.lock.release()
             h[0](*h[1], **h[2])
