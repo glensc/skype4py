@@ -89,7 +89,7 @@ class ISettings(object):
         return self._Skype.Variable('PCSPEAKER') == 'ON'
 
     def _SetPCSpeaker(self, value):
-        self._Skype.Variable('PCSPEAKER', 'ON' if value else 'OFF')
+        self._Skype.Variable('PCSPEAKER', cndexp(value, 'ON', 'OFF'))
 
     PCSpeaker = property(_GetPCSpeaker, _SetPCSpeaker)
 
@@ -97,7 +97,7 @@ class ISettings(object):
         return self._Skype.Variable('AGC') == 'ON'
 
     def _SetAGC(self, value):
-        self._Skype.Variable('AGC', 'ON' if value else 'OFF')
+        self._Skype.Variable('AGC', cndexp(value, 'ON', 'OFF'))
 
     AGC = property(_GetAGC, _SetAGC)
 
@@ -105,7 +105,7 @@ class ISettings(object):
         return self._Skype.Variable('AEC') == 'ON'
 
     def _SetAEC(self, value):
-        self._Skype.Variable('AEC', 'ON' if value else 'OFF')
+        self._Skype.Variable('AEC', cndexp(value, 'ON', 'OFF'))
 
     AEC = property(_GetAEC, _SetAEC)
 
@@ -121,6 +121,6 @@ class ISettings(object):
         return self._Skype.Variable('AUTOAWAY') == 'ON'
 
     def _SetAutoAway(self, value):
-        self._Skype.Variable('AUTOAWAY', 'ON' if value else 'OFF')
+        self._Skype.Variable('AUTOAWAY', cndexp(value, 'ON', 'OFF'))
 
     AutoAway = property(_GetAutoAway, _SetAutoAway)
