@@ -76,7 +76,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
             from dbus import SessionBus
             self.bus = SessionBus(private=True, mainloop=mainloop)
         if opts:
-            raise TypeError('Unexpected parameters: %s' % ', '.join(opts.keys()))
+            raise TypeError('Unexpected parameter(s): %s' % ', '.join(opts.keys()))
 
     def run(self):
         if hasattr(self, 'mainloop'):

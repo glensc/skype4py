@@ -22,7 +22,7 @@ except NameError:
     # This will allow importing of this module on non-Windows machines. It won't work
     # of course but this will allow building documentation on any platform.
     WNDPROC = c_void_p
-    
+
 class _WNDCLASS(Structure):
     _fields_ = [('style', c_uint),
                 ('lpfnWndProc', WNDPROC),
@@ -63,7 +63,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
     def __init__(self, handler, **opts):
         _ISkypeAPIBase.__init__(self)
         if opts:
-            raise TypeError('Unexpected parameters: %s' % ', '.join(opts.keys()))
+            raise TypeError('Unexpected parameter(s): %s' % ', '.join(opts.keys()))
         self.hwnd = None
         self.Skype = None
         self.RegisterHandler(handler)

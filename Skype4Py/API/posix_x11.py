@@ -137,7 +137,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
 
         # check options
         if opts:
-            raise TypeError('Unexpected parameters: %s' % ', '.join(opts.keys()))
+            raise TypeError('Unexpected parameter(s): %s' % ', '.join(opts.keys()))
 
         # setup Xlib
         libpath = find_library('X11')
