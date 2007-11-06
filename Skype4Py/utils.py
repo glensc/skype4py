@@ -8,7 +8,7 @@ import threading
 from new import instancemethod
 
 
-def chop(s, n=1):
+def chop(s, n=1, d=None):
     '''Chops initial words from a string and returns a list of them and the rest of the string.
 
     @param s: String to chop from.
@@ -20,19 +20,61 @@ def chop(s, n=1):
     @rtype: list of str or unicode
     '''
 
-    spl = s.split()
+    spl = s.split(d)
     res = []
     while len(res) < n:
         if len(spl) == 0:
             raise ValueError('chop: Could not chop %d words from \'%s\'' % (n, s))
         if spl[0]:
             res.append(spl[0])
+            s = s[s.index(spl[0])+len(spl[0]):]
         del spl[0]
-    res.append(type(s)(' ').join(spl))
+    if d == None:
+        s = s.lstrip()
+    else:
+        while s.startswith(d):
+            s = s[len(d):]
+    res.append(s)
     return res
 
 
-def quote(s):
+def args2dict(s):
+    '''Converts a string in 'ARG="value", ARG2="value2"' format into a dictionary.
+    '''
+
+    d = {}
+    while s:
+        t, s = chop(s, 1, '=')
+        if s.startswith('"'):
+            i = 0
+            while True:
+                i = s.find('"', i+1)
+                # XXX How are the double-quotes escaped? The code below implements VisualBasic technique.
+                try:
+                    if s[i+1] != '"':
+                        break
+                    else:
+                        i += 1
+                except IndexError:
+                    break
+            if i > 0:
+                d[t] = s[1:i]
+                s = s[i+1:]
+            else:
+                d[t] = s
+                break
+        else:
+            i = s.find(', ')
+            if i >= 0:
+                d[t] = s[:i]
+                s = s[i+2:]
+            else:
+                d[t] = s
+                break
+    return d
+
+
+def quote(s, always=False):
     '''Adds double-quotes to string if needed.
 
     @param s: String to add double-quotes to.
@@ -43,7 +85,7 @@ def quote(s):
     @rtype: str or unicode
     '''
 
-    if ' ' in s:
+    if always or ' ' in s:
         return '"%s"' % s.replace('"', '\\"')
     return s
 

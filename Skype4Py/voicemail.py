@@ -63,35 +63,89 @@ class IVoicemail(Cached):
         '''Changes played voicemail status back to unplayed.'''
         self._Property('STATUS', vmsUnplayed)
 
-    def InputDevice(self, DeviceType, Set=None):
-        if Set == None:
-            try:
-                value = dict([x.split('='), esplit(self._Property('INPUT'), ', ')])[DeviceType]
-            except KeyError:
-                return u''
-            return value[1:-1]
-        else:
-            self._Alter('SET_INPUT', '%s=\"%s\"' % (DeviceType, Set))
+    def InputDevice(self, DeviceType=None, Set=None):
+        '''Queries or sets the sound input device.
 
-    def OutputDevice(self, DeviceType, Set=None):
-        if Set == None:
+        @param DeviceType: Sound input device type.
+        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>}
+        @param Set: Value the device should be set to or None if the value should be queried.
+        @type Set: unicode or None
+        @return: Device value if Set=None, None otherwise.
+        @rtype: unicode or None
+        '''
+        if Set == None: # get
+            args = args2dict(self._Property('INPUT', Cache=False))
             try:
-                value = dict([x.split('='), esplit(self._Property('OUTPUT'), ', ')])[DeviceType]
+                if DeviceType == None: # get device type
+                    return tuple(map(str, args.keys()))
+                elif DeviceType == callIoDeviceTypePort:
+                    return int(args[DeviceType])
+                elif DeviceType == callIoDeviceTypeFile:
+                    return args[DeviceType].encode(sys.getfilesystemencoding())
+                else:
+                    return args[DeviceType]
             except KeyError:
-                return u''
-            return value[1:-1]
+                return None
+        elif DeviceType != None:
+            self._Alter('SET_INPUT', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
         else:
-            self._Alter('SET_OUTPUT', '%s=\"%s\"' % (DeviceType, Set))
+            raise TypeError('DeviceType must be specified if Set is used')
 
-    def CaptureMicDevice(self, DeviceType, Set=None):
-        if Set == None:
+    def OutputDevice(self, DeviceType=None, Set=None):
+        '''Queries or sets the sound output device.
+
+        @param DeviceType: Sound output device type.
+        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>}
+        @param Set: Value the device should be set to or None if the value should be queried.
+        @type Set: unicode or None
+        @return: Device value if Set=None, None otherwise.
+        @rtype: unicode or None
+        '''
+        if Set == None: # get
+            args = args2dict(self._Property('OUTPUT', Cache=False))
             try:
-                value = dict([x.split('='), esplit(self._Property('CAPTURE_MIC'), ', ')])[DeviceType]
+                if DeviceType == None: # get device type
+                    return tuple(map(str, args.keys()))
+                elif DeviceType == callIoDeviceTypePort:
+                    return int(args[DeviceType])
+                elif DeviceType == callIoDeviceTypeFile:
+                    return args[DeviceType].encode(sys.getfilesystemencoding())
+                else:
+                    return args[DeviceType]
             except KeyError:
-                return u''
-            return value[1:-1]
+                return None
+        elif DeviceType != None:
+            self._Alter('SET_OUTPUT', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
         else:
-            self._Alter('SET_CAPTURE_MIC', '%s=\"%s\"' % (DeviceType, Set))
+            raise TypeError('DeviceType must be specified if Set is used')
+
+    def CaptureMicDevice(self, DeviceType=None, Set=None):
+        '''Queries or sets the mic capture device.
+
+        @param DeviceType: Mic capture device type.
+        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>}
+        @param Set: Value the device should be set to or None if the value should be queried.
+        @type Set: unicode or None
+        @return: Device value if Set=None, None otherwise.
+        @rtype: unicode or None
+        '''
+        if Set == None: # get
+            args = args2dict(self._Property('CAPTURE_MIC', Cache=False))
+            try:
+                if DeviceType == None: # get device type
+                    return tuple(map(str, args.keys()))
+                elif DeviceType == callIoDeviceTypePort:
+                    return int(args[DeviceType])
+                elif DeviceType == callIoDeviceTypeFile:
+                    return args[DeviceType].encode(sys.getfilesystemencoding())
+                else:
+                    return args[DeviceType]
+            except KeyError:
+                return None
+        elif DeviceType != None:
+            self._Alter('SET_CAPTURE_MIC', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
+        else:
+            raise TypeError('DeviceType must be specified if Set is used')
 
     def _GetId(self):
         return self._Id
