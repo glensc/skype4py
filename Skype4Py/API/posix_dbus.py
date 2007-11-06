@@ -8,8 +8,14 @@ when the transport is set to DBus.
 @newfield option: Option, Options
 
 @option: C{Bus} DBus bus object as returned by python-dbus package.
-If not specified, private session bus is used.
-@option: C{MainLoop} DBus mainloop object. If not specified, default DBus mainloop is used.
+If not specified, private session bus is created and used. See also C{MainLoop}.
+@option: C{MainLoop} DBus mainloop object. Use only without specifying the C{Bus}
+(if you use C{Bus}, pass the mainloop to the bus constructor). If neither C{Bus} or
+C{MainLoop} is specified, glib mainloop is used. In such case, the mainloop is
+also run on a separate thread upon attaching to Skype. If you want to use glib
+mainloop but you want to run the loop yourself (for example because your GUI toolkit
+does it for you), pass C{dbus.mainloop.glib.DBusGMainLoop()} object as C{MainLoop}
+parameter.
 '''
 
 import threading
@@ -59,12 +65,13 @@ class _ISkypeAPI(_ISkypeAPIBase):
             if self.bus != None:
                 raise TypeError('Bus and MainLoop cannot be used at the same time!')
         except KeyError:
-            import dbus.mainloop.glib
-            import gobject
-            gobject.threads_init()
-            dbus.mainloop.glib.threads_init()
-            mainloop = dbus.mainloop.glib.DBusGMainLoop()
-            self.mainloop = gobject.MainLoop()
+            if self.bus == None:
+                import dbus.mainloop.glib
+                import gobject
+                gobject.threads_init()
+                dbus.mainloop.glib.threads_init()
+                mainloop = dbus.mainloop.glib.DBusGMainLoop()
+                self.mainloop = gobject.MainLoop()
         if self.bus == None:
             self.bus = dbus.SessionBus(private=True, mainloop=mainloop)
         if opts:

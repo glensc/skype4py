@@ -6,11 +6,18 @@ The options include:
 
 @newfield option: Option, Options
 
-@option: C{Transport} (str) - Transport to use, either 'dbus' or 'x11'. If not specified, 'x11' is used.
-Based on this option, the control is passed to either L{Skype4Py.API.posix_dbus} or L{Skype4Py.API.posix_x11}
-submodules which may specify further options.
+@option: C{Transport} (str) - A transport is a channel used to communicate with Skype client. Currently supported values are:
+  - C{'x11'}
 
-Please look in the appropriate modules for additional options and important notes.
+  Uses X11 (libX) messaging. This is the default if no transport is specified.
+
+  Look into L{Skype4Py.API.posix_x11} for additional options.
+
+  - C{'dbus'}
+
+  Uses DBus (python-dbus).
+
+  Look into L{Skype4Py.API.posix_dbus} for additional options.
 '''
 
 from Skype4Py.errors import ISkypeAPIError
