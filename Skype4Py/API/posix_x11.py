@@ -352,7 +352,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
             skype_inst = self.x11.XInternAtom(self.disp, '_SKYPE_INSTANCE', True)
             self.x11.XDeleteProperty(self.disp, self.win_root, skype_inst)
             self.win_skype = None
-            self.SetAttachmentStatus(apiAttachUnknown)
+            self.SetAttachmentStatus(apiAttachNotAvailable)
 
     def SendCommand(self, Command, Force=False):
         if self.AttachmentStatus != apiAttachSuccess and not Force:

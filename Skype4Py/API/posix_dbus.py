@@ -10,7 +10,6 @@ when the transport is set to DBus.
 @option: C{Bus} DBus bus object as returned by python-dbus package.
 If not specified, private session bus is used.
 @option: C{MainLoop} DBus mainloop object. If not specified, default DBus mainloop is used.
-@option: C{BusName} Skype DBus bus name. Defaults to 'com.Skype.API'.
 '''
 
 import threading
@@ -68,7 +67,6 @@ class _ISkypeAPI(_ISkypeAPIBase):
             self.mainloop = gobject.MainLoop()
         if self.bus == None:
             self.bus = dbus.SessionBus(private=True, mainloop=mainloop)
-        self.bus_name = opts.pop('BusName', 'com.Skype.API')
         if opts:
             raise TypeError('Unexpected parameters: %s' % ', '.join(opts.keys()))
 
@@ -105,7 +103,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 t.start()
             while self.wait:
                 try:
-                    self.skype_out = self.bus.get_object(self.bus_name, '/com/Skype')
+                    self.skype_out = self.bus.get_object('com.Skype.API', '/com/Skype')
                     self.skype_in = _SkypeNotifyCallback(self.bus, self.notify)
                 except dbus.DBusException:
                     time.sleep(1.0)
@@ -132,7 +130,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
 
     def IsRunning(self):
         try:
-            self.bus.get_object(self.bus_name, '/com/Skype')
+            self.bus.get_object('com.Skype.API', '/com/Skype')
             return True
         except dbus.DBusException:
             return False
