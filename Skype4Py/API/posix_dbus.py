@@ -74,7 +74,6 @@ class _ISkypeAPI(_ISkypeAPIBase):
 
     def run(self):
         if hasattr(self, 'mainloop'):
-            print 'running loop'
             self.mainloop.run()
 
     def Close(self):

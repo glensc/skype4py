@@ -172,7 +172,6 @@ class _ISkypeAPI(_ISkypeAPIBase):
             self.x11.XNextEvent(self.disp, byref(event))
             if event.type == _ClientMessage:
                 if event.xclient.format == 8:
-                    print repr(event.xclient.data)
                     if event.xclient.message_type == self.atom_msg_begin:
                         data = str(event.xclient.data)
                     elif event.xclient.message_type == self.atom_msg:
@@ -343,7 +342,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 raise ISkypeAPIError('Skype command timeout')
         else:
             timer.start()
-	
+
     def notify(self, com):
         # Called by main loop for all received Skype commands.
         if com.startswith(u'#'):

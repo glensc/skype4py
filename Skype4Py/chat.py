@@ -297,7 +297,8 @@ class IChatMessage(Cached):
     Users = property(_GetUsers)
 
     def _SetSeen(self, value):
-        deprecated('IChat', 'Seen', 'SetAsSeen()')
+        from warnings import warn
+        warn('IChat.Seen = x: Use IChat.SetAsSeen instead.', DeprecationWarning, stacklevel=2)
         if value:
             self.SetAsSeen()
         else:

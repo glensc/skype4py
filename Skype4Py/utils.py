@@ -125,20 +125,6 @@ def cndexp(condition, truevalue, falsevalue):
     return falsevalue
 
 
-def deprecated(klass, attrold, attrnew):
-    '''Prints a deprecation note to sys.stderr.
-
-    @param klass: Name of the class with a deprecated attribute.
-    @type klass: str
-    @param attrold: Name of the deprecated attribute.
-    @type attrold: str
-    @param attrnew: Name of an attribute that should be used instead.
-    @type attrnew: str
-    '''
-
-    print >>sys.stderr, 'Skype4Py warning!', klass + '.' + attrold, 'is deprecated, use', klass + '.' + attrnew, 'instead!'
-
-
 class _WeakMethod(object):
     '''Helper class for WeakCallableRef function (see below).
     Don't use directly.

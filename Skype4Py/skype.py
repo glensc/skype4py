@@ -644,8 +644,9 @@ class ISkype(EventHandlingBase):
 
     def CreateChatMultiple(self, Members):
         '''@deprecated: Use L{CreateChatWith} instead.'''
-        deprecated('ISkype', 'CreateChatMultiple()', 'CreateChatWith()')
-        return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join([x.Handle for x in Members])), 2)[1], self)
+        from warnings import warn
+        warn('ISkype.CreateChatMultiple: Use ISkype.CreateChatWith instead.', DeprecationWarning, stacklevel=2)
+        return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join(x.Handle for x in Members)), 2)[1], self)
 
     def SendVoicemail(self, Username):
         '''Sends a voicemail to a specified user.
