@@ -18,6 +18,10 @@ from Skype4Py.enums import *
 from Skype4Py.errors import ISkypeAPIError
 
 
+# 64bit systems support
+c_int = c_long
+
+
 # some Xlib constants
 _PropertyChangeMask = 0x400000
 _PropertyNotify = 28
@@ -74,7 +78,7 @@ class _XEvent(Union):
                 ('xclient', _XClientMessageEvent),
                 ('xproperty', _XPropertyEvent),
                 ('xerror', _XErrorEvent),
-                ('padding', c_char * 96)]
+                ('pad', c_long * 24)]
 
 XEventP = POINTER(_XEvent)
 
@@ -130,7 +134,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.x11.XSelectInput.argtypes = (DisplayP, Window, c_long)
         self.x11.XSelectInput.restype = None
         self.x11.XSendEvent.argtypes = (DisplayP, Window, Bool, c_long, XEventP)
-        self.x11.XSendEvent.restype = None
+        self.x11.XSendEvent.restype = Status
         self.x11.XSetErrorHandler.argtypes = (XErrorHandlerP,)
         self.x11.XSetErrorHandler.restype = None
 
@@ -149,9 +153,9 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.x11.XSelectInput(self.disp, self.win_root, _PropertyChangeMask)
         self.win_skype = self.get_skype()
         ctrl = 'SKYPECONTROLAPI_MESSAGE'
-        self.atom_msg = self.x11.XInternAtom(self.disp, ctrl, True)
-        self.atom_msg_begin = self.x11.XInternAtom(self.disp, ctrl + '_BEGIN', True)
-        self.atom_stop_loop = self.x11.XInternAtom(self.disp, 'STOP_LOOP', True)
+        self.atom_msg = self.x11.XInternAtom(self.disp, ctrl, False)
+        self.atom_msg_begin = self.x11.XInternAtom(self.disp, ctrl + '_BEGIN', False)
+        self.atom_stop_loop = self.x11.XInternAtom(self.disp, 'STOP_LOOP', False)
 
     def __del__(self):
         if hasattr(self, 'x11'):
@@ -167,15 +171,20 @@ class _ISkypeAPI(_ISkypeAPIBase):
         while True:
             self.x11.XNextEvent(self.disp, byref(event))
             if event.type == _ClientMessage:
-                if event.xclient.message_type == self.atom_msg_begin:
-                    data = event.xclient.data
-                elif event.xclient.message_type == self.atom_msg:
-                    data += event.xclient.data
-                elif event.xclient.message_type == self.atom_stop_loop:
-                    break
-                if len(event.xclient.data) != 20:
-                    if data:
+                if event.xclient.format == 8:
+                    print repr(event.xclient.data)
+                    if event.xclient.message_type == self.atom_msg_begin:
+                        data = str(event.xclient.data)
+                    elif event.xclient.message_type == self.atom_msg:
+                        if data != '':
+                            data += str(event.xclient.data)
+                        else:
+                            print 'Warning! Middle of message received with no beginning!'
+                    elif event.xclient.message_type == self.atom_stop_loop:
+                        break
+                    if len(event.xclient.data) != 20 and data:
                         self.notify(data.decode('utf-8'))
+                        data = ''
             elif event.type == _PropertyNotify:
                 if self.x11.XGetAtomName(self.disp, event.xproperty.atom) == '_SKYPE_INSTANCE':
                     if event.xproperty.state == _PropertyNewValue:
@@ -213,7 +222,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
 
     def get_skype(self):
         '''Returns Skype window ID or None if Skype not running.'''
-        skype_inst = self.x11.XInternAtom(self.disp, '_SKYPE_INSTANCE', False)
+        skype_inst = self.x11.XInternAtom(self.disp, '_SKYPE_INSTANCE', True)
         type_ret = Atom()
         format_ret = c_int()
         nitems_ret = c_ulong()
@@ -298,7 +307,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         if pid:
             os.kill(int(pid), SIGINT)
             # Skype sometimes doesn't delete the '_SKYPE_INSTANCE' property
-            skype_inst = self.x11.XInternAtom(self.disp, '_SKYPE_INSTANCE', False)
+            skype_inst = self.x11.XInternAtom(self.disp, '_SKYPE_INSTANCE', True)
             self.x11.XDeleteProperty(self.disp, self.win_root, skype_inst)
             self.win_skype = None
             self.SetAttachmentStatus(apiAttachUnknown)
@@ -322,7 +331,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
         com = unicode(com).encode('utf-8') + '\x00'
         for i in xrange(0, len(com), 20):
             event.xclient.data = com[i:i+20]
-            self.x11.XSendEvent(self.disp, self.win_skype, True, 0, byref(event))
+            if self.x11.XSendEvent(self.disp, self.win_skype, False, 0, byref(event)) == 0:
+                self.error_check()
             event.xclient.message_type = self.atom_msg
         self.x11.XFlush(self.disp)
         self.error_check()
@@ -333,7 +343,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 raise ISkypeAPIError('Skype command timeout')
         else:
             timer.start()
-
+	
     def notify(self, com):
         # Called by main loop for all received Skype commands.
         if com.startswith(u'#'):

@@ -300,7 +300,8 @@ class ISkype(EventHandlingBase):
     def __del__(self):
         '''Frees all resources.
         '''
-        self._API.Close()
+        if hasattr(self, '_API'):
+            self._API.Close()
 
     def _Handler(self, mode, arg):
         # low-level API callback

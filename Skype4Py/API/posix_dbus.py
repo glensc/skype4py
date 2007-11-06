@@ -7,10 +7,10 @@ when the transport is set to DBus.
 
 @newfield option: Option, Options
 
-@option Bus: DBus bus object as returned by python-dbus package.
+@option: C{Bus} DBus bus object as returned by python-dbus package.
 If not specified, private session bus is used.
-@option MainLoop: DBus mainloop object. If not specified, default DBus mainloop is used.
-@option BusName: Skype DBus bus name. Defaults to 'com.Skype.API'.
+@option: C{MainLoop} DBus mainloop object. If not specified, default DBus mainloop is used.
+@option: C{BusName} Skype DBus bus name. Defaults to 'com.Skype.API'.
 '''
 
 import threading
@@ -30,14 +30,8 @@ except ImportError:
         # we get here if we're building docs on windows, to let the module
         # import without exceptions, we import our faked dbus module
         from _faked_dbus import dbus
-
-
-### TODO:
-### Monitor com.Skype.API bus name owner and set AttachmentStatus accordingly (apiAttachAvailable, apiAttachUnavailable), here's how:
-# bus = dbus.SessionBus()
-# def callback(owned, old_owner, new_owner):
-#     api_available = (new_owner != '')
-# match = bus.add_signal_receiver(callback, 'NameOwnerChanged', 'org.freedesktop.DBus', 'org.freedesktop.DBus', '/org/freedesktop/DBus', arg0='com.Skype.API')
+    else:
+        raise
 
 
 class _SkypeNotifyCallback(dbus.service.Object):
@@ -45,7 +39,7 @@ class _SkypeNotifyCallback(dbus.service.Object):
     notifications with the notification string as a parameter. The Notify method of this
     class calls in turn the callable passed to the constructor.
     '''
-    
+
     def __init__(self, bus, notify):
         dbus.service.Object.__init__(self, bus, '/com/Skype/Client')
         self.notify = notify
@@ -87,9 +81,10 @@ class _ISkypeAPI(_ISkypeAPIBase):
         if hasattr(self, 'mainloop'):
             self.mainloop.quit()
         self.skype_in = self.skype_out = None
-        self.bus.remove_signal_receiver(self.dbus_name_owner_watch)
+        if self.dbus_name_owner_watch != None:
+            self.bus.remove_signal_receiver(self.dbus_name_owner_watch)
         self.dbus_name_owner_watch = None
-       
+
     def SetFriendlyName(self, FriendlyName):
         self.FriendlyName = FriendlyName
         if self.skype_out:
@@ -122,10 +117,10 @@ class _ISkypeAPI(_ISkypeAPIBase):
         finally:
             t.cancel()
         self.dbus_name_owner_watch = self.bus.add_signal_receiver(self.dbus_name_owner_changed,
-            'NameOwnerChanged', 
-            'org.freedesktop.DBus', 
-            'org.freedesktop.DBus', 
-            '/org/freedesktop/DBus', 
+            'NameOwnerChanged',
+            'org.freedesktop.DBus',
+            'org.freedesktop.DBus',
+            '/org/freedesktop/DBus',
             arg0='com.Skype.API')
         c = ICommand(-1, 'NAME %s' % self.FriendlyName, '', True, Timeout)
         self.SendCommand(c)

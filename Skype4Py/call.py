@@ -30,7 +30,7 @@ class ICall(Cached):
         self._Property('STATUS', 'ONHOLD')
 
     def Finish(self):
-        '''Finishes the call.'''
+        '''Ends the call.'''
         self._Property('STATUS', 'FINISHED')
 
     def Answer(self):
@@ -42,12 +42,15 @@ class ICall(Cached):
         self.Answer()
 
     def Join(self, Id):
-        '''Joins a conference.
+        '''Joins with another call to form a conference.
 
-        @param Id: Conference Id. Get it from L{IConference.Id}.
+        @param Id: Call Id of the other call to join to the conference.
         @type Id: int
+        @return: Conference object.
+        @rtype: L{IConference}
         '''
         self._Property('JOIN_CONFERENCE', Id)
+        return IConference(self.ConferenceId, self._Skype)
 
     def StartVideoSend(self):
         '''Starts video send.'''
