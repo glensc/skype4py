@@ -92,6 +92,12 @@ class IChat(Cached):
 
     Timestamp = property(_GetTimestamp)
 
+    def _GetDatetime(self):
+        from datetime import datetime
+        return datetime.fromtimestamp(self.Timestamp)
+
+    Datetime = property(_GetDatetime)
+
     def _GetAdder(self):
         return IUser(self._Property('ADDER'), self._Skype)
 
@@ -153,6 +159,12 @@ class IChat(Cached):
         return float(self._Property('ACTIVITY_TIMESTAMP'))
 
     ActivityTimestamp = property(_GetActivityTimestamp)
+
+    def _GetActivityDatetime(self):
+        from datetime import datetime
+        return datetime.fromtimestamp(self.ActivityTimestamp)
+
+    ActivityDatetime = property(_GetActivityDatetime)
 
     def _GetApplicants(self):
         return tuple(IUser(x, self._Skype) for x in esplit(self._Property('APPLICANTS')))
@@ -252,6 +264,12 @@ class IChatMessage(Cached):
         return float(self._Property('TIMESTAMP'))
 
     Timestamp = property(_GetTimestamp)
+
+    def _GetDatetime(self):
+        from datetime import datetime
+        return datetime.fromtimestamp(self.Timestamp)
+
+    Datetime = property(_GetDatetime)
 
     def _GetFromHandle(self):
         return self._Property('FROM_HANDLE')

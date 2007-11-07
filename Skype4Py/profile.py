@@ -9,7 +9,6 @@ accompanying LICENSE file for more information.
 
 from enums import *
 from utils import *
-import time
 import weakref
 
 
@@ -39,13 +38,13 @@ class IProfile(object):
     def _GetBirthday(self):
         value = self._Property('BIRTHDAY')
         if len(value) == 8:
-            return time.mktime((int(value[:4]), int(value[4:6]), int(value[6:]), 0, 0, 0, -1, -1, -1))
-        else:
-            return None
+            from datetime import date
+            from time import strptime
+            return date(*strptime(value, '%Y%m%d')[:3])
 
     def _SetBirthday(self, value):
         if value:
-            self._Property('BIRTHDAY', time.strftime('%Y%m%d', time.localtime(value)))
+            self._Property('BIRTHDAY', value.strftime('%Y%m%d'))
         else:
             self._Property('BIRTHDAY', 0)
 

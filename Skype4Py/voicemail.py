@@ -173,6 +173,12 @@ class IVoicemail(Cached):
 
     Timestamp = property(_GetTimestamp)
 
+    def _GetDatetime(self):
+        from datetime import datetime
+        return datetime.fromtimestamp(self.Timestamp)
+
+    Datetime = property(_GetDatetime)
+
     def _GetDuration(self):
         return int(self._Property('DURATION'))
 

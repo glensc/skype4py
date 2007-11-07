@@ -59,10 +59,22 @@ class IFileTransfer(Cached):
 
     StartTime = property(_GetStartTime)
 
+    def _GetStartDatetime(self):
+        from datetime import datetime
+        return datetime.fromtimestamp(self.StartTime)
+
+    StartDatetime = property(_GetStartDatetime)
+
     def _GetFinishTime(self):
         return float(self._Property('FINISHTIME'))
 
     FinishTime = property(_GetFinishTime)
+
+    def _GetFinishDatetime(self):
+        from datetime import datetime
+        return datetime.fromtimestamp(self.FinishTime)
+
+    FinishDatetime = property(_GetFinishDatetime)
 
     def _GetFilePath(self):
         return self._Property('FILEPATH').decode(sys.getfilesystemencoding())

@@ -9,7 +9,6 @@ accompanying LICENSE file for more information.
 
 from utils import *
 from enums import *
-import time
 import sys
 
 
@@ -33,7 +32,9 @@ class IUser(Cached):
     def _GetBirthday(self):
         value = self._Property('BIRTHDAY')
         if len(value) == 8:
-            return time.mktime((int(value[:4]), int(value[4:6]), int(value[6:]), 0, 0, 0, -1, -1, -1))
+            from datetime import date
+            from time import strptime
+            return date(*strptime(value, '%Y%m%d')[:3])
 
     Birthday = property(_GetBirthday)
 
@@ -132,6 +133,12 @@ class IUser(Cached):
         return float(self._Property('LASTONLINETIMESTAMP'))
 
     LastOnline = property(_GetLastOnline)
+
+    def _GetLastOnlineDatetime(self):
+        from datetime import datetime
+        return datetime.fromtimestamp(self.LastOnline)
+
+    LastOnlineDatetime = property(_GetLastOnlineDatetime)
 
     def _GetCountryCode(self):
         if self._Skype.Protocol < 4:

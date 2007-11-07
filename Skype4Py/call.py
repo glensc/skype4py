@@ -180,6 +180,12 @@ class ICall(Cached):
 
     Timestamp = property(_GetTimestamp)
 
+    def _GetDatetime(self):
+        from datetime import datetime
+        return datetime.fromtimestamp(self.Timestamp)
+
+    Datetime = property(_GetDatetime)
+
     def _GetPartnerHandle(self):
         return self._Property('PARTNER_HANDLE')
 
