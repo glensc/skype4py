@@ -70,56 +70,56 @@ class IApplication(Cached):
     def _GetName(self):
         return self._Name
 
-    Name = property(_GetName)
-    '''Name of the application.
+    Name = property(_GetName,
+    doc='''Name of the application.
 
     Type: unicode
-    @type: unicode'''
+    @type: unicode''')
 
     def _GetStreams(self):
         return tuple(IApplicationStream(x, self) for x in esplit(self._Property('STREAMS')))
 
-    Streams = property(_GetStreams)
-    '''All currently connected application streams.
+    Streams = property(_GetStreams,
+    doc='''All currently connected application streams.
 
     Type: tuple of L{IApplicationStream}
-    @type: tuple of L{IApplicationStream}'''
+    @type: tuple of L{IApplicationStream}''')
 
     def _GetConnectableUsers(self):
         return tuple(IUser(x, self._Skype) for x in esplit(self._Property('CONNECTABLE')))
 
-    ConnectableUsers = property(_GetConnectableUsers)
-    '''All connectable users.
+    ConnectableUsers = property(_GetConnectableUsers,
+    doc='''All connectable users.
 
     Type: tuple of L{IUser}
-    @type: tuple of L{IUser}'''
+    @type: tuple of L{IUser}''')
 
     def _GetConnectingUsers(self):
         return tuple(IUser(x, self._Skype) for x in esplit(self._Property('CONNECTING')))
 
-    ConnectingUsers = property(_GetConnectingUsers)
-    '''All users connecting at the moment.
+    ConnectingUsers = property(_GetConnectingUsers,
+    doc='''All users connecting at the moment.
 
     Type: tuple of L{IUser}
-    @type: tuple of L{IUser}'''
+    @type: tuple of L{IUser}''')
 
     def _GetSendingStreams(self):
         return tuple(IApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('SENDING')))
 
-    SendingStreams = property(_GetSendingStreams)
-    '''All streams that send data and at the moment.
+    SendingStreams = property(_GetSendingStreams,
+    doc='''All streams that send data and at the moment.
 
     Type: tuple of L{IApplicationStream}
-    @type: tuple of L{IApplicationStream}'''
+    @type: tuple of L{IApplicationStream}''')
 
     def _GetReceivedStreams(self):
         return tuple(IApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('RECEIVED')))
 
-    ReceivedStreams = property(_GetReceivedStreams)
-    '''All streams that received data and can be read.
+    ReceivedStreams = property(_GetReceivedStreams,
+    doc='''All streams that received data and can be read.
 
     Type: tuple of L{IApplicationStream}
-    @type: tuple of L{IApplicationStream}'''
+    @type: tuple of L{IApplicationStream}''')
 
 
 class IApplicationStream(Cached):
@@ -163,29 +163,29 @@ class IApplicationStream(Cached):
     def _GetApplication(self):
         return self._Application
 
-    Application = property(_GetApplication)
-    '''Application this stream belongs to.
+    Application = property(_GetApplication,
+    doc='''Application this stream belongs to.
 
     Type: L{IApplication}
-    @type: L{IApplication}'''
+    @type: L{IApplication}''')
 
     def _GetApplicationName(self):
         return self._Application.Name
 
-    ApplicationName = property(_GetApplicationName)
-    '''Name of the application this stream belongs to.
+    ApplicationName = property(_GetApplicationName,
+    doc='''Name of the application this stream belongs to.
 
     Type: unicode
-    @type: unicode'''
+    @type: unicode''')
 
     def _GetHandle(self):
         return self._Handle
 
-    Handle = property(_GetHandle)
-    '''Stream handle in u'<Skypename>:<n>' format.
+    Handle = property(_GetHandle,
+    doc='''Stream handle in u'<Skypename>:<n>' format.
 
     Type: unicode
-    @type: unicode'''
+    @type: unicode''')
 
     def _GetDataLength(self):
         def GetStreamLength(Type):
@@ -201,21 +201,22 @@ class IApplicationStream(Cached):
             return i
         return 0
 
-    DataLength = property(_GetDataLength)
-    '''Number of bytes awaiting in the read buffer.
+    DataLength = property(_GetDataLength,
+    doc='''Number of bytes awaiting in the read buffer.
 
     Type: int
-    @type: int'''
+    @type: int''')
 
     def _GetPartnerHandle(self):
         return self._Handle.split(':')[0]
 
-    PartnerHandle = property(_GetPartnerHandle)
-    '''Skypename of the user this stream is connected to.
+    PartnerHandle = property(_GetPartnerHandle,
+    doc='''Skypename of the user this stream is connected to.
 
     Type: unicode
-    @type: unicode'''
+    @type: unicode''')
 
     read = Read
     write = Write
     close = Disconnect
+    
