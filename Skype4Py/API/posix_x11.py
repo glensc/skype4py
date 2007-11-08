@@ -39,13 +39,13 @@ Time = c_ulong
 c_int_p = POINTER(c_int)
 
 
-# is this a 64 bit platform?
-m64 = (sizeof(c_long) == 8)
+# should the structures be aligned to 8 bytes?
+align = (sizeof(c_long) == 8 and sizeof(c_int) == 4)
 
 
 # some Xlib structures
 class _XClientMessageEvent(Structure):
-    if m64:
+    if align:
         _fields_ = [('type', c_int),
                     ('pad0', c_int),
                     ('serial', c_ulong),
@@ -68,7 +68,7 @@ class _XClientMessageEvent(Structure):
                     ('data', c_char * 20)]
 
 class _XPropertyEvent(Structure):
-    if m64:
+    if align:
         _fields_ = [('type', c_int),
                     ('pad0', c_int),
                     ('serial', c_ulong),
@@ -91,7 +91,7 @@ class _XPropertyEvent(Structure):
                     ('state', c_int)]
 
 class _XErrorEvent(Structure):
-    if m64:
+    if align:
         _fields_ = [('type', c_int),
                     ('pad0', c_int),
                     ('display', DisplayP),
@@ -110,7 +110,7 @@ class _XErrorEvent(Structure):
                     ('minor_code', c_ubyte)]
 
 class _XEvent(Union):
-    if m64:
+    if align:
         _fields_ = [('type', c_int),
                     ('xclient', _XClientMessageEvent),
                     ('xproperty', _XPropertyEvent),

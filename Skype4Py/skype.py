@@ -730,23 +730,22 @@ class ISkype(EventHandlingBase):
         '''
         return ISmsMessage(chop(self._DoCommand('CREATE SMS %s %s' % (MessageType, ', '.join(TargetNumbers))), 2)[1], self)
 
-    def SendSms(self, MessageText, *TargetNumbers, **Options):
+    def SendSms(self, *TargetNumbers, **Properties):
         '''Creates and sends an SMS message.
 
-        @param MessageText: Text of the message to send.
-        @type MessageText: unicode
         @param TargetNumbers: One or more target SMS numbers.
         @type TargetNumbers: unicode
-        @param Options: Additional options.
-        @type Options: kwargs
-        @return: An sms message object.
+        @param Properties: Message properties. Properties available are same as L{ISmsMessage} object properties.
+        @type Properties: kwargs
+        @return: An sms message object. The message is already sent at this point.
         @rtype: L{ISmsMessage}
-
-        @option: C{ReplyToNumber} (unicode) - Reply-To number.
         '''
-        sms = ISmsMessage(chop(self._DoCommand('CREATE SMS OUTGOING %s' % ', '.join(TargetNumbers)), 2)[1], self)
-        sms.Body = MessageText
-        sms.__dict__.update(Options)
+        sms = self.CreateSms(smsMessageTypeOutgoing, *TargetNumbers)
+        for prop, value in Properties.items():
+            if hasattr(sms, prop):
+                setattr(sms, prop, value)
+            else:
+                raise TypeError('Unknown property: %s' % prop)
         sms.Send()
         return sms
 

@@ -299,7 +299,9 @@ class ICall(Cached):
     RateCurrency = property(_GetRateCurrency)
 
     def _GetRateValue(self):
-        return float(self._Property('RATE')) / (10 ** float(self._Property('RATE_PRECISION')))
+        if self.Rate < 0:
+            return 0.0
+        return float(self.Rate) / (10 ** self.RatePrecision)
 
     RateValue = property(_GetRateValue)
 
