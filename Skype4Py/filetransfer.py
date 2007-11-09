@@ -1,19 +1,18 @@
-'''
-Copyright (c) 2007, Arkadiusz Wahlig
-
-All rights reserved.
-
-Distributed under the BSD License, see the
-accompanying LICENSE file for more information.
+'''File transfers.
 '''
 
 from utils import *
 from enums import *
 import os
-import sys
 
 
 class IFileTransfer(Cached):
+    '''Represents a file transfer.
+    '''
+
+    def _Alter(self, AlterName, Args=None):
+        return self._Skype._Alter('FILETRANSFER', self._Id, AlterName, Args)
+
     def _Init(self, Id, Skype):
         self._Id = int(Id)
         self._Skype = Skype
@@ -21,83 +20,139 @@ class IFileTransfer(Cached):
     def _Property(self, PropName, Set=None):
         return self._Skype._Property('FILETRANSFER', self._Id, PropName, Set)
 
-    def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('FILETRANSFER', self._Id, AlterName, Args)
+    def _GetBytesPerSecond(self):
+        return int(self._Property('BYTESPERSECOND'))
 
-    def _GetId(self):
-        return self._Id
+    BytesPerSecond = property(_GetBytesPerSecond,
+    doc='''BytesPerSecond.
 
-    Id = property(_GetId)
+    @type: int
+    ''')
 
-    def _GetType(self):
-        return self._Property('TYPE')
+    def _GetBytesTransferred(self):
+        return long(self._Property('BYTESTRANSFERRED'))
 
-    Type = property(_GetType)
+    BytesTransferred = property(_GetBytesTransferred,
+    doc='''BytesTransferred.
 
-    def _GetStatus(self):
-        return self._Property('STATUS')
-
-    Status = property(_GetStatus)
+    @type: long
+    ''')
 
     def _GetFailureReason(self):
         return self._Property('FAILUREREASON')
 
-    FailureReason = property(_GetFailureReason)
+    FailureReason = property(_GetFailureReason,
+    doc='''FailureReason.
 
-    def _GetPartnerHandle(self):
-        return self._Property('PARTNER_HANDLE')
+    @type: ?
+    ''')
 
-    PartnerHandle = property(_GetPartnerHandle)
+    def _GetFileName(self):
+        return os.path.split(self.FilePath)[1]
 
-    def _GetPartnerDisplayName(self):
-        return self._Property('PARTNER_DISPNAME')
+    FileName = property(_GetFileName,
+    doc='''FileName.
 
-    PartnerDisplayName = property(_GetPartnerDisplayName)
+    @type: unicode
+    ''')
 
-    def _GetStartTime(self):
-        return float(self._Property('STARTTIME'))
+    def _GetFilePath(self):
+        return self._Property('FILEPATH')
 
-    StartTime = property(_GetStartTime)
+    FilePath = property(_GetFilePath,
+    doc='''FilePath.
 
-    def _GetStartDatetime(self):
-        from datetime import datetime
-        return datetime.fromtimestamp(self.StartTime)
+    @type: unicode
+    ''')
 
-    StartDatetime = property(_GetStartDatetime)
+    def _GetFileSize(self):
+        return long(self._Property('FILESIZE'))
 
-    def _GetFinishTime(self):
-        return float(self._Property('FINISHTIME'))
+    FileSize = property(_GetFileSize,
+    doc='''FileSize.
 
-    FinishTime = property(_GetFinishTime)
+    @type: long
+    ''')
 
     def _GetFinishDatetime(self):
         from datetime import datetime
         return datetime.fromtimestamp(self.FinishTime)
 
-    FinishDatetime = property(_GetFinishDatetime)
+    FinishDatetime = property(_GetFinishDatetime,
+    doc='''FinishDatetime.
 
-    def _GetFilePath(self):
-        return self._Property('FILEPATH').decode(sys.getfilesystemencoding())
+    @type: datetime.datetime
+    ''')
 
-    FilePath = property(_GetFilePath)
+    def _GetFinishTime(self):
+        return float(self._Property('FINISHTIME'))
 
-    def _GetFileName(self):
-        return os.path.split(self._Property('FILEPATH'))[1]
+    FinishTime = property(_GetFinishTime,
+    doc='''FinishTime.
 
-    FileName = property(_GetFileName)
+    @type: float
+    ''')
 
-    def _GetBytesPerSecond(self):
-        return int(self._Property('BYTESPERSECOND'))
+    def _GetId(self):
+        return self._Id
 
-    BytesPerSecond = property(_GetBytesPerSecond)
+    Id = property(_GetId,
+    doc='''Id.
 
-    def _GetBytesTransferred(self):
-        return long(self._Property('BYTESTRANSFERRED'))
+    @type: int
+    ''')
 
-    BytesTransferred = property(_GetBytesTransferred)
+    def _GetPartnerDisplayName(self):
+        return self._Property('PARTNER_DISPNAME')
 
-    # Custom
-    def _GetFileSize(self):
-        return long(self._Property('FILESIZE'))
+    PartnerDisplayName = property(_GetPartnerDisplayName,
+    doc='''PartnerDisplayName.
 
-    FileSize = property(_GetFileSize)
+    @type: unicode
+    ''')
+
+    def _GetPartnerHandle(self):
+        return self._Property('PARTNER_HANDLE')
+
+    PartnerHandle = property(_GetPartnerHandle,
+    doc='''PartnerHandle.
+
+    @type: unicode
+    ''')
+
+    def _GetStartDatetime(self):
+        from datetime import datetime
+        return datetime.fromtimestamp(self.StartTime)
+
+    StartDatetime = property(_GetStartDatetime,
+    doc='''StartDatetime.
+
+    @type: datetime.datetime
+    ''')
+
+    def _GetStartTime(self):
+        return float(self._Property('STARTTIME'))
+
+    StartTime = property(_GetStartTime,
+    doc='''StartTime.
+
+    @type: float
+    ''')
+
+    def _GetStatus(self):
+        return self._Property('STATUS')
+
+    Status = property(_GetStatus,
+    doc='''Status.
+
+    @type: ?
+    ''')
+
+    def _GetType(self):
+        return self._Property('TYPE')
+
+    Type = property(_GetType,
+    doc='''Type.
+
+    @type: ?
+    ''')

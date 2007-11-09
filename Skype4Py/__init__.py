@@ -1,3 +1,9 @@
+#
+# Skype4Py
+#
+# Multiplatform python wrapper for Skype.
+#
+
 '''
 Reference Guide
 ===============

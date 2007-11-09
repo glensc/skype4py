@@ -1,5 +1,4 @@
-'''
-Classes handling the APP2APP protocol.
+'''APP2APP protocol.
 '''
 
 from utils import *
@@ -8,7 +7,11 @@ import threading
 
 
 class IApplication(Cached):
-    '''Represents an application in APP2APP protocol. Use L{ISkype.Application} to instatinate.'''
+    '''Represents an application in APP2APP protocol. Use L{ISkype.Application} to instatinate.
+    '''
+
+    def _Alter(self, AlterName, Args=None):
+        return self._Skype._Alter('APPLICATION', self._Name, AlterName, Args)
 
     def _Init(self, Name, Skype):
         self._Name = unicode(Name)
@@ -17,17 +20,6 @@ class IApplication(Cached):
     def _Property(self, PropName, Set=None):
         return self._Skype._Property('APPLICATION', self._Name, PropName, Set)
 
-    def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('APPLICATION', self._Name, AlterName, Args)
-
-    def Create(self):
-        '''Creates application.'''
-        self._Skype._DoCommand('CREATE APPLICATION %s' % self._Name)
-
-    def Delete(self):
-        '''Deletes application.'''
-        self._Skype._DoCommand('DELETE APPLICATION %s' % self._Name)
-
     def Connect(self, Username, WaitConnected=False):
         '''Connects application to user.
 
@@ -35,6 +27,9 @@ class IApplication(Cached):
         @type Username: unicode
         @param WaitConnected: If True, causes the method to wait untill the connection is established.
         @type WaitConnected: bool
+        @return: If C{WaitConnected} is True, returns the stream which can be used to send the data.
+        Otherwise returns None.
+        @rtype: L{IApplicationStream} or None
         '''
         if WaitConnected:
             event = threading.Event()
@@ -54,36 +49,28 @@ class IApplication(Cached):
         else:
             self._Alter('CONNECT', Username)
 
+    def Create(self):
+        '''Creates the APP2APP application in Skype client.
+        '''
+        self._Skype._DoCommand('CREATE APPLICATION %s' % self._Name)
+
+    def Delete(self):
+        '''Deletes the APP2APP application in Skype client.
+        '''
+        self._Skype._DoCommand('DELETE APPLICATION %s' % self._Name)
+
     def SendDatagram(self, Text, Streams=None):
         '''Sends datagram to application streams.
 
         @param Text: Text to send.
         @type Text: unicode
         @param Streams: Streams to send the datagram to or None if all currently connected streams should be used.
-        @type Streams: iterable of L{IApplicationStream}
+        @type Streams: sequence of L{IApplicationStream}
         '''
         if Streams == None:
             Streams = self.Streams
         for s in Streams:
             s.SendDatagram(Text)
-
-    def _GetName(self):
-        return self._Name
-
-    Name = property(_GetName,
-    doc='''Name of the application.
-
-    Type: unicode
-    @type: unicode''')
-
-    def _GetStreams(self):
-        return tuple(IApplicationStream(x, self) for x in esplit(self._Property('STREAMS')))
-
-    Streams = property(_GetStreams,
-    doc='''All currently connected application streams.
-
-    Type: tuple of L{IApplicationStream}
-    @type: tuple of L{IApplicationStream}''')
 
     def _GetConnectableUsers(self):
         return tuple(IUser(x, self._Skype) for x in esplit(self._Property('CONNECTABLE')))
@@ -91,8 +78,8 @@ class IApplication(Cached):
     ConnectableUsers = property(_GetConnectableUsers,
     doc='''All connectable users.
 
-    Type: tuple of L{IUser}
-    @type: tuple of L{IUser}''')
+    @type: tuple of L{IUser}
+    ''')
 
     def _GetConnectingUsers(self):
         return tuple(IUser(x, self._Skype) for x in esplit(self._Property('CONNECTING')))
@@ -100,17 +87,17 @@ class IApplication(Cached):
     ConnectingUsers = property(_GetConnectingUsers,
     doc='''All users connecting at the moment.
 
-    Type: tuple of L{IUser}
-    @type: tuple of L{IUser}''')
+    @type: tuple of L{IUser}
+    ''')
 
-    def _GetSendingStreams(self):
-        return tuple(IApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('SENDING')))
+    def _GetName(self):
+        return self._Name
 
-    SendingStreams = property(_GetSendingStreams,
-    doc='''All streams that send data and at the moment.
+    Name = property(_GetName,
+    doc='''Name of the application.
 
-    Type: tuple of L{IApplicationStream}
-    @type: tuple of L{IApplicationStream}''')
+    @type: unicode
+    ''')
 
     def _GetReceivedStreams(self):
         return tuple(IApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('RECEIVED')))
@@ -118,32 +105,55 @@ class IApplication(Cached):
     ReceivedStreams = property(_GetReceivedStreams,
     doc='''All streams that received data and can be read.
 
-    Type: tuple of L{IApplicationStream}
-    @type: tuple of L{IApplicationStream}''')
+    @type: tuple of L{IApplicationStream}
+    ''')
+
+    def _GetSendingStreams(self):
+        return tuple(IApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('SENDING')))
+
+    SendingStreams = property(_GetSendingStreams,
+    doc='''All streams that send data and at the moment.
+
+    @type: tuple of L{IApplicationStream}
+    ''')
+
+    def _GetStreams(self):
+        return tuple(IApplicationStream(x, self) for x in esplit(self._Property('STREAMS')))
+
+    Streams = property(_GetStreams,
+    doc='''All currently connected application streams.
+
+    @type: tuple of L{IApplicationStream}
+    ''')
 
 
 class IApplicationStream(Cached):
-    '''Represents an application stream in APP2APP protocol.'''
+    '''Represents an application stream in APP2APP protocol.
+    '''
+
+    def __len__(self):
+        return self.DataLength
 
     def _Init(self, Handle, Application):
         self._Handle = Handle
         self._Application = Application
 
+    def Disconnect(self):
+        '''Disconnects the stream.
+        '''
+        self._Application._Alter('DISCONNECT', self._Handle)
+
+    close = Disconnect
+
     def Read(self):
         '''Reads data from stream.
 
-        @returns: Read data or an empty string if none were available.
+        @return: Read data or an empty string if none were available.
         @rtype: unicode
         '''
         return self._Application._Alter('READ', self._Handle)
 
-    def Write(self, Text):
-        '''Writes data to stream.
-
-        @param Text: Data to send.
-        @type Text: unicode
-        '''
-        self._Application._Alter('WRITE', '%s %s' % (self._Handle, Text))
+    read = Read
 
     def SendDatagram(self, Text):
         '''Sends datagram to stream.
@@ -153,12 +163,15 @@ class IApplicationStream(Cached):
         '''
         self._Application._Alter('DATAGRAM', '%s %s' % (self._Handle, Text))
 
-    def Disconnect(self):
-        '''Disconnects from stream.'''
-        self._Application._Alter('DISCONNECT', self._Handle)
+    def Write(self, Text):
+        '''Writes data to stream.
 
-    def __len__(self):
-        return self.DataLength
+        @param Text: Data to send.
+        @type Text: unicode
+        '''
+        self._Application._Alter('WRITE', '%s %s' % (self._Handle, Text))
+
+    write = Write
 
     def _GetApplication(self):
         return self._Application
@@ -166,26 +179,17 @@ class IApplicationStream(Cached):
     Application = property(_GetApplication,
     doc='''Application this stream belongs to.
 
-    Type: L{IApplication}
-    @type: L{IApplication}''')
+    @type: L{IApplication}
+    ''')
 
     def _GetApplicationName(self):
         return self._Application.Name
 
     ApplicationName = property(_GetApplicationName,
-    doc='''Name of the application this stream belongs to.
+    doc='''Name of the application this stream belongs to. Same as C{IApplicationStream.Application.Name}.
 
-    Type: unicode
-    @type: unicode''')
-
-    def _GetHandle(self):
-        return self._Handle
-
-    Handle = property(_GetHandle,
-    doc='''Stream handle in u'<Skypename>:<n>' format.
-
-    Type: unicode
-    @type: unicode''')
+    @type: unicode
+    ''')
 
     def _GetDataLength(self):
         def GetStreamLength(Type):
@@ -204,8 +208,17 @@ class IApplicationStream(Cached):
     DataLength = property(_GetDataLength,
     doc='''Number of bytes awaiting in the read buffer.
 
-    Type: int
-    @type: int''')
+    @type: int
+    ''')
+
+    def _GetHandle(self):
+        return self._Handle
+
+    Handle = property(_GetHandle,
+    doc='''Stream handle in u'<Skypename>:<n>' format.
+
+    @type: unicode
+    ''')
 
     def _GetPartnerHandle(self):
         return self._Handle.split(':')[0]
@@ -213,10 +226,5 @@ class IApplicationStream(Cached):
     PartnerHandle = property(_GetPartnerHandle,
     doc='''Skypename of the user this stream is connected to.
 
-    Type: unicode
-    @type: unicode''')
-
-    read = Read
-    write = Write
-    close = Disconnect
-    
+    @type: unicode
+    ''')

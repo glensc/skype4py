@@ -1,5 +1,4 @@
-'''
-Utility functions and classes used internally by Skype4Py.
+'''Utility functions and classes used internally by Skype4Py.
 '''
 
 import sys
@@ -15,6 +14,8 @@ def chop(s, n=1, d=None):
     @type s: str or unicode
     @param n: Number of words to chop.
     @type n: int
+    @param d: d
+    @type d: ?
     @return: A list of n first words from the string followed by the rest of the string
     (C{[w1, w2, ..., wn, rest_of_string]}).
     @rtype: list of str or unicode
@@ -40,6 +41,11 @@ def chop(s, n=1, d=None):
 
 def args2dict(s):
     '''Converts a string in 'ARG="value", ARG2="value2"' format into a dictionary.
+
+    @param s: s
+    @type s: ?
+    @return: ?
+    @rtype: ?
     '''
 
     d = {}
@@ -79,6 +85,8 @@ def quote(s, always=False):
 
     @param s: String to add double-quotes to.
     @type s: str or unicode
+    @param always: always
+    @type always: ?
     @return: If the given string contains spaces, returns the string enclosed in double-quotes
     (if it contained quotes too, they are preceded with a backslash). If the string doesn't
     contain spaces, returns the string unchanged.
@@ -114,8 +122,11 @@ def cndexp(condition, truevalue, falsevalue):
     @param condition: Boolean value telling what should be returned.
     @type condition: bool, see note
     @param truevalue: Value returned if condition was True.
+    @type truevalue: ?
     @param falsevalue: Value returned if condition was False.
+    @type falsevalue: ?
     @return: Either truevalue or falsevalue depending on condition.
+    @rtype: ?
     @note: The type of condition parameter can be anything as long as
     C{bool(condition)} returns a bool value.
     '''
@@ -131,6 +142,13 @@ class _WeakMethod(object):
     '''
 
     def __init__(self, method, callback=None):
+        '''__init__.
+
+        @param method: method
+        @type method: ?
+        @param callback: callback
+        @type callback: ?
+        '''
         self.im_func = method.im_func
         try:
             self.weak_im_self = weakref.ref(method.im_self, self._dies)
@@ -159,6 +177,13 @@ def WeakCallableRef(c, callback=None):
 
     In contrast to weakref.ref() works on all kinds of callables.
     Usage is same as weakref.ref().
+
+    @param c: c
+    @type c: ?
+    @param callback: callback
+    @type callback: ?
+    @return: ?
+    @rtype: ?
     '''
 
     try:
@@ -169,15 +194,31 @@ def WeakCallableRef(c, callback=None):
 
 class _EventHandlingThread(threading.Thread):
     def __init__(self, name=None):
+        '''__init__.
+
+        @param name: name
+        @type name: unicode
+        '''
         threading.Thread.__init__(self, name='%s event handler' % name)
         self.setDaemon(False)
         self.lock = threading.Lock()
         self.queue = []
 
     def enqueue(self, target, args, kwargs):
+        '''enqueue.
+
+        @param target: target
+        @type target: ?
+        @param args: args
+        @type args: ?
+        @param kwargs: kwargs
+        @type kwargs: ?
+        '''
         self.queue.append((target, args, kwargs))
 
     def run(self):
+        '''run.
+        '''
         while True:
             try:
                 try:
@@ -196,7 +237,8 @@ class EventHandlingBase(object):
     _EventNames = []
 
     def __init__(self):
-        '''Initializes the object.'''
+        '''Initializes the object.
+        '''
         self._EventHandlerObj = None
         self._DefaultEventHandlers = {}
         self._EventHandlers = {}
@@ -348,4 +390,3 @@ class Cached(object):
 
     def __copy__(self):
         return self
-

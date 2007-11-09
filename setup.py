@@ -15,12 +15,12 @@ from distutils.cmd import Command
 from Skype4Py import __version__
 
 
-class DocCommand(Command):
+class build_doc(Command):
     description = 'build the documentation'
-    user_options = []
+    user_options = [('pdf', None, 'Builds a PDF documentation.')]
 
     def initialize_options(self):
-        pass
+        self.pdf = None
 
     def finalize_options(self):
         pass
@@ -30,11 +30,12 @@ class DocCommand(Command):
             from epydoc import cli
             epydoc_config = os.path.join('doc', 'epydoc.conf')
             old_argv = sys.argv[1:]
-            sys.argv[1:] = (
-                '--config=%s' % epydoc_config,
-                '--no-private', # epydoc bug, not read from config
-                '--simple-term',
-                '--verbose')
+            sys.argv[1:] = ['--config=%s' % epydoc_config,
+                            #'--no-private', # epydoc bug, not read from config
+                            '--simple-term',
+                            '--verbose']
+            if self.pdf:
+                sys.argv.append('--pdf')
             cli.cli()
             sys.argv[1:] = old_argv
 
@@ -55,4 +56,4 @@ setup(name='Skype4Py',
       platforms=('Windows 2000/XP', 'Linux'),
       packages=('Skype4Py', 'Skype4Py.API', 'Skype4Py.Languages'),
       provides=('Skype4Py',),
-      cmdclass={'build_doc': DocCommand})
+      cmdclass={'build_doc': build_doc})

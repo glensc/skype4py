@@ -1,10 +1,4 @@
-'''
-Copyright (c) 2007, Arkadiusz Wahlig
-
-All rights reserved.
-
-Distributed under the BSD License, see the
-accompanying LICENSE file for more information.
+'''Skype settings.
 '''
 
 import weakref
@@ -13,93 +7,89 @@ from utils import *
 
 
 class ISettings(object):
+    '''Represents Skype settings. Access using L{ISkype.Settings}.
+    '''
+
     def __init__(self, Skype):
+        '''__init__.
+
+        @param Skype: Skype
+        @type Skype: L{ISkype}
+        '''
         self._SkypeRef = weakref.ref(Skype)
 
-    def _GetSkype(self):
+    def Avatar(self, Id=1, Set=None):
+        '''Sets user avatar picture from file.
+
+        @param Id: Id
+        @type Id: int
+        @param Set: Set
+        @type Set: ?
+        '''
+        if Set == None:
+            raise TypeError('Argument \'Set\' is mandatory!')
+        self.LoadAvatarFromFile(Set, Id)
+
+    def LoadAvatarFromFile(self, Filename, AvatarId=1):
+        '''Loads user avatar picture from file.
+
+        @param Filename: Filename
+        @type Filename: unicode
+        @param AvatarId: AvatarId
+        @type AvatarId: int
+        '''
+        s = 'AVATAR %s %s' % (AvatarId, Filename)
+        self._Skype._DoCommand('SET %s' % s, s)
+
+    def ResetIdleTimer(self):
+        '''ResetIdleTimer.
+        '''
+        self._Skype._DoCommand('RESETIDLETIMER')
+
+    def RingTone(self, Id=1, Set=None):
+        '''Returns/sets ringtone.
+
+        @param Id: Id
+        @type Id: int
+        @param Set: Set
+        @type Set: ?
+        @return: ?
+        @rtype: ?
+        '''
+        return self._Skype._Property('RINGTONE', Id, '', Set)
+
+    def RingToneStatus(self, Id=1, Set=None):
+        '''Returns/sets ringtone status.
+
+        @param Id: Id
+        @type Id: int
+        @param Set: Set
+        @type Set: ?
+        @return: ?
+        @rtype: bool
+        '''
+        if Set == None:
+            return self._Skype._Property('RINGTONE', Id, 'STATUS') == 'ON'
+        return self._Skype._Property('RINGTONE', Id, 'STATUS', cndexp(Set, 'ON', 'OFF'))
+
+    def SaveAvatarToFile(self, Filename, AvatarId=1):
+        '''Saves user avatar picture to file.
+
+        @param Filename: Filename
+        @type Filename: unicode
+        @param AvatarId: AvatarId
+        @type AvatarId: int
+        '''
+        s = 'AVATAR %s %s' % (AvatarId, Filename)
+        self._Skype._DoCommand('GET %s' % s, s)
+
+    def _Get_Skype(self):
         skype = self._SkypeRef()
         if skype:
             return skype
         raise Exception()
 
-    def Avatar(self, Id='1', Set=None):
-        '''Sets user avatar picture from file.'''
-        if Set == None:
-            raise TypeError('Argument \'Set\' is mandatory!')
-        self.LoadAvatarFromFile(Set, Id)
-
-    def RingToneStatus(self, Id='1', Set=None):
-        '''Returns/sets ringtone status.'''
-        if Set == None:
-            return self._Skype._Property('RINGTONE', Id, 'STATUS') == 'ON'
-        return self._Skype._Property('RINGTONE', Id, 'STATUS', cndexp(Set, 'ON', 'OFF'))
-
-    def RingTone(self, Id='1', Set=None):
-        '''Returns/sets ringtone.'''
-        return self._Skype._Property('RINGTONE', Id, '', Set)
-
-    def ResetIdleTimer(self):
-        self._Skype._DoCommand('RESETIDLETIMER')
-
-    def LoadAvatarFromFile(self, Filename, AvatarId='1'):
-        '''Loads user avatar picture from file.'''
-        s = 'AVATAR %s %s' % (AvatarId, Filename.decode(sys.getfilesystemencoding()))
-        self._Skype._DoCommand('SET %s' % s, s)
-
-    def SaveAvatarToFile(self, Filename, AvatarId='1'):
-        '''Saves user avatar picture to file.'''
-        s = 'AVATAR %s %s' % (AvatarId, Filename.decode(sys.getfilesystemencoding()))
-        self._Skype._DoCommand('GET %s' % s, s)
-
-    _Skype = property(_GetSkype)
-
-    def _GetAudioIn(self):
-        return self._Skype.Variable('AUDIO_IN')
-
-    def _SetAudioIn(self, value):
-        self._Skype.Variable('AUDIO_IN', value)
-
-    AudioIn = property(_GetAudioIn, _SetAudioIn)
-
-    def _GetAudioOut(self):
-        return self._Skype.Variable('AUDIO_OUT')
-
-    def _SetAudioOut(self, value):
-        self._Skype.Variable('AUDIO_OUT', value)
-
-    AudioOut = property(_GetAudioOut, _SetAudioOut)
-
-    def _GetRinger(self):
-        return self._Skype.Variable('RINGER')
-
-    def _SetRinger(self, value):
-        self._Skype.Variable('RINGER', value)
-
-    Ringer = property(_GetRinger, _SetRinger)
-
-    def _GetVideoIn(self):
-        return self._Skype.Variable('VIDEO_IN')
-
-    def _SetVideoIn(self, value):
-        self._Skype.Variable('VIDEO_IN', value)
-
-    VideoIn = property(_GetVideoIn, _SetVideoIn)
-
-    def _GetPCSpeaker(self):
-        return self._Skype.Variable('PCSPEAKER') == 'ON'
-
-    def _SetPCSpeaker(self, value):
-        self._Skype.Variable('PCSPEAKER', cndexp(value, 'ON', 'OFF'))
-
-    PCSpeaker = property(_GetPCSpeaker, _SetPCSpeaker)
-
-    def _GetAGC(self):
-        return self._Skype.Variable('AGC') == 'ON'
-
-    def _SetAGC(self, value):
-        self._Skype.Variable('AGC', cndexp(value, 'ON', 'OFF'))
-
-    AGC = property(_GetAGC, _SetAGC)
+    _Skype = property(_Get_Skype)
 
     def _GetAEC(self):
         return self._Skype.Variable('AEC') == 'ON'
@@ -107,15 +97,47 @@ class ISettings(object):
     def _SetAEC(self, value):
         self._Skype.Variable('AEC', cndexp(value, 'ON', 'OFF'))
 
-    AEC = property(_GetAEC, _SetAEC)
+    AEC = property(_GetAEC, _SetAEC,
+    doc='''AEC.
 
-    def _GetLanguage(self):
-        return self._Skype.Variable('UI_LANGUAGE')
+    @type: bool
+    ''')
 
-    def _SetLanguage(self, value):
-        self._Skype.Variable('UI_LANGUAGE', value)
+    def _GetAGC(self):
+        return self._Skype.Variable('AGC') == 'ON'
 
-    Language = property(_GetLanguage, _SetLanguage)
+    def _SetAGC(self, value):
+        self._Skype.Variable('AGC', cndexp(value, 'ON', 'OFF'))
+
+    AGC = property(_GetAGC, _SetAGC,
+    doc='''AGC.
+
+    @type: bool
+    ''')
+
+    def _GetAudioIn(self):
+        return self._Skype.Variable('AUDIO_IN')
+
+    def _SetAudioIn(self, value):
+        self._Skype.Variable('AUDIO_IN', value)
+
+    AudioIn = property(_GetAudioIn, _SetAudioIn,
+    doc='''AudioIn.
+
+    @type: unicode
+    ''')
+
+    def _GetAudioOut(self):
+        return self._Skype.Variable('AUDIO_OUT')
+
+    def _SetAudioOut(self, value):
+        self._Skype.Variable('AUDIO_OUT', value)
+
+    AudioOut = property(_GetAudioOut, _SetAudioOut,
+    doc='''AudioOut.
+
+    @type: unicode
+    ''')
 
     def _GetAutoAway(self):
         return self._Skype.Variable('AUTOAWAY') == 'ON'
@@ -123,4 +145,56 @@ class ISettings(object):
     def _SetAutoAway(self, value):
         self._Skype.Variable('AUTOAWAY', cndexp(value, 'ON', 'OFF'))
 
-    AutoAway = property(_GetAutoAway, _SetAutoAway)
+    AutoAway = property(_GetAutoAway, _SetAutoAway,
+    doc='''AutoAway.
+
+    @type: bool
+    ''')
+
+    def _GetLanguage(self):
+        return self._Skype.Variable('UI_LANGUAGE')
+
+    def _SetLanguage(self, value):
+        self._Skype.Variable('UI_LANGUAGE', value)
+
+    Language = property(_GetLanguage, _SetLanguage,
+    doc='''Language.
+
+    @type: unicode
+    ''')
+
+    def _GetPCSpeaker(self):
+        return self._Skype.Variable('PCSPEAKER') == 'ON'
+
+    def _SetPCSpeaker(self, value):
+        self._Skype.Variable('PCSPEAKER', cndexp(value, 'ON', 'OFF'))
+
+    PCSpeaker = property(_GetPCSpeaker, _SetPCSpeaker,
+    doc='''PCSpeaker.
+
+    @type: bool
+    ''')
+
+    def _GetRinger(self):
+        return self._Skype.Variable('RINGER')
+
+    def _SetRinger(self, value):
+        self._Skype.Variable('RINGER', value)
+
+    Ringer = property(_GetRinger, _SetRinger,
+    doc='''Ringer.
+
+    @type: unicode
+    ''')
+
+    def _GetVideoIn(self):
+        return self._Skype.Variable('VIDEO_IN')
+
+    def _SetVideoIn(self, value):
+        self._Skype.Variable('VIDEO_IN', value)
+
+    VideoIn = property(_GetVideoIn, _SetVideoIn,
+    doc='''VideoIn.
+
+    @type: unicode
+    ''')

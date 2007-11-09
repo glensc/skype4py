@@ -1,10 +1,4 @@
-'''
-Copyright (c) 2007, Arkadiusz Wahlig
-
-All rights reserved.
-
-Distributed under the BSD License, see the
-accompanying LICENSE file for more information.
+'''Calls, conferences.
 '''
 
 from utils import *
@@ -13,7 +7,11 @@ from errors import *
 
 
 class ICall(Cached):
-    '''Represents a call.'''
+    '''Represents a voice/video call.
+    '''
+
+    def _Alter(self, AlterName, Args=None):
+        return self._Skype._Alter('CALL', self._Id, AlterName, Args)
 
     def _Init(self, Id, Skype):
         self._Skype = Skype
@@ -22,24 +20,87 @@ class ICall(Cached):
     def _Property(self, PropName, Set=None, Cache=True):
         return self._Skype._Property('CALL', self._Id, PropName, Set, Cache)
 
-    def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('CALL', self._Id, AlterName, Args)
-
-    def Hold(self):
-        '''Puts the call on hold.'''
-        self._Property('STATUS', 'ONHOLD')
-
-    def Finish(self):
-        '''Ends the call.'''
-        self._Property('STATUS', 'FINISHED')
-
     def Answer(self):
-        '''Answers the call.'''
+        '''Answers the call.
+        '''
         self._Property('STATUS', 'INPROGRESS')
 
-    def Resume(self):
-        '''Resumes the held call.'''
-        self.Answer()
+    def CanTransfer(self, Target):
+        '''Queries if a call can be transferred to a contact or phone number.
+
+        @param Target: Skypename or phone number the call is to be transfered to.
+        @type Target: unicode
+        @return: True if call can be transfered, False otherwise.
+        @rtype: bool
+        '''
+        return self._Property('CAN_TRANSFER %s' % Target) == 'TRUE'
+
+    def CaptureMicDevice(self, DeviceType=None, Set=None):
+        '''Queries or sets the mic capture device.
+
+        @param DeviceType: Mic capture device type or None.
+        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>} or None
+        @param Set: Value the device should be set to or None.
+        @type Set: unicode, int or None
+        @return: If DeviceType and Set are None, returns a dictionary of device types and their
+        values. Dictionary contains only those device types, whose values were set. If the
+        DeviceType is not None but Set is None, returns the current value of the device or
+        None if the device wasn't set. If Set is not None, sets a new value for the device.
+        @rtype: unicode, dict or None
+        '''
+        if Set == None: # get
+            args = args2dict(self._Property('CAPTURE_MIC', Cache=False))
+            for t in args:
+                if t == callIoDeviceTypePort:
+                    args[t] = int(args[t])
+            if DeviceType == None: # get active devices
+                return args
+            return args.get(DeviceType, None)
+        elif DeviceType != None: # set
+            self._Alter('SET_CAPTURE_MIC', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
+        else:
+            raise TypeError('DeviceType must be specified if Set is used')
+
+    def Finish(self):
+        '''Ends the call.
+        '''
+        self._Property('STATUS', 'FINISHED')
+
+    def Forward(self):
+        '''Forwards a call.
+        '''
+        self._Alter('END', 'FORWARD_CALL')
+
+    def Hold(self):
+        '''Puts the call on hold.
+        '''
+        self._Property('STATUS', 'ONHOLD')
+
+    def InputDevice(self, DeviceType=None, Set=None):
+        '''Queries or sets the sound input device.
+
+        @param DeviceType: Sound input device type or None.
+        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>} or None
+        @param Set: Value the device should be set to or None.
+        @type Set: unicode, int or None
+        @return: If DeviceType and Set are None, returns a dictionary of device types and their
+        values. Dictionary contains only those device types, whose values were set. If the
+        DeviceType is not None but Set is None, returns the current value of the device or
+        None if the device wasn't set. If Set is not None, sets a new value for the device.
+        @rtype: unicode, dict or None
+        '''
+        if Set == None: # get
+            args = args2dict(self._Property('INPUT', Cache=False))
+            for t in args:
+                if t == callIoDeviceTypePort:
+                    args[t] = int(args[t])
+            if DeviceType == None: # get active devices
+                return args
+            return args.get(DeviceType, None)
+        elif DeviceType != None: # set
+            self._Alter('SET_INPUT', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
+        else:
+            raise TypeError('DeviceType must be specified if Set is used')
 
     def Join(self, Id):
         '''Joins with another call to form a conference.
@@ -52,29 +113,61 @@ class ICall(Cached):
         self._Property('JOIN_CONFERENCE', Id)
         return IConference(self.ConferenceId, self._Skype)
 
-    def StartVideoSend(self):
-        '''Starts video send.'''
-        self._Alter('START_VIDEO_SEND')
+    def OutputDevice(self, DeviceType=None, Set=None):
+        '''Queries or sets the sound output device.
 
-    def StopVideoSend(self):
-        '''Stops video send.'''
-        self._Alter('STOP_VIDEO_SEND')
-
-    def StartVideoReceive(self):
-        '''Starts video receive.'''
-        self._Alter('START_VIDEO_RECEIVE')
-
-    def StopVideoReceive(self):
-        '''Stops video receive.'''
-        self._Alter('STOP_VIDEO_RECEIVE')
+        @param DeviceType: Sound output device type or None.
+        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>} or None
+        @param Set: Value the device should be set to or None.
+        @type Set: unicode, int or None
+        @return: If DeviceType and Set are None, returns a dictionary of device types and their
+        values. Dictionary contains only those device types, whose values were set. If the
+        DeviceType is not None but Set is None, returns the current value of the device or
+        None if the device wasn't set. If Set is not None, sets a new value for the device.
+        @rtype: unicode, dict or None
+        '''
+        if Set == None: # get
+            args = args2dict(self._Property('OUTPUT', Cache=False))
+            for t in args:
+                if t == callIoDeviceTypePort:
+                    args[t] = int(args[t])
+            if DeviceType == None: # get active devices
+                return args
+            return args.get(DeviceType, None)
+        elif DeviceType != None: # set
+            self._Alter('SET_OUTPUT', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
+        else:
+            raise TypeError('DeviceType must be specified if Set is used')
 
     def RedirectToVoicemail(self):
-        '''Redirects a call to voicemail.'''
+        '''Redirects a call to voicemail.
+        '''
         self._Alter('END', 'REDIRECT_TO_VOICEMAIL')
 
-    def Forward(self):
-        '''Forwards a call.'''
-        self._Alter('END', 'FORWARD_CALL')
+    def Resume(self):
+        '''Resumes the held call.
+        '''
+        self.Answer()
+
+    def StartVideoReceive(self):
+        '''Starts video receive.
+        '''
+        self._Alter('START_VIDEO_RECEIVE')
+
+    def StartVideoSend(self):
+        '''Starts video send.
+        '''
+        self._Alter('START_VIDEO_SEND')
+
+    def StopVideoReceive(self):
+        '''Stops video receive.
+        '''
+        self._Alter('STOP_VIDEO_RECEIVE')
+
+    def StopVideoSend(self):
+        '''Stops video send.
+        '''
+        self._Alter('STOP_VIDEO_SEND')
 
     def Transfer(self, *Targets):
         '''Transfers a call to one or more contacts or phone numbers.
@@ -85,159 +178,175 @@ class ICall(Cached):
         '''
         self._Alter('TRANSFER', Target)
 
-    def InputDevice(self, DeviceType=None, Set=None):
-        '''Queries or sets the sound input device.
+    def _GetConferenceId(self):
+        return int(self._Property('CONF_ID'))
 
-        @param DeviceType: Sound input device type.
-        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>}
-        @param Set: Value the device should be set to or None if the value should be queried.
-        @type Set: unicode or None
-        @return: Device value if Set=None, None otherwise.
-        @rtype: unicode or None
-        '''
-        if Set == None: # get
-            args = args2dict(self._Property('INPUT', Cache=False))
-            for t in args:
-                if t == callIoDeviceTypePort:
-                    args[t] = int(args[t])
-                elif t == callIoDeviceTypeFile:
-                    args[t] = args[t].encode(sys.getfilesystemencoding())
-            if DeviceType == None: # get active devices
-                return args
-            return args.get(DeviceType, None)
-        elif DeviceType != None: # set
-            self._Alter('SET_INPUT', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
-        else:
-            raise TypeError('DeviceType must be specified if Set is used')
+    ConferenceId = property(_GetConferenceId,
+    doc='''ConferenceId.
 
-    def OutputDevice(self, DeviceType=None, Set=None):
-        '''Queries or sets the sound output device.
-
-        @param DeviceType: Sound output device type.
-        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>}
-        @param Set: Value the device should be set to or None if the value should be queried.
-        @type Set: unicode or None
-        @return: Device value if Set=None, None otherwise.
-        @rtype: unicode or None
-        '''
-        if Set == None: # get
-            args = args2dict(self._Property('OUTPUT', Cache=False))
-            for t in args:
-                if t == callIoDeviceTypePort:
-                    args[t] = int(args[t])
-                elif t == callIoDeviceTypeFile:
-                    args[t] = args[t].encode(sys.getfilesystemencoding())
-            if DeviceType == None: # get active devices
-                return args
-            return args.get(DeviceType, None)
-        elif DeviceType != None: # set
-            self._Alter('SET_OUTPUT', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
-        else:
-            raise TypeError('DeviceType must be specified if Set is used')
-
-    def CaptureMicDevice(self, DeviceType=None, Set=None):
-        '''Queries or sets the mic capture device.
-
-        @param DeviceType: Mic capture device type.
-        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>}
-        @param Set: Value the device should be set to or None if the value should be queried.
-        @type Set: unicode or None
-        @return: Device value if Set=None, None otherwise.
-        @rtype: unicode or None
-        '''
-        if Set == None: # get
-            args = args2dict(self._Property('CAPTURE_MIC', Cache=False))
-            for t in args:
-                if t == callIoDeviceTypePort:
-                    args[t] = int(args[t])
-                elif t == callIoDeviceTypeFile:
-                    args[t] = args[t].encode(sys.getfilesystemencoding())
-            if DeviceType == None: # get active devices
-                return args
-            return args.get(DeviceType, None)
-        elif DeviceType != None: # set
-            self._Alter('SET_CAPTURE_MIC', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
-        else:
-            raise TypeError('DeviceType must be specified if Set is used')
-
-    def CanTransfer(self, Target):
-        '''Queries if a call can be transferred to a contact or phone number.
-
-        @param Target: Skypename or phone number the call is to be transfered to.
-        @type Target: unicode
-        @return: True if call can be transfered, False otherwise.
-        @rtype: bool
-        '''
-        return self._Property('CAN_TRANSFER %s' % Target) == 'TRUE'
-
-    def _GetId(self):
-        return self._Id
-
-    Id = property(_GetId)
-
-    def _GetTimestamp(self):
-        return float(self._Property('TIMESTAMP'))
-
-    Timestamp = property(_GetTimestamp)
+    @type: int
+    ''')
 
     def _GetDatetime(self):
         from datetime import datetime
         return datetime.fromtimestamp(self.Timestamp)
 
-    Datetime = property(_GetDatetime)
+    Datetime = property(_GetDatetime,
+    doc='''Date and time of the call.
 
-    def _GetPartnerHandle(self):
-        return self._Property('PARTNER_HANDLE')
+    @type: datetime.datetime
+    @see: L{Timestamp}
+    ''')
 
-    PartnerHandle = property(_GetPartnerHandle)
+    def _SetDTMF(self, value):
+        self._Property('DTMF', value)
 
-    def _GetPartnerDisplayName(self):
-        return self._Property('PARTNER_DISPNAME')
+    DTMF = property(fset=_SetDTMF,
+    doc='''Set this property to send DTMF codes.
 
-    PartnerDisplayName = property(_GetPartnerDisplayName)
-
-    def _GetConferenceId(self):
-        return int(self._Property('CONF_ID'))
-
-    ConferenceId = property(_GetConferenceId)
-
-    def _GetType(self):
-        return self._Property('TYPE')
-
-    Type = property(_GetType)
-
-    def _GetStatus(self):
-        return self._Property('STATUS')
-
-    def _SetStatus(self, value):
-        self._Property('STATUS', str(value))
-
-    Status = property(_GetStatus, _SetStatus)
-
-    def _GetFailureReason(self):
-        return int(self._Property('FAILUREREASON'))
-
-    FailureReason = property(_GetFailureReason)
-
-    def _GetSubject(self):
-        return self._Property('SUBJECT')
-
-    Subject = property(_GetSubject)
-
-    def _GetPstnNumber(self):
-        return self._Property('PSTN_NUMBER')
-
-    PstnNumber = property(_GetPstnNumber)
+    @type: unicode
+    ''')
 
     def _GetDuration(self):
         return int(self._Property('DURATION', Cache=False))
 
-    Duration = property(_GetDuration)
+    Duration = property(_GetDuration,
+    doc='''Duration of the call in seconds.
+
+    @type: int
+    ''')
+
+    def _GetFailureReason(self):
+        return int(self._Property('FAILUREREASON'))
+
+    FailureReason = property(_GetFailureReason,
+    doc='''Call failure reason. Read if L{Status} == L{clsFailed<enums.clsFailed>}.
+
+    @type: L{Call failure reason<enums.cfrUnknown>}
+    ''')
+
+    def _GetForwardedBy(self):
+        return self._Property('FORWARDED_BY')
+
+    ForwardedBy = property(_GetForwardedBy,
+    doc='''Skypename of the user who forwarded a call.
+
+    @type: unicode
+    ''')
+
+    def _GetId(self):
+        return self._Id
+
+    Id = property(_GetId,
+    doc='''Call Id.
+
+    @type: int
+    ''')
+
+    def _GetInputStatus(self):
+        return self._Property('VAA_INPUT_STATUS') == 'TRUE'
+
+    InputStatus = property(_GetInputStatus,
+    doc='''True if call voice input is enabled.
+
+    @type: bool
+    ''')
+
+    def _GetParticipants(self):
+        count = int(self._Property('CONF_PARTICIPANTS_COUNT'))
+        return tuple(IParticipant((self._Id, x), self._Skype) for x in xrange(1, count + 1))
+
+    Participants = property(_GetParticipants,
+    doc='''Participants of a conference call not hosted by the user.
+
+    @type: tuple of L{IParticipant}
+    ''')
+
+    def _GetPartnerDisplayName(self):
+        return self._Property('PARTNER_DISPNAME')
+
+    PartnerDisplayName = property(_GetPartnerDisplayName,
+    doc='''The DisplayName of the remote caller.
+
+    @type: unicode
+    ''')
+
+    def _GetPartnerHandle(self):
+        return self._Property('PARTNER_HANDLE')
+
+    PartnerHandle = property(_GetPartnerHandle,
+    doc='''The Skypename of the remote caller.
+
+    @type: unicode
+    ''')
+
+    def _GetPstnNumber(self):
+        return self._Property('PSTN_NUMBER')
+
+    PstnNumber = property(_GetPstnNumber,
+    doc='''PSTN number of the call.
+
+    @type: unicode
+    ''')
 
     def _GetPstnStatus(self):
         return self._Property('PSTN_STATUS')
 
-    PstnStatus = property(_GetPstnStatus)
+    PstnStatus = property(_GetPstnStatus,
+    doc='''PSTN number status.
+
+    @type: unicode
+    ''')
+
+    def _GetRate(self):
+        return int(self._Property('RATE'))
+
+    Rate = property(_GetRate,
+    doc='''Call rate. Expressed using L{RatePrecision}. If you're just interested in the call rate
+    expressed in current currency, use L{RateValue} instead.
+
+    @type: int
+    @see: L{RatePrecision}, L{RateValue}
+    ''')
+
+    def _GetRateCurrency(self):
+        return self._Property('RATE_CURRENCY')
+
+    RateCurrency = property(_GetRateCurrency,
+    doc='''Call rate currency.
+
+    @type: unicode
+    ''')
+
+    def _GetRatePrecision(self):
+        return int(self._Property('RATE_PRECISION'))
+
+    RatePrecision = property(_GetRatePrecision,
+    doc='''Call rate precision. Expressed as a number of times the call rate has to be divided by 10.
+
+    @type: int
+    @see: L{Rate}, L{RateValue}
+    ''')
+
+    def _GetRateToText(self):
+        return (u'%s %.2f' % (self.RateCurrency, self.RateValue)).strip()
+
+    RateToText = property(_GetRateToText,
+    doc='''Returns the call rate as a text with currency and properly formatted value.
+
+    @type: unicode
+    ''')
+
+    def _GetRateValue(self):
+        if self.Rate < 0:
+            return 0.0
+        return float(self.Rate) / (10 ** self.RatePrecision)
+
+    RateValue = property(_GetRateValue,
+    doc='''Call rate value. Expressed in current currency.
+
+    @type: float
+    ''')
 
     def _GetSeen(self):
         return self._Property('SEEN') == 'TRUE'
@@ -245,108 +354,147 @@ class ICall(Cached):
     def _SetSeen(self, value):
         self._Property('SEEN', cndexp(value, 'TRUE', 'FALSE'))
 
-    Seen = property(_GetSeen, _SetSeen)
+    Seen = property(_GetSeen, _SetSeen,
+    doc='''Queries/sets the seen status of the call. True if the call was seen, False otherwise.
 
-    def _SetDTMF(self, value):
-        self._Property('DTMF', value)
+    @type: bool
+    ''')
 
-    DTMF = property(fset=_SetDTMF)
+    def _GetStatus(self):
+        return self._Property('STATUS')
 
-    def _GetParticipants(self):
-        count = int(self._Property('CONF_PARTICIPANTS_COUNT'))
-        return tuple(IParticipant((self._Id, x), self._Skype) for x in xrange(1, count + 1))
+    def _SetStatus(self, value):
+        self._Property('STATUS', str(value))
 
-    Participants = property(_GetParticipants)
+    Status = property(_GetStatus, _SetStatus,
+    doc='''The call status.
 
-    def _GetVmDuration(self):
-        return int(self._Property('VM_DURATION'))
+    @type: L{Call status<enums.clsUnknown>}
+    ''')
 
-    VmDuration = property(_GetVmDuration)
+    def _GetSubject(self):
+        return self._Property('SUBJECT')
 
-    def _GetVmAllowedDuration(self):
-        return int(self._Property('VM_ALLOWED_DURATION'))
+    Subject = property(_GetSubject,
+    doc='''Call subject.
 
-    VmAllowedDuration = property(_GetVmAllowedDuration)
-
-    def _GetVideoStatus(self):
-        return self._Property('VIDEO_STATUS')
-
-    VideoStatus = property(_GetVideoStatus)
-
-    def _GetVideoSendStatus(self):
-        return self._Property('VIDEO_SEND_STATUS')
-
-    VideoSendStatus = property(_GetVideoSendStatus)
-
-    def _GetVideoReceiveStatus(self):
-        return self._Property('VIDEO_RECEIVE_STATUS')
-
-    VideoReceiveStatus = property(_GetVideoReceiveStatus)
-
-    def _GetRate(self):
-        return int(self._Property('RATE'))
-
-    Rate = property(_GetRate)
-
-    def _GetRatePrecision(self):
-        return int(self._Property('RATE_PRECISION'))
-
-    RatePrecision = property(_GetRatePrecision)
-
-    def _GetRateCurrency(self):
-        return self._Property('RATE_CURRENCY')
-
-    RateCurrency = property(_GetRateCurrency)
-
-    def _GetRateValue(self):
-        if self.Rate < 0:
-            return 0.0
-        return float(self.Rate) / (10 ** self.RatePrecision)
-
-    RateValue = property(_GetRateValue)
-
-    def _GetRateToText(self):
-        return (u'%s %.2f' % (self.RateCurrency, self.RateValue)).strip()
-
-    RateToText = property(_GetRateToText)
-
-    def _GetInputStatus(self):
-        return self._Property('VAA_INPUT_STATUS') == 'TRUE'
-
-    InputStatus = property(_GetInputStatus)
-
-    def _GetForwardedBy(self):
-        return self._Property('FORWARDED_BY')
-
-    ForwardedBy = property(_GetForwardedBy)
-
-    def _GetTransferStatus(self):
-        return self._Property('TRANSFER_STATUS')
-
-    TransferStatus = property(_GetTransferStatus)
-
-    def _GetTransferActive(self):
-        return self._Property('TRANSFER_ACTIVE') == 'TRUE'
-
-    TransferActive = property(_GetTransferActive)
-
-    def _GetTransferredBy(self):
-        return self._Property('TRANSFERRED_BY')
-
-    TransferredBy = property(_GetTransferredBy)
-
-    def _GetTransferredTo(self):
-        return self._Property('TRANSFERRED_TO')
-
-    TransferredTo = property(_GetTransferredTo)
+    @type: unicode
+    ''')
 
     def _GetTargetIdentify(self):
         return self._Property('TARGET_IDENTIFY')
 
-    TargetIdentify = property(_GetTargetIdentify)
+    TargetIdentify = property(_GetTargetIdentify,
+    doc='''Target number for incoming SkypeIn calls.
+
+    @type: unicode
+    ''')
+
+    def _GetTimestamp(self):
+        return float(self._Property('TIMESTAMP'))
+
+    Timestamp = property(_GetTimestamp,
+    doc='''Call date and time expressed as a timestamp.
+
+    @type: float
+    @see L{Datetime}
+    ''')
+
+    def _GetTransferActive(self):
+        return self._Property('TRANSFER_ACTIVE') == 'TRUE'
+
+    TransferActive = property(_GetTransferActive,
+    doc='''Returns True if the call has been transfered.
+
+    @type: bool
+    ''')
+
+    def _GetTransferredBy(self):
+        return self._Property('TRANSFERRED_BY')
+
+    TransferredBy = property(_GetTransferredBy,
+    doc='''Returns the Skypename of the user who transferred the call.
+
+    @type: unicode
+    ''')
+
+    def _GetTransferredTo(self):
+        return self._Property('TRANSFERRED_TO')
+
+    TransferredTo = property(_GetTransferredTo,
+    doc='''Returns the Skypename of the user or phone number the call has been transferred to.
+
+    @type: unicode
+    ''')
+
+    def _GetTransferStatus(self):
+        return self._Property('TRANSFER_STATUS')
+
+    TransferStatus = property(_GetTransferStatus,
+    doc='''Returns the call transfer status.
+
+    @type: L{Call status<enums.clsUnknown>}
+    ''')
+
+    def _GetType(self):
+        return self._Property('TYPE')
+
+    Type = property(_GetType,
+    doc='''Call type.
+
+    @type: L{Call type<enums.cltUnknown>}
+    ''')
+
+    def _GetVideoReceiveStatus(self):
+        return self._Property('VIDEO_RECEIVE_STATUS')
+
+    VideoReceiveStatus = property(_GetVideoReceiveStatus,
+    doc='''Call video receive status.
+
+    @type: L{Call video send status<enums.vssUnknown>}
+    ''')
+
+    def _GetVideoSendStatus(self):
+        return self._Property('VIDEO_SEND_STATUS')
+
+    VideoSendStatus = property(_GetVideoSendStatus,
+    doc='''Call video send status.
+
+    @type: L{Call video send status<enums.vssUnknown>}
+    ''')
+
+    def _GetVideoStatus(self):
+        return self._Property('VIDEO_STATUS')
+
+    VideoStatus = property(_GetVideoStatus,
+    doc='''Call video status.
+
+    @type: L{Call video status<enums.cvsUnknown>}
+    ''')
+
+    def _GetVmAllowedDuration(self):
+        return int(self._Property('VM_ALLOWED_DURATION'))
+
+    VmAllowedDuration = property(_GetVmAllowedDuration,
+    doc='''Returns the permitted duration of a voicemail in seconds.
+
+    @type: int
+    ''')
+
+    def _GetVmDuration(self):
+        return int(self._Property('VM_DURATION'))
+
+    VmDuration = property(_GetVmDuration,
+    doc='''Returns the duration of a voicemail.
+
+    @type: int
+    ''')
 
 
 class IParticipant(Cached):
+    '''Represents a conference call participant.
+    '''
+
     def _Init(self, (Id, Idx), Skype):
         self._Skype = Skype
         self._Id = Id
@@ -356,58 +504,92 @@ class IParticipant(Cached):
         reply = self._Skype._Property('CALL', self._Id, 'CONF_PARTICIPANT %d' % self._Idx)
         return chop(reply, 7)[Prop]
 
-    def _GetHandle(self):
-        return self._Property(4)
+    def _GetCallStatus(self):
+        return self._Property(6)
 
-    Handle = property(_GetHandle)
+    CallStatus = property(_GetCallStatus,
+    doc='''Call status of a participant in a conference call.
 
-    def _GetDisplayName(self):
-        return self._Property(7)
-
-    DisplayName = property(_GetDisplayName)
+    @type: L{Call status<enums.clsUnknown>}
+    ''')
 
     def _GetCallType(self):
         return self._Property(5)
 
-    CallType = property(_GetCallType)
+    CallType = property(_GetCallType,
+    doc='''Call type in a conference call.
 
-    def _GetCallStatus(self):
-        return self._Property(6)
+    @type: L{Call type<enums.cltUnknown>}
+    ''')
 
-    CallStatus = property(_GetCallStatus)
+    def _GetDisplayName(self):
+        return self._Property(7)
+
+    DisplayName = property(_GetDisplayName,
+    doc='''DisplayName of a participant in a conference call.
+
+    @type: unicode
+    ''')
+
+    def _GetHandle(self):
+        return self._Property(4)
+
+    Handle = property(_GetHandle,
+    doc='''Skypename of a participant in a conference call.
+
+    @type: unicode
+    ''')
 
 
 class IConference(Cached):
+    '''Represents a conference call.
+    '''
+
     def _Init(self, Id, Skype):
         self._Skype = Skype
         self._Id = int(Id)
 
+    def Finish(self):
+        '''Finishes a conference so all active calls have the status L{clsFinished<enums.clsFinished>}.
+        '''
+        for c in self._GetCalls():
+            c.Finish()
+
     def Hold(self):
-        '''Hold conference.'''
+        '''Places all calls in a conference on hold so all active calls have the status L{clsLocalHold<enums.clsLocalHold>}.
+        '''
         for c in self._GetCalls():
             c.Hold()
 
     def Resume(self):
-        '''Resume conference.'''
+        '''Resumes a conference that was placed on hold so all active calls have the status L{clsInProgress<enums.clsInProgress>}.
+        '''
         for c in self._GetCalls():
             c.Resume()
-
-    def Finish(self):
-        '''End conference.'''
-        for c in self._GetCalls():
-            c.Finish()
-
-    def _GetId(self):
-        return self._Id
-
-    Id = property(_GetId)
-
-    def _GetCalls(self):
-        return tuple(x for x in self._Skype.Calls() if c.ConferenceId == self._Id)
-
-    Calls = property(_GetCalls)
 
     def _GetActiveCalls(self):
         return tuple(x for x in self._Skype.ActiveCalls if c.ConferenceId == self._Id)
 
-    ActiveCalls = property(_GetActiveCalls)
+    ActiveCalls = property(_GetActiveCalls,
+    doc='''Active calls with the same conference ID.
+
+    @type: tuple of L{ICall}
+    ''')
+
+    def _GetCalls(self):
+        return tuple(x for x in self._Skype.Calls() if c.ConferenceId == self._Id)
+
+    Calls = property(_GetCalls,
+    doc='''Calls with the same conference ID.
+
+    @type: tuple of L{ICall}
+    ''')
+
+    def _GetId(self):
+        return self._Id
+
+    Id = property(_GetId,
+    doc='''Id of a conference.
+
+    @type: int
+    ''')

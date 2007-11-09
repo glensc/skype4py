@@ -14,7 +14,6 @@ from voicemail import *
 from sms import *
 from filetransfer import *
 import threading
-import sys
 
 
 class ISkype(EventHandlingBase):
@@ -61,221 +60,138 @@ class ISkype(EventHandlingBase):
 
     @newfield option: Option, Options
 
-    @ivar OnNotify: Event handler; prototype same as L{ISkypeEvents.Notify}.
-
-    Type: callable
+    @ivar OnNotify: Event handler; a callable with L{ISkypeEvents.Notify} prototype (no 'self' argument).
     @type OnNotify: callable
 
-    @ivar OnCommand: Event handler; prototype same as L{ISkypeEvents.Command}.
-
-    Type: callable
+    @ivar OnCommand: Event handler; a callable with L{ISkypeEvents.Command} prototype (no 'self' argument).
     @type OnCommand: callable
 
-    @ivar OnReply: Event handler; prototype same as L{ISkypeEvents.Reply}.
-
-    Type: callable
+    @ivar OnReply: Event handler; a callable with L{ISkypeEvents.Reply} prototype (no 'self' argument).
     @type OnReply: callable
 
-    @ivar OnError: Event handler; prototype same as L{ISkypeEvents.Error}.
-
-    Type: callable
+    @ivar OnError: Event handler; a callable with L{ISkypeEvents.Error} prototype (no 'self' argument).
     @type OnError: callable
 
-    @ivar OnAttachmentStatus: Event handler; prototype same as L{ISkypeEvents.AttachmentStatus}.
-
-    Type: callable
+    @ivar OnAttachmentStatus: Event handler; a callable with L{ISkypeEvents.AttachmentStatus} prototype (no 'self' argument).
     @type OnAttachmentStatus: callable
 
-    @ivar OnConnectionStatus: Event handler; prototype same as L{ISkypeEvents.ConnectionStatus}.
-
-    Type: callable
+    @ivar OnConnectionStatus: Event handler; a callable with L{ISkypeEvents.ConnectionStatus} prototype (no 'self' argument).
     @type OnConnectionStatus: callable
 
-    @ivar OnUserStatus: Event handler; prototype same as L{ISkypeEvents.UserStatus}.
-
-    Type: callable
+    @ivar OnUserStatus: Event handler; a callable with L{ISkypeEvents.UserStatus} prototype (no 'self' argument).
     @type OnUserStatus: callable
 
-    @ivar OnOnlineStatus: Event handler; prototype same as L{ISkypeEvents.OnlineStatus}.
-
-    Type: callable
+    @ivar OnOnlineStatus: Event handler; a callable with L{ISkypeEvents.OnlineStatus} prototype (no 'self' argument).
     @type OnOnlineStatus: callable
 
-    @ivar OnCallStatus: Event handler; prototype same as L{ISkypeEvents.CallStatus}.
-
-    Type: callable
+    @ivar OnCallStatus: Event handler; a callable with L{ISkypeEvents.CallStatus} prototype (no 'self' argument).
     @type OnCallStatus: callable
 
-    @ivar OnCallHistory: Event handler; prototype same as L{ISkypeEvents.CallHistory}.
-
-    Type: callable
+    @ivar OnCallHistory: Event handler; a callable with L{ISkypeEvents.CallHistory} prototype (no 'self' argument).
     @type OnCallHistory: callable
 
-    @ivar OnMute: Event handler; prototype same as L{ISkypeEvents.Mute}.
-
-    Type: callable
+    @ivar OnMute: Event handler; a callable with L{ISkypeEvents.Mute} prototype (no 'self' argument).
     @type OnMute: callable
 
-    @ivar OnMessageStatus: Event handler; prototype same as L{ISkypeEvents.MessageStatus}.
-
-    Type: callable
+    @ivar OnMessageStatus: Event handler; a callable with L{ISkypeEvents.MessageStatus} prototype (no 'self' argument).
     @type OnMessageStatus: callable
 
-    @ivar OnMessageHistory: Event handler; prototype same as L{ISkypeEvents.MessageHistory}.
-
-    Type: callable
+    @ivar OnMessageHistory: Event handler; a callable with L{ISkypeEvents.MessageHistory} prototype (no 'self' argument).
     @type OnMessageHistory: callable
 
-    @ivar OnAutoAway: Event handler; prototype same as L{ISkypeEvents.AutoAway}.
-
-    Type: callable
+    @ivar OnAutoAway: Event handler; a callable with L{ISkypeEvents.AutoAway} prototype (no 'self' argument).
     @type OnAutoAway: callable
 
-    @ivar OnCallDtmfReceived: Event handler; prototype same as L{ISkypeEvents.CallDtmfReceived}.
-
-    Type: callable
+    @ivar OnCallDtmfReceived: Event handler; a callable with L{ISkypeEvents.CallDtmfReceived} prototype (no 'self' argument).
     @type OnCallDtmfReceived: callable
 
-    @ivar OnVoicemailStatus: Event handler; prototype same as L{ISkypeEvents.VoicemailStatus}.
-
-    Type: callable
+    @ivar OnVoicemailStatus: Event handler; a callable with L{ISkypeEvents.VoicemailStatus} prototype (no 'self' argument).
     @type OnVoicemailStatus: callable
 
-    @ivar OnApplicationConnecting: Event handler; prototype same as L{ISkypeEvents.ApplicationConnecting}.
-
-    Type: callable
+    @ivar OnApplicationConnecting: Event handler; a callable with L{ISkypeEvents.ApplicationConnecting} prototype (no 'self' argument).
     @type OnApplicationConnecting: callable
 
-    @ivar OnApplicationStreams: Event handler; prototype same as L{ISkypeEvents.ApplicationStreams}.
-
-    Type: callable
+    @ivar OnApplicationStreams: Event handler; a callable with L{ISkypeEvents.ApplicationStreams} prototype (no 'self' argument).
     @type OnApplicationStreams: callable
 
-    @ivar OnApplicationDatagram: Event handler; prototype same as L{ISkypeEvents.ApplicationDatagram}.
-
-    Type: callable
+    @ivar OnApplicationDatagram: Event handler; a callable with L{ISkypeEvents.ApplicationDatagram} prototype (no 'self' argument).
     @type OnApplicationDatagram: callable
 
-    @ivar OnApplicationSending: Event handler; prototype same as L{ISkypeEvents.ApplicationSending}.
-
-    Type: callable
+    @ivar OnApplicationSending: Event handler; a callable with L{ISkypeEvents.ApplicationSending} prototype (no 'self' argument).
     @type OnApplicationSending: callable
 
-    @ivar OnApplicationReceiving: Event handler; prototype same as L{ISkypeEvents.ApplicationReceiving}.
-
-    Type: callable
+    @ivar OnApplicationReceiving: Event handler; a callable with L{ISkypeEvents.ApplicationReceiving} prototype (no 'self' argument).
     @type OnApplicationReceiving: callable
 
-    @ivar OnContactsFocused: Event handler; prototype same as L{ISkypeEvents.ContactsFocused}.
-
-    Type: callable
+    @ivar OnContactsFocused: Event handler; a callable with L{ISkypeEvents.ContactsFocused} prototype (no 'self' argument).
     @type OnContactsFocused: callable
 
-    @ivar OnGroupVisible: Event handler; prototype same as L{ISkypeEvents.GroupVisible}.
-
-    Type: callable
+    @ivar OnGroupVisible: Event handler; a callable with L{ISkypeEvents.GroupVisible} prototype (no 'self' argument).
     @type OnGroupVisible: callable
 
-    @ivar OnGroupExpanded: Event handler; prototype same as L{ISkypeEvents.GroupExpanded}.
-
-    Type: callable
+    @ivar OnGroupExpanded: Event handler; a callable with L{ISkypeEvents.GroupExpanded} prototype (no 'self' argument).
     @type OnGroupExpanded: callable
 
-    @ivar OnGroupUsers: Event handler; prototype same as L{ISkypeEvents.GroupUsers}.
-
-    Type: callable
+    @ivar OnGroupUsers: Event handler; a callable with L{ISkypeEvents.GroupUsers} prototype (no 'self' argument).
     @type OnGroupUsers: callable
 
-    @ivar OnGroupDeleted: Event handler; prototype same as L{ISkypeEvents.GroupDeleted}.
-
-    Type: callable
+    @ivar OnGroupDeleted: Event handler; a callable with L{ISkypeEvents.GroupDeleted} prototype (no 'self' argument).
     @type OnGroupDeleted: callable
 
-    @ivar OnUserMood: Event handler; prototype same as L{ISkypeEvents.UserMood}.
-
-    Type: callable
+    @ivar OnUserMood: Event handler; a callable with L{ISkypeEvents.UserMood} prototype (no 'self' argument).
     @type OnUserMood: callable
 
-    @ivar OnSmsMessageStatusChanged: Event handler; prototype same as L{ISkypeEvents.SmsMessageStatusChanged}.
-
-    Type: callable
+    @ivar OnSmsMessageStatusChanged: Event handler; a callable with L{ISkypeEvents.SmsMessageStatusChanged} prototype (no 'self' argument).
     @type OnSmsMessageStatusChanged: callable
 
-    @ivar OnSmsTargetStatusChanged: Event handler; prototype same as L{ISkypeEvents.SmsTargetStatusChanged}.
-
-    Type: callable
+    @ivar OnSmsTargetStatusChanged: Event handler; a callable with L{ISkypeEvents.SmsTargetStatusChanged} prototype (no 'self' argument).
     @type OnSmsTargetStatusChanged: callable
 
-    @ivar OnCallInputStatusChanged: Event handler; prototype same as L{ISkypeEvents.CallInputStatusChanged}.
-
-    Type: callable
+    @ivar OnCallInputStatusChanged: Event handler; a callable with L{ISkypeEvents.CallInputStatusChanged} prototype (no 'self' argument).
     @type OnCallInputStatusChanged: callable
 
-    @ivar OnAsyncSearchUsersFinished: Event handler; prototype same as L{ISkypeEvents.AsyncSearchUsersFinished}.
-
-    Type: callable
+    @ivar OnAsyncSearchUsersFinished: Event handler; a callable with L{ISkypeEvents.AsyncSearchUsersFinished} prototype (no 'self' argument).
     @type OnAsyncSearchUsersFinished: callable
 
-    @ivar OnCallSeenStatusChanged: Event handler; prototype same as L{ISkypeEvents.CallSeenStatusChanged}.
-
-    Type: callable
+    @ivar OnCallSeenStatusChanged: Event handler; a callable with L{ISkypeEvents.CallSeenStatusChanged} prototype (no 'self' argument).
     @type OnCallSeenStatusChanged: callable
 
-    @ivar OnPluginEventClicked: Event handler; prototype same as L{ISkypeEvents.PluginEventClicked}.
-
-    Type: callable
+    @ivar OnPluginEventClicked: Event handler; a callable with L{ISkypeEvents.PluginEventClicked} prototype (no 'self' argument).
     @type OnPluginEventClicked: callable
 
-    @ivar OnPluginMenuItemClicked: Event handler; prototype same as L{ISkypeEvents.PluginMenuItemClicked}.
-
-    Type: callable
+    @ivar OnPluginMenuItemClicked: Event handler; a callable with L{ISkypeEvents.PluginMenuItemClicked} prototype (no 'self' argument).
     @type OnPluginMenuItemClicked: callable
 
-    @ivar OnWallpaperChanged: Event handler; prototype same as L{ISkypeEvents.WallpaperChanged}.
-
-    Type: callable
+    @ivar OnWallpaperChanged: Event handler; a callable with L{ISkypeEvents.WallpaperChanged} prototype (no 'self' argument).
     @type OnWallpaperChanged: callable
 
-    @ivar OnFileTransferStatusChanged: Event handler; prototype same as L{ISkypeEvents.FileTransferStatusChanged}.
-
-    Type: callable
+    @ivar OnFileTransferStatusChanged: Event handler; a callable with L{ISkypeEvents.FileTransferStatusChanged} prototype (no 'self' argument).
     @type OnFileTransferStatusChanged: callable
 
-    @ivar OnCallTransferStatusChanged: Event handler; prototype same as L{ISkypeEvents.CallTransferStatusChanged}.
-
-    Type: callable
+    @ivar OnCallTransferStatusChanged: Event handler; a callable with L{ISkypeEvents.CallTransferStatusChanged} prototype (no 'self' argument).
     @type OnCallTransferStatusChanged: callable
 
-    @ivar OnChatMembersChanged: Event handler; prototype same as L{ISkypeEvents.ChatMembersChanged}.
-
-    Type: callable
+    @ivar OnChatMembersChanged: Event handler; a callable with L{ISkypeEvents.ChatMembersChanged} prototype (no 'self' argument).
     @type OnChatMembersChanged: callable
 
-    @ivar OnChatMemberRoleChanged: Event handler; prototype same as L{ISkypeEvents.ChatMemberRoleChanged}.
-
-    Type: callable
+    @ivar OnChatMemberRoleChanged: Event handler; a callable with L{ISkypeEvents.ChatMemberRoleChanged} prototype (no 'self' argument).
     @type OnChatMemberRoleChanged: callable
 
-    @ivar OnCallVideoReceiveStatusChanged: Event handler; prototype same as L{ISkypeEvents.CallVideoReceiveStatusChanged}.
-
-    Type: callable
+    @ivar OnCallVideoReceiveStatusChanged: Event handler; a callable with L{ISkypeEvents.CallVideoReceiveStatusChanged} prototype (no 'self' argument).
     @type OnCallVideoReceiveStatusChanged: callable
 
-    @ivar OnCallVideoSendStatusChanged: Event handler; prototype same as L{ISkypeEvents.CallVideoSendStatusChanged}.
-
-    Type: callable
+    @ivar OnCallVideoSendStatusChanged: Event handler; a callable with L{ISkypeEvents.CallVideoSendStatusChanged} prototype (no 'self' argument).
     @type OnCallVideoSendStatusChanged: callable
 
-    @ivar OnCallVideoStatusChanged: Event handler; prototype same as L{ISkypeEvents.CallVideoStatusChanged}.
-
-    Type: callable
+    @ivar OnCallVideoStatusChanged: Event handler; a callable with L{ISkypeEvents.CallVideoStatusChanged} prototype (no 'self' argument).
     @type OnCallVideoStatusChanged: callable
     '''
 
     def __init__(self, Events=None, **Options):
         '''Initializes the object.
 
-        @param Events: An optional object with event handlers. Read the B{Events} section at the top of this page.
+        @param Events: An optional object with event handlers. See L{ISkypeEvents} for possible event handlers and their
+        prototypes. Read the B{Events} section at the top of this page for more information.
         @type Events: object
         @param Options: Addtional options for the low-level API handler. For supported options, go to L{Skype4Py.API}
         subpackage and select your platform.
@@ -432,7 +348,7 @@ class ISkype(EventHandlingBase):
                                 context_id = chop(Value[j+11:])[0]
                         self._CallEventHandler('PluginMenuItemClicked', IPluginMenuItem(ObjectId, self), users, context, context_id)
             elif a == 'WALLPAPER':
-                self._CallEventHandler('WallpaperChanged', b.encode(sys.getfilesystemencoding()))
+                self._CallEventHandler('WallpaperChanged', b)
         elif mode == 'rece':
             self._CallEventHandler('Reply', arg)
         elif mode == 'send':
@@ -503,6 +419,47 @@ class ISkype(EventHandlingBase):
             com = '%s %s' % (com, Args)
         return esplit(chop(self._DoCommand(com))[-1], ', ')
 
+    def ApiSecurityContextEnabled(self, Context):
+        '''Queries if an API security context for Internet Explorer is enabled.
+
+        @param Context: API security context to check.
+        @type Context: unicode
+        @return: True if the API security for the given context is enabled, False elsewhere.
+        @rtype: bool
+
+        @warning: This functionality isn't supported by Skype4Py.
+        '''
+        self._API.ApiSecurityContextEnabled(Context)
+
+    def Application(self, Name):
+        '''Queries an application object.
+
+        @param Name: Application name.
+        @type Name: unicode
+        @return: The application object.
+        @rtype: L{IApplication}
+        '''
+        return IApplication(Name, self)
+
+    def AsyncSearchUsers(self, Target):
+        '''Asynchronously searches for Skype users.
+
+        @param Target: Search target (name or email address).
+        @type Target: unicode
+        @return: A search identifier. It will be passed along with the results to the
+        L{ISkypeEvents.AsyncSearchUsersFinished} event after the search is completed.
+        @rtype: int
+        '''
+        def reply_handler(command):
+            if command.Command.startswith('SEARCH USERS'):
+                self._CallEventHandler('AsyncSearchUsersFinished', command.Id, tuple(IUser(x, self) for x in esplit(chop(command.Reply)[-1], ', ')))
+                self.UnregisterEventHandler('Reply', reply_handler)
+        command = ICommand(-1, 'SEARCH USERS %s' % Target, 'USERS', False, self.Timeout)
+        self.RegisterEventHandler('Reply', reply_handler)
+        self.SendCommand(command)
+        # return pCookie - search identifier
+        return command.Id
+
     def Attach(self, Protocol=5, Wait=True):
         '''Establishes a connection to Skype.
 
@@ -519,17 +476,78 @@ class ISkype(EventHandlingBase):
             self.ResetCache()
             raise
 
-    def SendCommand(self, Command):
-        '''Sends an API command.
+    def Call(self, Id=0):
+        '''Queries a call object.
 
-        @param Command: Command to send. Use L{Command} method to create a command.
-        @type Command: L{ICommand}
+        @param Id: Call identifier.
+        @type Id: int
+        @return: Call object.
+        @rtype: L{ICall}
         '''
-        try:
-            self._API.SendCommand(Command)
-        except ISkypeAPIError:
-            self.ResetCache()
-            raise
+        o = ICall(Id, self)
+        o.Status
+        return o
+
+    def Calls(self, Target=''):
+        '''Queries calls in call history.
+
+        @param Target: Call target.
+        @type Target: unicode
+        @return: Call objects.
+        @rtype: tuple of L{ICall}
+        '''
+        return tuple(ICall(x, self) for x in self._Search('CALLS', Target))
+
+    def ChangeUserStatus(self, Val):
+        '''Changes the online status for the current user.
+
+        @param Val: New online status for the user.
+        @type Val: L{User status<enums.cusUnknown>}
+
+        @note: This function waits until the online status changes. Alternatively, use
+        the L{CurrentUserStatus} property to perform an immediate change of status.
+        '''
+        event = threading.Event()
+        def userstatus_handler(status):
+            if status.upper() == Val.upper():
+                event.set()
+        self.RegisterEventHandler('UserStatus', userstatus_handler)
+        self.CurrentUserStatus = Val
+        event.wait()
+        self.UnregisterEventHandler('UserStatus', userstatus_handler)
+
+    def Chat(self, Name=''):
+        '''Queries a chat object.
+
+        @param Name: Chat name.
+        @type Name: unicode
+        @return: A chat object.
+        @rtype: L{IChat}
+        '''
+        o = IChat(Name, self)
+        o.Status
+        return o
+
+    def ClearCallHistory(self, Username='ALL', Type=chsAllCalls):
+        '''Clears the call history.
+
+        @param Username: Skypename of the user. A special value of 'ALL' means that entries of all users should
+        be removed.
+        @type Username: unicode
+        @param Type: Call type.
+        @type Type: L{Call type<enums.cltUnknown>}
+        '''
+        self._DoCommand('CLEAR CALLHISTORY %s %s' % (str(Type), Username))
+
+    def ClearChatHistory(self):
+        '''Clears the chat history.
+        '''
+        self._DoCommand('CLEAR CHATHISTORY')
+
+    def ClearVoicemailHistory(self):
+        '''Clears the voicemail history.
+        '''
+        self._DoCommand('CLEAR VOICEMAILHISTORY')
 
     def Command(self, Command, Reply=u'', Block=False, Timeout=30000, Id=-1):
         '''Creates an API command object.
@@ -551,34 +569,146 @@ class ISkype(EventHandlingBase):
         '''
         return ICommand(Id, Command, Reply, Block, Timeout)
 
-    def SearchForUsers(self, Target):
-        '''Searches for users.
+    def Conference(self, Id=0):
+        '''Queries a call conference object.
 
-        @param Target: Search target (name or email address).
-        @type Target: unicode
-        @return: Found users.
-        @rtype: tuple of L{IUser}
+        @param Id: Conference Id.
+        @type Id: int
+        @return: A conference object.
+        @rtype: L{IConference}
         '''
-        return tuple(IUser(x, self) for x in self._Search('USERS', Target))
+        o = IConference(Id, self)
+        if Id <= 0 or not o.Calls:
+            raise ISkypeError(0, 'Unknown conference')
+        return o
 
-    def AsyncSearchUsers(self, Target):
-        '''Asynchronously searches for Skype users.
+    def CreateChatMultiple(self, Members):
+        '''CreateChatMultiple.
 
-        @param Target: Search target (name or email address).
-        @type Target: unicode
-        @return: A search identifier. It will be passed along with the results to the
-        L{ISkypeEvents.AsyncSearchUsersFinished} event after the search is completed.
-        @rtype: int
+        @param Members: Members
+        @type Members: ?
+        @return: ?
+        @rtype: ?
+        @deprecated: Use L{CreateChatWith} instead.
         '''
-        def reply_handler(command):
-            if command.Command.startswith('SEARCH USERS'):
-                self._CallEventHandler('AsyncSearchUsersFinished', command.Id, tuple(IUser(x, self) for x in esplit(chop(command.Reply)[-1], ', ')))
-                self.UnregisterEventHandler('Reply', reply_handler)
-        command = ICommand(-1, 'SEARCH USERS %s' % Target, 'USERS', False, self.Timeout)
-        self.RegisterEventHandler('Reply', reply_handler)
-        self.SendCommand(command)
-        # return pCookie - search identifier
-        return command.Id
+        from warnings import warn
+        warn('ISkype.CreateChatMultiple: Use ISkype.CreateChatWith instead.', DeprecationWarning, stacklevel=2)
+        return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join(x.Handle for x in Members)), 2)[1], self)
+
+    def CreateChatUsingBlob(self, Blob):
+        '''Returns existing or joins a new chat using given blob.
+
+        @param Blob: A blob indentifying the chat.
+        @type Blob: unicode
+        @return: A chat object
+        @rtype: L{IChat}
+        '''
+        return IChat(chop(self._DoCommand('CHAT CREATEUSINGBLOB %s' % Blob), 2)[1], self)
+
+    def CreateChatWith(self, *Usernames):
+        '''Creates a chat with one or more users.
+
+        @param Usernames: One or more strings with the Skypenames of the users.
+        @type Usernames: unicode
+        @return: A chat object
+        @rtype: L{IChat}
+        @see: L{IChat.AddMembers}
+        '''
+        return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join(Usernames)), 2)[1], self)
+
+    def CreateGroup(self, GroupName):
+        '''Creates a custom contact group.
+
+        @param GroupName: Group name.
+        @type GroupName: unicode
+        @return: A group object.
+        @rtype: L{IGroup}
+        @see: L{DeleteGroup}
+        '''
+        groups = self.CustomGroups
+        self._DoCommand('CREATE GROUP %s' % GroupName)
+        for g in self.CustomGroups:
+            if g not in groups and g.DisplayName == GroupName:
+                return g
+        raise ISkypeError(0, 'Group creating failed')
+
+    def CreateSms(self, MessageType, *TargetNumbers):
+        '''Creates an SMS message.
+
+        @param MessageType: Message type.
+        @type MessageType: L{SMS message type<enums.smsMessageTypeUnknown>}
+        @param TargetNumbers: One or more target SMS numbers.
+        @type TargetNumbers: unicode
+        @return: An sms message object.
+        @rtype: L{ISmsMessage}
+        '''
+        return ISmsMessage(chop(self._DoCommand('CREATE SMS %s %s' % (MessageType, ', '.join(TargetNumbers))), 2)[1], self)
+
+    def DeleteGroup(self, GroupId):
+        '''Deletes a custom contact group.
+
+        Users in the contact group are moved to the All Contacts (hardwired) contact group.
+
+        @param GroupId: Group identifier. Get it from L{IGroup.Id}.
+        @type GroupId: int
+        @see: L{CreateGroup}
+        '''
+        self._DoCommand('DELETE GROUP %s' % GroupId)
+
+    def EnableApiSecurityContext(self, Context):
+        '''Enables an API security context for Internet Explorer scripts.
+
+        @param Context: combination of API security context values.
+        @type Context: unicode
+        @warning: This functionality isn't supported by Skype4Py.
+        '''
+        self._API.EnableApiSecurityContext(Context)
+
+    def FindChatUsingBlob(self, Blob):
+        '''Returns existing chat using given blob.
+
+        @param Blob: A blob indentifying the chat.
+        @type Blob: unicode
+        @return: A chat object
+        @rtype: L{IChat}
+        '''
+        return IChat(chop(self._DoCommand('CHAT FINDUSINGBLOB %s' % Blob), 2)[1], self)
+
+    def Greeting(self, Username=''):
+        '''Queries the greeting used as voicemail.
+
+        @param Username: Skypename of the user.
+        @type Username: unicode
+        @return: A voicemail object.
+        @rtype: L{IVoicemail}
+        '''
+        for v in self.Voicemails:
+            if Username and v.PartnerHandle != Username:
+                continue
+            if v.Type in (vmtDefaultGreeting, vmtCustomGreeting):
+                return v
+
+    def Message(self, Id=0):
+        '''Queries a chat message object.
+
+        @param Id: Message Id.
+        @type Id: int
+        @return: A chat message object.
+        @rtype: L{IChatMessage}
+        '''
+        o = IChatMessage(Id, self)
+        o.Status
+        return o
+
+    def Messages(self, Target=''):
+        '''Queries chat messages which were sent/received by the user.
+
+        @param Target: Message sender.
+        @type Target: unicode
+        @return: Chat message objects.
+        @rtype: tuple of L{IChatMessage}
+        '''
+        return tuple(IChatMessage(x, self) for x in self._Search('CHATMESSAGES', Target))
 
     def PlaceCall(self, *Targets):
         '''Places a call to a single user or creates a conference call.
@@ -601,6 +731,77 @@ class ISkype(EventHandlingBase):
                 return c
         raise ISkypeError(0, 'Placing call failed')
 
+    def Privilege(self, Name):
+        '''Queries the Skype services (privileges) enabled for the Skype client.
+
+        @param Name: Privilege name, currently one of 'SKYPEOUT', 'SKYPEIN', 'VOICEMAIL'.
+        @type Name: unicode
+        @return: True if the priviledge is available, False otherwise.
+        @rtype: bool
+        '''
+        return self._Property('PRIVILEGE', '', Name.upper()) == 'TRUE'
+
+    def Profile(self, Property, Set=None):
+        '''Queries/sets user profile properties.
+
+        @param Property: Property name, currently one of 'PSTN_BALANCE', 'PSTN_BALANCE_CURRENCY',
+        'FULLNAME', 'BIRTHDAY', 'SEX', 'LANGUAGES', 'COUNTRY', 'PROVINCE', 'CITY', 'PHONE_HOME',
+        'PHONE_OFFICE', 'PHONE_MOBILE', 'HOMEPAGE', 'ABOUT'.
+        @type Property: unicode
+        @param Set: Value the property should be set to or None if the value should be queried.
+        @type Set: unicode or None
+        @return: Property value if Set=None, None otherwise.
+        @rtype: unicode or None
+        '''
+        return self._Property('PROFILE', '', Property, Set)
+
+    def Property(self, ObjectType, ObjectId, PropName, Set=None):
+        '''Queries/sets the properties of an object.
+
+        @param ObjectType: Object type, currently one of 'USER', 'CALL', 'CHAT', 'CHATMESSAGE', 'VOICEMAIL'.
+        @type ObjectType: unicode
+        @param ObjectId: Object Id, depends on the object type
+        @type ObjectId: unicode
+        @param PropName: Name of the property you want to access.
+        @type PropName: unicode
+        @param Set: Value the property should be set to or None if the value should be queried.
+        @type Set: unicode or None
+        @return: Property value if Set=None, None otherwise.
+        @rtype: unicode or None
+        '''
+        return self._Property(ObjectType, ObjectId, PropName, Set)
+
+    def ResetCache(self):
+        '''Deletes all command cache entries.
+
+        This method clears the Skype4Py's internal command cache which means that all objects will forget
+        their property values and querying them will trigger a code to get them from Skype client (and
+        cache them again).
+        '''
+        self._CacheDict = {}
+
+    def SearchForUsers(self, Target):
+        '''Searches for users.
+
+        @param Target: Search target (name or email address).
+        @type Target: unicode
+        @return: Found users.
+        @rtype: tuple of L{IUser}
+        '''
+        return tuple(IUser(x, self) for x in self._Search('USERS', Target))
+
+    def SendCommand(self, Command):
+        '''Sends an API command.
+
+        @param Command: Command to send. Use L{Command} method to create a command.
+        @type Command: L{ICommand}
+        '''
+        try:
+            self._API.SendCommand(Command)
+        except ISkypeAPIError:
+            self.ResetCache()
+            raise
+
     def SendMessage(self, Username, Text):
         '''Sends a chat message.
 
@@ -612,123 +813,6 @@ class ISkype(EventHandlingBase):
         @rtype: L{IChatMessage}
         '''
         return self.CreateChatWith(Username).SendMessage(Text)
-
-    def ChangeUserStatus(self, Val):
-        '''Changes the online status for the current user.
-
-        @param Val: New online status for the user.
-        @type Val: L{User status<enums.cusUnknown>}
-
-        @note: This function waits until the online status changes. Alternatively, use
-        the L{CurrentUserStatus} property to perform an immediate change of status.
-        '''
-        event = threading.Event()
-        def userstatus_handler(status):
-            if status.upper() == Val.upper():
-                event.set()
-        self.RegisterEventHandler('UserStatus', userstatus_handler)
-        self.CurrentUserStatus = Val
-        event.wait()
-        self.UnregisterEventHandler('UserStatus', userstatus_handler)
-
-    def CreateChatWith(self, *Usernames):
-        '''Creates a chat with one or more users.
-
-        @param Usernames: One or more strings with the Skypenames of the users.
-        @type Usernames: unicode
-        @return: A chat object
-        @rtype: L{IChat}
-        @see: L{IChat.AddMembers}
-        '''
-        return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join(Usernames)), 2)[1], self)
-
-    def CreateChatMultiple(self, Members):
-        '''@deprecated: Use L{CreateChatWith} instead.'''
-        from warnings import warn
-        warn('ISkype.CreateChatMultiple: Use ISkype.CreateChatWith instead.', DeprecationWarning, stacklevel=2)
-        return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join(x.Handle for x in Members)), 2)[1], self)
-
-    def SendVoicemail(self, Username):
-        '''Sends a voicemail to a specified user.
-
-        @param Username: Skypename of the user.
-        @type Username: unicode
-        @return: A voicemail object.
-        @rtype: L{IVoicemail}
-        '''
-        if self._API.Protocol >= 6:
-            self._DoCommand('CALLVOICEMAIL %s' % Username)
-        else:
-            self._DoCommand('VOICEMAIL %s' % Username)
-
-    def ClearChatHistory(self):
-        '''Clears the chat history.
-        '''
-        self._DoCommand('CLEAR CHATHISTORY')
-
-    def ClearVoicemailHistory(self):
-        '''Clears the voicemail history.
-        '''
-        self._DoCommand('CLEAR VOICEMAILHISTORY')
-
-    def ClearCallHistory(self, Username='ALL', Type=chsAllCalls):
-        '''Clears the call history.
-
-        @param Username: Skypename of the user. A special value of 'ALL' means that entries of all users should
-        be removed.
-        @type Username: unicode
-        @param Type: Call type.
-        @type Type: L{Call type<enums.cltUnknown>}
-        '''
-        self._DoCommand('CLEAR CALLHISTORY %s %s' % (str(Type), Username))
-
-    def ResetCache(self):
-        '''Deletes all command cache entries.
-
-        This method clears the Skype4Py's internal command cache which means that all objects will forget
-        their property values and querying them will trigger a code to get them from Skype client (and
-        cache them again).
-        '''
-        self._CacheDict = {}
-
-    def CreateGroup(self, GroupName):
-        '''Creates a custom contact group.
-
-        @param GroupName: Group name.
-        @type GroupName: unicode
-        @return: A group object.
-        @rtype: L{IGroup}
-        @see: L{DeleteGroup}
-        '''
-        groups = self.CustomGroups
-        self._DoCommand('CREATE GROUP %s' % GroupName)
-        for g in self.CustomGroups:
-            if g not in groups and g.DisplayName == GroupName:
-                return g
-        raise ISkypeError(0, 'Group creating failed')
-
-    def DeleteGroup(self, GroupId):
-        '''Deletes a custom contact group.
-
-        Users in the contact group are moved to the All Contacts (hardwired) contact group.
-
-        @param GroupId: Group identifier. Get it from L{IGroup.Id}.
-        @type GroupId: int
-        @see: L{CreateGroup}
-        '''
-        self._DoCommand('DELETE GROUP %s' % GroupId)
-
-    def CreateSms(self, MessageType, *TargetNumbers):
-        '''Creates an SMS message.
-
-        @param MessageType: Message type.
-        @type MessageType: L{SMS message type<enums.smsMessageTypeUnknown>}
-        @param TargetNumbers: One or more target SMS numbers.
-        @type TargetNumbers: unicode
-        @return: An sms message object.
-        @rtype: L{ISmsMessage}
-        '''
-        return ISmsMessage(chop(self._DoCommand('CREATE SMS %s %s' % (MessageType, ', '.join(TargetNumbers))), 2)[1], self)
 
     def SendSms(self, *TargetNumbers, **Properties):
         '''Creates and sends an SMS message.
@@ -749,63 +833,18 @@ class ISkype(EventHandlingBase):
         sms.Send()
         return sms
 
-    def Property(self, ObjectType, ObjectId, PropName, Set=None):
-        '''Queries/sets the properties of an object.
+    def SendVoicemail(self, Username):
+        '''Sends a voicemail to a specified user.
 
-        @param ObjectType: Object type, currently one of 'USER', 'CALL', 'CHAT', 'CHATMESSAGE', 'VOICEMAIL'.
-        @type ObjectType: unicode
-        @param ObjectId: Object Id, depends on the object type
-        @type ObjectId: unicode
-        @param PropName: Name of the property you want to access.
-        @type PropName: unicode
-        @param Set: Value the property should be set to or None if the value should be queried.
-        @type Set: unicode or None
-        @return: Property value if Set=None, None otherwise.
-        @rtype: unicode or None
+        @param Username: Skypename of the user.
+        @type Username: unicode
+        @return: A voicemail object.
+        @rtype: L{IVoicemail}
         '''
-        return self._Property(ObjectType, ObjectId, PropName, Set)
-
-    def Variable(self, Name, Set=None):
-        '''Queries/sets Skype general parameters.
-
-        @param Name: Variable name.
-        @type Name: unicode
-        @param Set: Value the variable should be set to or None if the value should be queried.
-        @type Set: unicode or None
-        @return: Variable value if Set=None, None otherwise.
-        @rtype: unicode or None
-        '''
-        return self._Property(Name, '', '', Set)
-
-    def Privilege(self, Name):
-        '''Queries the Skype services (privileges) enabled for the Skype client.
-
-        @param Name: Privilege name, currently one of 'SKYPEOUT', 'SKYPEIN', 'VOICEMAIL'.
-        @type Name: unicode
-        @return: True if the priviledge is available, False otherwise.
-        @rtype: bool
-        '''
-        return self._Property('PRIVILEGE', '', Name.upper()) == 'TRUE'
-
-    def Calls(self, Target=''):
-        '''Queries calls in call history.
-
-        @param Target: Call target.
-        @type Target: unicode
-        @return: Call objects.
-        @rtype: tuple of L{ICall}
-        '''
-        return tuple(ICall(x, self) for x in self._Search('CALLS', Target))
-
-    def Messages(self, Target=''):
-        '''Queries chat messages which were sent/received by the user.
-
-        @param Target: Message sender.
-        @type Target: unicode
-        @return: Chat message objects.
-        @rtype: tuple of L{IChatMessage}
-        '''
-        return tuple(IChatMessage(x, self) for x in self._Search('CHATMESSAGES', Target))
+        if self._API.Protocol >= 6:
+            self._DoCommand('CALLVOICEMAIL %s' % Username)
+        else:
+            self._DoCommand('VOICEMAIL %s' % Username)
 
     def User(self, Username=''):
         '''Queries a user object.
@@ -819,92 +858,17 @@ class ISkype(EventHandlingBase):
         o.OnlineStatus
         return o
 
-    def Message(self, Id=0):
-        '''Queries a chat message object.
+    def Variable(self, Name, Set=None):
+        '''Queries/sets Skype general parameters.
 
-        @param Id: Message Id.
-        @type Id: int
-        @return: A chat message object.
-        @rtype: L{IChatMessage}
-        '''
-        o = IChatMessage(Id, self)
-        o.Status
-        return o
-
-    def Call(self, Id=0):
-        '''Queries a call object.
-
-        @param Id: Call identifier.
-        @type Id: int
-        @return: Call object.
-        @rtype: L{ICall}
-        '''
-        o = ICall(Id, self)
-        o.Status
-        return o
-
-    def Chat(self, Name=''):
-        '''Queries a chat object.
-
-        @param Name: Chat name.
+        @param Name: Variable name.
         @type Name: unicode
-        @return: A chat object.
-        @rtype: L{IChat}
-        '''
-        o = IChat(Name, self)
-        o.Status
-        return o
-
-    def Conference(self, Id=0):
-        '''Queries a call conference object.
-
-        @param Id: Conference Id.
-        @type Id: int
-        @return: A conference object.
-        @rtype: L{IConference}
-        '''
-        o = IConference(Id, self)
-        if Id <= 0 or not o.Calls:
-            raise ISkypeError(0, 'Unknown conference')
-        return o
-
-    def Profile(self, Property, Set=None):
-        '''Queries/sets user profile properties.
-
-        @param Property: Property name, currently one of 'PSTN_BALANCE', 'PSTN_BALANCE_CURRENCY',
-        'FULLNAME', 'BIRTHDAY', 'SEX', 'LANGUAGES', 'COUNTRY', 'PROVINCE', 'CITY', 'PHONE_HOME',
-        'PHONE_OFFICE', 'PHONE_MOBILE', 'HOMEPAGE', 'ABOUT'.
-        @type Property: unicode
-        @param Set: Value the property should be set to or None if the value should be queried.
+        @param Set: Value the variable should be set to or None if the value should be queried.
         @type Set: unicode or None
-        @return: Property value if Set=None, None otherwise.
+        @return: Variable value if Set=None, None otherwise.
         @rtype: unicode or None
         '''
-        return self._Property('PROFILE', '', Property, Set)
-
-    def Application(self, Name):
-        '''Queries an application object.
-
-        @param Name: Application name.
-        @type Name: unicode
-        @return: The application object.
-        @rtype: L{IApplication}
-        '''
-        return IApplication(Name, self)
-
-    def Greeting(self, Username=''):
-        '''Queries the greeting used as voicemail.
-
-        @param Username: Skypename of the user.
-        @type Username: unicode
-        @return: A voicemail object.
-        @rtype: L{IVoicemail}
-        '''
-        for v in self.Voicemails:
-            if Username and v.PartnerHandle != Username:
-                continue
-            if v.Type in (vmtDefaultGreeting, vmtCustomGreeting):
-                return v
+        return self._Property(Name, '', '', Set)
 
     def Voicemail(self, Id):
         '''Queries the voicemail object.
@@ -918,278 +882,60 @@ class ISkype(EventHandlingBase):
         o.Type
         return o
 
-    def ApiSecurityContextEnabled(self, Context):
-        '''Queries if an API security context for Internet Explorer is enabled.
-
-        @param Context: API security context to check.
-        @type Context: L{API security context<enums.apiContextUnknown>}
-        @return: True if the API security for the given context is enabled, False elsewhere.
-        @rtype: bool
-
-        @warning: This functionality isn't supported by Skype4Py.
-        '''
-        self._API.ApiSecurityContextEnabled(Context)
-
-    def EnableApiSecurityContext(self, Context):
-        '''Enables an API security context for Internet Explorer scripts.
-
-        @param Context: combination of API security context values.
-        @type Context: L{API security context<enums.apiContextUnknown>}
-
-        @warning: This functionality isn't supported by Skype4Py.
-        '''
-        self._API.EnableApiSecurityContext(Context)
-
-    def CreateChatUsingBlob(self, Blob):
-        '''Returns existing or joins a new chat using given blob.
-
-        @param Blob: A blob indentifying the chat.
-        @type Blob: unicode
-        @return: A chat object
-        @rtype: L{IChat}
-        '''
-        return IChat(chop(self._DoCommand('CHAT CREATEUSINGBLOB %s' % Blob), 2)[1], self)
-
-    def FindChatUsingBlob(self, Blob):
-        '''Returns existing chat using given blob.
-
-        @param Blob: A blob indentifying the chat.
-        @type Blob: unicode
-        @return: A chat object
-        @rtype: L{IChat}
-        '''
-        return IChat(chop(self._DoCommand('CHAT FINDUSINGBLOB %s' % Blob), 2)[1], self)
-
-    ###
-    ### PROPERTIES
-    ###
-
-    def _GetTimeout(self):
-        return self._Timeout
-
-    def _SetTimeout(self, value):
-        self._Timeout = int(value)
-
-    Timeout = property(_GetTimeout, _SetTimeout)
-    '''Queries/sets the wait timeout value in milliseconds. This timeout value applies to every
-    command sent to the Skype API. If a response is not received during the timeout period, an
-    L{ISkypeAPIError} exception is raised.
-
-    Type: int
-    @type: int'''
-
-    def _GetProtocol(self):
-        return self._API.Protocol
-
-    def _SetProtocol(self, value):
-        self._API.Protocol = int(value)
-
-    Protocol = property(_GetProtocol, _SetProtocol)
-    '''Queries/sets the protocol version used by the Skype client.
-
-    Type: int
-    @type: int'''
-
-    def _GetCurrentUserHandle(self):
-        return self.Variable('CURRENTUSERHANDLE')
-
-    CurrentUserHandle = property(_GetCurrentUserHandle)
-    '''Queries the Skypename of the current user.
-
-    Type: unicode
-    @type: unicode'''
-
-    def _GetCurrentUserStatus(self):
-        return self.Variable('USERSTATUS')
-
-    def _SetCurrentUserStatus(self, value):
-        self.Variable('USERSTATUS', str(value))
-
-    CurrentUserStatus = property(_GetCurrentUserStatus, _SetCurrentUserStatus)
-    '''Queries/sets the online status of the current user.
-
-    Type: L{Online status<enums.olsUnknown>}
-    @type: L{Online status<enums.olsUnknown>}'''
-
-    def _GetConnectionStatus(self):
-        return self.Variable('CONNSTATUS')
-
-    ConnectionStatus = property(_GetConnectionStatus)
-    '''Queries the connection status of the Skype client.
-
-    Type: L{Connection status<enums.conUnknown>}
-    @type: L{Connection status<enums.conUnknown>}'''
-
-    def _GetMute(self):
-        return self.Variable('MUTE') == 'ON'
-
-    def _SetMute(self, value):
-        self.Variable('MUTE', cndexp(value, 'ON', 'OFF'))
-
-    Mute = property(_GetMute, _SetMute)
-    '''Queries/sets the mute status of the Skype client.
-
-    Type: bool
-    Note: This value can be set only when there is an active call.
-    @type: bool'''
-
-    def _GetVersion(self):
-        return self.Variable('SKYPEVERSION')
-
-    Version = property(_GetVersion)
-    '''Queries the application version of the Skype client.
-
-    Type: unicode
-    @type: unicode'''
-
-    def _GetCurrentUser(self):
-        return IUser(self.CurrentUserHandle, self)
-
-    CurrentUser = property(_GetCurrentUser)
-    '''Queries the current user object.
-
-    Type: L{IUser}
-    @type: L{IUser}'''
-
-    def _GetConvert(self):
-        return self._Convert
-
-    Convert = property(_GetConvert)
-    '''Queries the conversion object.
-
-    Type: L{IConversion}
-    @type: L{IConversion}'''
-
-    def _GetFriends(self):
-        return tuple(IUser(x, self) for x in self._Search('FRIENDS'))
-
-    Friends = property(_GetFriends)
-    '''Queries the users in a contact list.
-
-    Type: tuple of L{IUser}
-    @type: tuple of L{IUser}'''
-
-    def _GetClient(self):
-        return self._Client
-
-    Client = property(_GetClient)
-    '''Queries the user interface control object.
-
-    Type: L{IClient}
-    @type: L{IClient}'''
-
-    def _GetAttachmentStatus(self):
-        return self._API.AttachmentStatus
-
-    AttachmentStatus = property(_GetAttachmentStatus)
-    '''Queries the attachment status of the Skype client.
-
-    Type: L{Attachment status<enums.apiAttachUnknown>}
-    @type: L{Attachment status<enums.apiAttachUnknown>}'''
-
-    def _GetCurrentUserProfile(self):
-        return self._Profile
-
-    CurrentUserProfile = property(_GetCurrentUserProfile)
-    '''Queries the user profile object.
-
-    Type: L{IProfile}
-    @type: L{IProfile}'''
-
-    def _GetGroups(self):
-        return tuple(IGroup(x, self) for x in self._Search('GROUPS', 'ALL'))
-
-    Groups = property(_GetGroups)
-    '''Queries the list of all contact groups.
-
-    Type: tuple of L{IGroup}
-    @type: tuple of L{IGroup}'''
-
-    def _GetCustomGroups(self):
-        return tuple(IGroup(x, self) for x in self._Search('GROUPS', 'CUSTOM'))
-
-    CustomGroups = property(_GetCustomGroups)
-    '''Queries the list of custom contact groups. Custom groups are contact groups defined by the user.
-
-    Type: tuple of L{IGroup}
-    @type: tuple of L{IGroup}'''
-
-    def _GetHardwiredGroups(self):
-        return tuple(IGroup(x, self) for x in self._Search('GROUPS', 'HARDWIRED'))
-
-    HardwiredGroups = property(_GetHardwiredGroups)
-    '''Queries the list of hardwired contact groups. Hardwired groups are "smart" contact groups,
-    defined by Skype, that cannot be removed.
-
-    Type: tuple of L{IGroup}
-    @type: tuple of L{IGroup}'''
-
     def _GetActiveCalls(self):
         return tuple(ICall(x, self) for x in self._Search('ACTIVECALLS'))
 
-    ActiveCalls = property(_GetActiveCalls)
-    '''Queries a list of active calls.
+    ActiveCalls = property(_GetActiveCalls,
+    doc='''Queries a list of active calls.
 
-    Type: tuple of L{ICall}
-    @type: tuple of L{ICall}'''
+    @type: tuple of L{ICall}
+    ''')
 
-    def _GetMissedCalls(self):
-        return tuple(ICall(x, self) for x in self._Search('MISSEDCALLS'))
+    def _GetActiveChats(self):
+        return tuple(IChat(x, self) for x in self._Search('ACTIVECHATS'))
 
-    MissedCalls = property(_GetMissedCalls)
-    '''Queries a list of missed calls.
+    ActiveChats = property(_GetActiveChats,
+    doc='''Queries a list of active chats.
 
-    Type: tuple of L{ICall}
-    @type: tuple of L{ICall}'''
+    @type: tuple of L{IChat}
+    ''')
 
-    def _SetFriendlyName(self, FriendlyName):
-        self._API.SetFriendlyName(FriendlyName)
+    def _GetActiveFileTransfers(self):
+        return tuple(IFileTransfer(x, self) for x in self._Search('ACTIVEFILETRANSFERS'))
 
-    FriendlyName = property(fset=_SetFriendlyName)
-    '''Sets a "friendly" name for an application.
+    ActiveFileTransfers = property(_GetActiveFileTransfers,
+    doc='''Queries currently active file transfers.
 
-    Type: unicode
-    @type: unicode'''
+    @type: tuple of L{IFileTransfer}
+    ''')
 
     def _GetApiWrapperVersion(self):
         from Skype4Py import __version__
         return unicode(__version__)
 
-    ApiWrapperVersion = property(_GetApiWrapperVersion)
-    '''Returns Skype4Py version.
+    ApiWrapperVersion = property(_GetApiWrapperVersion,
+    doc='''Returns Skype4Py version.
 
-    Type: unicode
-    @type: unicode'''
+    @type: unicode
+    ''')
 
-    def _GetSilentMode(self):
-        return self.Variable('SILENT_MODE') == 'ON'
+    def _GetAttachmentStatus(self):
+        return self._API.AttachmentStatus
 
-    def _SetSilentMode(self, value):
-        self.SendCommand(ICommand(-1, 'SET SILENT_MODE %s' % cndexp(value, 'ON', 'OFF')))
+    AttachmentStatus = property(_GetAttachmentStatus,
+    doc='''Queries the attachment status of the Skype client.
 
-    SilentMode = property(_GetSilentMode, _SetSilentMode)
-    '''Returns/sets Skype silent mode status.
+    @type: L{Attachment status<enums.apiAttachUnknown>}
+    ''')
 
-    Type: bool
-    @type: bool'''
+    def _GetBookmarkedChats(self):
+        return tuple(IChat(x, self) for x in self._Search('BOOKMARKEDCHATS'))
 
-    def _GetSettings(self):
-        return self._Settings
+    BookmarkedChats = property(_GetBookmarkedChats,
+    doc='''Queries a list of bookmarked chats.
 
-    Settings = property(_GetSettings)
-    '''Queries the settings for Skype general parameters.
-
-    Type: L{ISettings}
-    @type: L{ISettings}'''
-
-    def _GetUsersWaitingAuthorization(self):
-        return tuple(IUser(x, self) for x in self._Search('USERSWAITINGMYAUTHORIZATION'))
-
-    UsersWaitingAuthorization = property(_GetUsersWaitingAuthorization)
-    '''Queries the list of users waiting for authorization.
-
-    Type: tuple of L{IUser}
-    @type: tuple of L{IUser}'''
+    @type: tuple of L{IChat}
+    ''')
 
     def _GetCache(self):
         return self._Cache
@@ -1197,12 +943,30 @@ class ISkype(EventHandlingBase):
     def _SetCache(self, value):
         self._Cache = bool(value)
 
-    Cache = property(_GetCache, _SetCache)
-    '''Queries/sets the status of internal cache. The internal API cache is used
+    Cache = property(_GetCache, _SetCache,
+    doc='''Queries/sets the status of internal cache. The internal API cache is used
     to cache Skype object properties and global parameters.
 
-    Type: bool
-    @type: bool'''
+    @type: bool
+    ''')
+
+    def _GetChats(self):
+        return tuple(IChat(x, self) for x in self._Search('CHATS'))
+
+    Chats = property(_GetChats,
+    doc='''Queries a list of chats.
+
+    @type: tuple of L{IChat}
+    ''')
+
+    def _GetClient(self):
+        return self._Client
+
+    Client = property(_GetClient,
+    doc='''Queries the user interface control object.
+
+    @type: L{IClient}
+    ''')
 
     def _GetCommandId(self):
         return True
@@ -1210,84 +974,14 @@ class ISkype(EventHandlingBase):
     def _SetCommandId(self, value):
         pass
 
-    CommandId = property(_GetCommandId, _SetCommandId)
-    '''Queries/sets the status of automatic command identifiers.
+    CommandId = property(_GetCommandId, _SetCommandId,
+    doc='''Queries/sets the status of automatic command identifiers.
 
     Type: bool
     Note: Currently it is always True.
-    @type: bool'''
 
-    def _GetChats(self):
-        return tuple(IChat(x, self) for x in self._Search('CHATS'))
-
-    Chats = property(_GetChats)
-    '''Queries a list of chats.
-
-    Type: tuple of L{IChat}
-    @type: tuple of L{IChat}'''
-
-    def _GetActiveChats(self):
-        return tuple(IChat(x, self) for x in self._Search('ACTIVECHATS'))
-
-    ActiveChats = property(_GetActiveChats)
-    '''Queries a list of active chats.
-
-    Type: tuple of L{IChat}
-    @type: tuple of L{IChat}'''
-
-    def _GetMissedChats(self):
-        return tuple(IChat(x, self) for x in self._Search('MISSEDCHATS'))
-
-    MissedChats = property(_GetMissedChats)
-    '''Queries a list of missed chats.
-
-    Type: tuple of L{IChat}
-    @type: tuple of L{IChat}'''
-
-    def _GetRecentChats(self):
-        return tuple(IChat(x, self) for x in self._Search('RECENTCHATS'))
-
-    RecentChats = property(_GetRecentChats)
-    '''Queries a list of recent chats.
-
-    Type: tuple of L{IChat}
-    @type: tuple of L{IChat}'''
-
-    def _GetBookmarkedChats(self):
-        return tuple(IChat(x, self) for x in self._Search('BOOKMARKEDCHATS'))
-
-    BookmarkedChats = property(_GetBookmarkedChats)
-    '''Queries a list of bookmarked chats.
-
-    Type: tuple of L{IChat}
-    @type: tuple of L{IChat}'''
-
-    def _GetMissedMessages(self):
-        return tuple(IChatMessage(x, self) for x in self._Search('MISSEDCHATMESSAGES'))
-
-    MissedMessages = property(_GetMissedMessages)
-    '''Queries a list of missed chat messages.
-
-    Type: L{IChatMessage}
-    @type: L{IChatMessage}'''
-
-    def _GetVoicemails(self):
-        return tuple(IVoicemail(x, self) for x in self._Search('VOICEMAILS'))
-
-    Voicemails = property(_GetVoicemails)
-    '''Queries a list of voicemails.
-
-    Type: L{IVoicemail}
-    @type: L{IVoicemail}'''
-
-    def _GetMissedVoicemails(self):
-        return tuple(IVoicemail(x, self) for x in self._Search('MISSEDVOICEMAILS'))
-
-    MissedVoicemails = property(_GetMissedVoicemails)
-    '''Requests a list of missed voicemails.
-
-    Type: L{IVoicemail}
-    @type: L{IVoicemail}'''
+    @type: bool
+    ''')
 
     def _GetConferences(self):
         confs = []
@@ -1297,90 +991,346 @@ class ISkype(EventHandlingBase):
                 confs.append(IConference(cid, self))
         return tuple(confs)
 
-    Conferences = property(_GetConferences)
-    '''Queries a list of call conferences.
+    Conferences = property(_GetConferences,
+    doc='''Queries a list of call conferences.
 
-    Type: tuple of L{IConference}
-    @type: tuple of L{IConference}'''
+    @type: tuple of L{IConference}
+    ''')
 
-    def _GetSmss(self):
-        return tuple(ISmsMessage(x, self) for x in self._Search('SMSS'))
+    def _GetConnectionStatus(self):
+        return self.Variable('CONNSTATUS')
 
-    Smss = property(_GetSmss)
-    '''Requests a list of all SMS messages.
+    ConnectionStatus = property(_GetConnectionStatus,
+    doc='''Queries the connection status of the Skype client.
 
-    Type: tuple of L{ISmsMessage}
-    @type: tuple of L{ISmsMessage}'''
+    @type: L{Connection status<enums.conUnknown>}
+    ''')
 
-    def _GetMissedSmss(self):
-        return tuple(ISmsMessage(x, self) for x in self._Search('MISSEDSMSS'))
+    def _GetConvert(self):
+        return self._Convert
 
-    MissedSmss = property(_GetMissedSmss)
-    '''Requests a list of all missed SMS messages.
+    Convert = property(_GetConvert,
+    doc='''Queries the conversion object.
 
-    Type: tuple of L{ISmsMessage}
-    @type: tuple of L{ISmsMessage}'''
+    @type: L{IConversion}
+    ''')
+
+    def _GetCurrentUser(self):
+        return IUser(self.CurrentUserHandle, self)
+
+    CurrentUser = property(_GetCurrentUser,
+    doc='''Queries the current user object.
+
+    @type: L{IUser}
+    ''')
+
+    def _GetCurrentUserHandle(self):
+        return self.Variable('CURRENTUSERHANDLE')
+
+    CurrentUserHandle = property(_GetCurrentUserHandle,
+    doc='''Queries the Skypename of the current user.
+
+    @type: unicode
+    ''')
+
+    def _GetCurrentUserProfile(self):
+        return self._Profile
+
+    CurrentUserProfile = property(_GetCurrentUserProfile,
+    doc='''Queries the user profile object.
+
+    @type: L{IProfile}
+    ''')
+
+    def _GetCurrentUserStatus(self):
+        return self.Variable('USERSTATUS')
+
+    def _SetCurrentUserStatus(self, value):
+        self.Variable('USERSTATUS', str(value))
+
+    CurrentUserStatus = property(_GetCurrentUserStatus, _SetCurrentUserStatus,
+    doc='''Queries/sets the online status of the current user.
+
+    @type: L{Online status<enums.olsUnknown>}
+    ''')
+
+    def _GetCustomGroups(self):
+        return tuple(IGroup(x, self) for x in self._Search('GROUPS', 'CUSTOM'))
+
+    CustomGroups = property(_GetCustomGroups,
+    doc='''Queries the list of custom contact groups. Custom groups are contact groups defined by the user.
+
+    @type: tuple of L{IGroup}
+    ''')
 
     def _GetFileTransfers(self):
         return tuple(IFileTransfer(x, self) for x in self._Search('FILETRANSFERS'))
 
-    FileTransfers = property(_GetFileTransfers)
-    '''Queries all file transfers.
+    FileTransfers = property(_GetFileTransfers,
+    doc='''Queries all file transfers.
 
-    Type: tuple of L{IFileTransfer}
-    @type: tuple of L{IFileTransfer}'''
-
-    def _GetActiveFileTransfers(self):
-        return tuple(IFileTransfer(x, self) for x in self._Search('ACTIVEFILETRANSFERS'))
-
-    ActiveFileTransfers = property(_GetActiveFileTransfers)
-    '''Queries currently active file transfers.
-
-    Type: tuple of L{IFileTransfer}
-    @type: tuple of L{IFileTransfer}'''
+    @type: tuple of L{IFileTransfer}
+    ''')
 
     def _GetFocusedContacts(self):
         return tuple(IUser(x, self) for x in esplit(chop(self.Variable('CONTACTS_FOCUSED'), 2)[-1]))
 
-    FocusedContacts = property(_GetFocusedContacts)
-    '''Queries a list of contacts selected in the contacts list.
+    FocusedContacts = property(_GetFocusedContacts,
+    doc='''Queries a list of contacts selected in the contacts list.
 
-    Type: tuple of L{IUser}
-    @type: tuple of L{IUser}'''
+    @type: tuple of L{IUser}
+    ''')
+
+    def _SetFriendlyName(self, FriendlyName):
+        self._API.SetFriendlyName(FriendlyName)
+
+    FriendlyName = property(fset=_SetFriendlyName,
+    doc='''Sets a "friendly" name for an application.
+
+    @type: unicode
+    ''')
+
+    def _GetFriends(self):
+        return tuple(IUser(x, self) for x in self._Search('FRIENDS'))
+
+    Friends = property(_GetFriends,
+    doc='''Queries the users in a contact list.
+
+    @type: tuple of L{IUser}
+    ''')
+
+    def _GetGroups(self):
+        return tuple(IGroup(x, self) for x in self._Search('GROUPS', 'ALL'))
+
+    Groups = property(_GetGroups,
+    doc='''Queries the list of all contact groups.
+
+    @type: tuple of L{IGroup}
+    ''')
+
+    def _GetHardwiredGroups(self):
+        return tuple(IGroup(x, self) for x in self._Search('GROUPS', 'HARDWIRED'))
+
+    HardwiredGroups = property(_GetHardwiredGroups,
+    doc='''Queries the list of hardwired contact groups. Hardwired groups are "smart" contact groups,
+    defined by Skype, that cannot be removed.
+
+    @type: tuple of L{IGroup}
+    ''')
+
+    def _GetMissedCalls(self):
+        return tuple(ICall(x, self) for x in self._Search('MISSEDCALLS'))
+
+    MissedCalls = property(_GetMissedCalls,
+    doc='''Queries a list of missed calls.
+
+    @type: tuple of L{ICall}
+    ''')
+
+    def _GetMissedChats(self):
+        return tuple(IChat(x, self) for x in self._Search('MISSEDCHATS'))
+
+    MissedChats = property(_GetMissedChats,
+    doc='''Queries a list of missed chats.
+
+    @type: tuple of L{IChat}
+    ''')
+
+    def _GetMissedMessages(self):
+        return tuple(IChatMessage(x, self) for x in self._Search('MISSEDCHATMESSAGES'))
+
+    MissedMessages = property(_GetMissedMessages,
+    doc='''Queries a list of missed chat messages.
+
+    @type: L{IChatMessage}
+    ''')
+
+    def _GetMissedSmss(self):
+        return tuple(ISmsMessage(x, self) for x in self._Search('MISSEDSMSS'))
+
+    MissedSmss = property(_GetMissedSmss,
+    doc='''Requests a list of all missed SMS messages.
+
+    @type: tuple of L{ISmsMessage}
+    ''')
+
+    def _GetMissedVoicemails(self):
+        return tuple(IVoicemail(x, self) for x in self._Search('MISSEDVOICEMAILS'))
+
+    MissedVoicemails = property(_GetMissedVoicemails,
+    doc='''Requests a list of missed voicemails.
+
+    @type: L{IVoicemail}
+    ''')
+
+    def _GetMute(self):
+        return self.Variable('MUTE') == 'ON'
+
+    def _SetMute(self, value):
+        self.Variable('MUTE', cndexp(value, 'ON', 'OFF'))
+
+    Mute = property(_GetMute, _SetMute,
+    doc='''Queries/sets the mute status of the Skype client.
+
+    Type: bool
+    Note: This value can be set only when there is an active call.
+
+    @type: bool
+    ''')
+
+    def _GetProtocol(self):
+        return self._API.Protocol
+
+    def _SetProtocol(self, value):
+        self._DoCommand('PROTOCOL %s' % value)
+        self._API.Protocol = int(value)
+
+    Protocol = property(_GetProtocol, _SetProtocol,
+    doc='''Queries/sets the protocol version used by the Skype client.
+
+    @type: int
+    ''')
+
+    def _GetRecentChats(self):
+        return tuple(IChat(x, self) for x in self._Search('RECENTCHATS'))
+
+    RecentChats = property(_GetRecentChats,
+    doc='''Queries a list of recent chats.
+
+    @type: tuple of L{IChat}
+    ''')
+
+    def _GetSettings(self):
+        return self._Settings
+
+    Settings = property(_GetSettings,
+    doc='''Queries the settings for Skype general parameters.
+
+    @type: L{ISettings}
+    ''')
+
+    def _GetSilentMode(self):
+        return self.Variable('SILENT_MODE') == 'ON'
+
+    def _SetSilentMode(self, value):
+        self.SendCommand(ICommand(-1, 'SET SILENT_MODE %s' % cndexp(value, 'ON', 'OFF')))
+
+    SilentMode = property(_GetSilentMode, _SetSilentMode,
+    doc='''Returns/sets Skype silent mode status.
+
+    @type: bool
+    ''')
+
+    def _GetSmss(self):
+        return tuple(ISmsMessage(x, self) for x in self._Search('SMSS'))
+
+    Smss = property(_GetSmss,
+    doc='''Requests a list of all SMS messages.
+
+    @type: tuple of L{ISmsMessage}
+    ''')
+
+    def _GetTimeout(self):
+        return self._Timeout
+
+    def _SetTimeout(self, value):
+        self._Timeout = int(value)
+
+    Timeout = property(_GetTimeout, _SetTimeout,
+    doc='''Queries/sets the wait timeout value in milliseconds. This timeout value applies to every
+    command sent to the Skype API. If a response is not received during the timeout period, an
+    L{ISkypeAPIError} exception is raised.
+
+    @type: int
+    ''')
+
+    def _GetUsersWaitingAuthorization(self):
+        return tuple(IUser(x, self) for x in self._Search('USERSWAITINGMYAUTHORIZATION'))
+
+    UsersWaitingAuthorization = property(_GetUsersWaitingAuthorization,
+    doc='''Queries the list of users waiting for authorization.
+
+    @type: tuple of L{IUser}
+    ''')
+
+    def _GetVersion(self):
+        return self.Variable('SKYPEVERSION')
+
+    Version = property(_GetVersion,
+    doc='''Queries the application version of the Skype client.
+
+    @type: unicode
+    ''')
+
+    def _GetVoicemails(self):
+        return tuple(IVoicemail(x, self) for x in self._Search('VOICEMAILS'))
+
+    Voicemails = property(_GetVoicemails,
+    doc='''Queries a list of voicemails.
+
+    @type: L{IVoicemail}
+    ''')
 
 
 class ISkypeEvents(object):
-    def Notify(self, Notification):
-        '''This event is triggered whenever Skype client sends a notification.
+    '''Events defined in L{ISkype}.
+    '''
 
-        @param Notification: Notification string.
-        @type Notification: unicode
-        @note: This is a custom Skype4Py event. Use it only if there is no dedicated event.
+    def ApplicationConnecting(self, App, Users):
+        '''This event is triggered when list of users connecting to an application changes.
+
+        @param App: Application object.
+        @type App: L{IApplication}
+        @param Users: Connecting users.
+        @type Users: tuple of L{IUser}
         '''
 
-    def Command(self, Command):
-        '''This event is triggered when a command is sent to the Skype API.
+    def ApplicationDatagram(self, App, Stream, Text):
+        '''This event is caused by the arrival of an application datagram.
 
-        @param Command: Command object.
-        @type Command: L{ICommand}
+        @param App: Application object.
+        @type App: L{IApplication}
+        @param Stream: Application stream that received the datagram.
+        @type Stream: L{IApplicationStream}
+        @param Text: The datagram text.
+        @type Text: unicode
         '''
 
-    def Reply(self, Command):
-        '''This event is triggered when the API replies to a command object.
+    def ApplicationReceiving(self, App, Streams):
+        '''This event is triggered when list of application receiving streams changes.
 
-        @param Command: Command object.
-        @type Command: L{ICommand}
+        @param App: Application object.
+        @type App: L{IApplication}
+        @param Streams: Application receiving streams.
+        @type Streams: tuple of L{IApplicationStream}
         '''
 
-    def Error(self, Command, Number, Description):
-        '''This event is triggered when an error occurs during execution of an API command.
+    def ApplicationSending(self, App, Streams):
+        '''This event is triggered when list of application sending streams changes.
 
-        @param Command: Command object that caused the error.
-        @type Command: L{ICommand}
-        @param Number: Error number returned by the Skype API.
-        @type Number: int
-        @param Description: Description of the error.
-        @type Description: unicode
+        @param App: Application object.
+        @type App: L{IApplication}
+        @param Streams: Application sending streams.
+        @type Streams: tuple of L{IApplicationStream}
+        '''
+
+    def ApplicationStreams(self, App, Streams):
+        '''This event is triggered when list of application streams changes.
+
+        @param App: Application object.
+        @type App: L{IApplication}
+        @param Streams: Application streams.
+        @type Streams: tuple of L{IApplicationStream}
+        '''
+
+    def AsyncSearchUsersFinished(self, Cookie, Users):
+        '''This event occurs when an asynchronous search is completed.
+
+        @param Cookie: Search identifier as returned by L{ISkype.AsyncSearchUsers}.
+        @type Cookie: int
+        @param Users: Found users.
+        @type Users: tuple of L{IUser}
+        @see: L{ICall.InputDevice}
         '''
 
     def AttachmentStatus(self, Status):
@@ -1388,64 +1338,6 @@ class ISkypeEvents(object):
 
         @param Status: New attachment status.
         @type Status: L{Attachment status<enums.apiAttachUnknown>}
-        '''
-
-    def ConnectionStatus(self, Status):
-        '''This event is caused by a connection status change.
-
-        @param Status: New connection status.
-        @type Status: L{Connection status<enums.conUnknown>}
-        '''
-
-    def UserStatus(self, Status):
-        '''This event is caused by a user status change.
-
-        @param Status: New user status.
-        @type Status: L{User status<enums.cusUnknown>}
-        '''
-
-    def OnlineStatus(self, User, Status):
-        '''This event is caused by a change in the online status of a user.
-
-        @param User: User object.
-        @type User: L{IUser}
-        @param Status: New online status of the user.
-        @type Status: L{Online status<enums.olsUnknown>}
-        '''
-
-    def CallStatus(self, Call, Status):
-        '''This event is caused by a change in call status.
-
-        @param Call: Call object.
-        @type Call: L{ICall}
-        @param Status: New status of the call.
-        @type Status: L{Call status<enums.clsUnknown>}
-        '''
-
-    def CallHistory(self):
-        '''This event is caused by a change in call history.'''
-
-    def Mute(self, Mute):
-        '''This event is caused by a change in mute status.
-
-        @param Mute: New mute status.
-        @type Mute: bool
-        '''
-
-    def MessageStatus(self, Message, Status):
-        '''This event is caused by a change in chat message status.
-
-        @param Message: Chat message object.
-        @type Message: L{IChatMessage}
-        @param Status: New status of the chat message.
-        @type Status: L{Chat message status<enums.cmsUnknown>}
-        '''
-
-    def MessageHistory(self, Username):
-        '''This event is caused by a change in message history.
-
-        @param Username: Name of the user whose message history changed.
-        @type Username: unicode
         '''
 
     def AutoAway(self, Automatic):
@@ -1464,128 +1356,8 @@ class ISkypeEvents(object):
         @type Code: unicode
         '''
 
-    def VoicemailStatus(self, Mail, Status):
-        '''This event is caused by a change in voicemail status.
-
-        @param Mail: Voicemail object.
-        @type Mail: L{IVoicemail}
-        @param Status: New status of the voicemail.
-        @type Status: L{Voicemail status<enums.vmsUnknown>}
-        '''
-
-    def ApplicationConnecting(self, App, Users):
-        '''This event is triggered when list of users connecting to an application changes.
-
-        @param App: Application object.
-        @type App: L{IApplication}
-        @param Users: Connecting users.
-        @type Users: tuple of L{IUser}
-        '''
-
-    def ApplicationStreams(self, App, Streams):
-        '''This event is triggered when list of application streams changes.
-
-        @param App: Application object.
-        @type App: L{IApplication}
-        @param Streams: Application streams.
-        @type Streams: tuple of L{IApplicationStream}
-        '''
-
-    def ApplicationDatagram(self, App, Stream, Text):
-        '''This event is caused by the arrival of an application datagram.
-
-        @param App: Application object.
-        @type App: L{IApplication}
-        @param Stream: Application stream that received the datagram.
-        @type Stream: L{IApplicationStream}
-        @param Text: The datagram text.
-        @type Text: unicode
-        '''
-
-    def ApplicationSending(self, App, Streams):
-        '''This event is triggered when list of application sending streams changes.
-
-        @param App: Application object.
-        @type App: L{IApplication}
-        @param Streams: Application sending streams.
-        @type Streams: tuple of L{IApplicationStream}
-        '''
-
-    def ApplicationReceiving(self, App, Streams):
-        '''This event is triggered when list of application receiving streams changes.
-
-        @param App: Application object.
-        @type App: L{IApplication}
-        @param Streams: Application receiving streams.
-        @type Streams: tuple of L{IApplicationStream}
-        '''
-
-    def ContactsFocused(self, Username):
-        '''This event is caused by a change in contacts focus.
-
-        @param Username: Name of the user that was focused or empty string if focus was lost.
-        @type Username: unicode
-        '''
-
-    def GroupVisible(self, Group, Visible):
-        '''This event is caused by a user hiding/showing a group in the contacts tab.
-
-        @param Group: Group object.
-        @type Group: L{IGroup}
-        @param Visible: Tells if the group is visible or not.
-        @type Visible: bool
-        '''
-
-    def GroupExpanded(self, Group, Expanded):
-        '''This event is caused by a user expanding or collapsing a group in the contacts tab.
-
-        @param Group: Group object.
-        @type Group: L{IGroup}
-        @param Expanded: Tells if the group is expanded (True) or collapsed (False).
-        @type Expanded: bool
-        '''
-
-    def GroupUsers(self, Group, Users):
-        '''This event is caused by a change in a contact group members.
-
-        @param Group: Group object.
-        @type Group: L{IGroup}
-        @param Users: Group members.
-        @type Users: tuple of L{IUser}
-        '''
-
-    def GroupDeleted(self, GroupId):
-        '''This event is caused by a user deleting a custom contact group.
-
-        @param GroupId: Id of the deleted group.
-        @type GroupId: int
-        '''
-
-    def UserMood(self, User, MoodText):
-        '''This event is caused by a change in the mood text of the user.
-
-        @param User: User object.
-        @type User: L{IUser}
-        @param MoodText: New mood text.
-        @type MoodText: unicode
-        '''
-
-    def SmsMessageStatusChanged(self, Message, Status):
-        '''This event is caused by a change in the SMS message status.
-
-        @param Message: SMS message object.
-        @type Message: L{ISmsMessage}
-        @param Status: New status of the SMS message.
-        @type Status: L{SMS message status<enums.smsMessageStatusUnknown>}
-        '''
-
-    def SmsTargetStatusChanged(self, Target, Status):
-        '''This event is caused by a change in the SMS target status.
-
-        @param Target: SMS target object.
-        @type Target: L{ISmsTarget}
-        @param Status: New status of the SMS target.
-        @type Status: L{SMS target status<enums.smsTargetStatusUnknown>}
+    def CallHistory(self):
+        '''This event is caused by a change in call history.
         '''
 
     def CallInputStatusChanged(self, Call, Active):
@@ -1595,16 +1367,6 @@ class ISkypeEvents(object):
         @type Call: L{ICall}
         @param Active: New voice input status (active when True).
         @type Active: bool
-        '''
-
-    def AsyncSearchUsersFinished(self, Cookie, Users):
-        '''This event occurs when an asynchronous search is completed.
-
-        @param Cookie: Search identifier as returned by L{ISkype.AsyncSearchUsers}.
-        @type Cookie: int
-        @param Users: Found users.
-        @type Users: tuple of L{IUser}
-        @see: L{ICall.InputDevice}
         '''
 
     def CallSeenStatusChanged(self, Call, Seen):
@@ -1617,41 +1379,13 @@ class ISkypeEvents(object):
         @see: L{ICall.Seen}
         '''
 
-    def PluginEventClicked(self, Event):
-        '''This event occurs when a user clicks on a plug-in event.
+    def CallStatus(self, Call, Status):
+        '''This event is caused by a change in call status.
 
-        @param Event: Plugin event object.
-        @type Event: L{IPluginEvent}
-        '''
-
-    def PluginMenuItemClicked(self, MenuItem, Users, PluginContext, ContextId):
-        '''This event occurs when a user clicks on a plug-in menu item.
-
-        @param MenuItem: Menu item object.
-        @type MenuItem: L{IPluginMenuItem}
-        @param Users: Users this item refers to.
-        @type Users: tuple of L{IUser}
-        @param PluginContext: Plug-in context.
-        @type PluginContext: L{Plug-in context<enums.pluginContextUnknown>}
-        @param ContextId: Context Id.
-        @type ContextId: unicode
-        @see: L{IPluginMenuItem}
-        '''
-
-    def WallpaperChanged(self, Path):
-        '''This event occurs when client wallpaper changes.
-
-        @param Path: Path to new wallpaper bitmap.
-        @type Path: str
-        '''
-
-    def FileTransferStatusChanged(self, Transfer, Status):
-        '''This event occurs when a file transfer status changes.
-
-        @param Transfer: File transfer object.
-        @type Transfer: L{IFileTransfer}
-        @param Status: New status of the file transfer.
-        @type Status: L{File transfer status<enums.fileTransferStatusNew>}
+        @param Call: Call object.
+        @type Call: L{ICall}
+        @param Status: New status of the call.
+        @type Status: L{Call status<enums.clsUnknown>}
         '''
 
     def CallTransferStatusChanged(self, Call, Status):
@@ -1661,24 +1395,6 @@ class ISkypeEvents(object):
         @type Call: L{ICall}
         @param Status: New status of the call transfer.
         @type Status: L{Call status<enums.clsUnknown>}
-        '''
-
-    def ChatMembersChanged(self, Chat, Members):
-        '''This event occurs when a list of chat members change.
-
-        @param Chat: Chat object.
-        @type Chat: L{IChat}
-        @param Members: Chat members.
-        @type Members: tuple of L{IUser}
-        '''
-
-    def ChatMemberRoleChanged(self, Member, Role):
-        '''This event occurs when a chat member role changes.
-
-        @param Member: Chat member object.
-        @type Member: L{IChatMember}
-        @param Role: New member role.
-        @type Role: L{Chat member role<enums.chatMemberRoleUnknown>}
         '''
 
     def CallVideoReceiveStatusChanged(self, Call, Status):
@@ -1706,6 +1422,217 @@ class ISkypeEvents(object):
         @type Call: L{ICall}
         @param Status: New video status of the call.
         @type Status: L{Call video status<enums.cvsUnknown>}
+        '''
+
+    def ChatMemberRoleChanged(self, Member, Role):
+        '''This event occurs when a chat member role changes.
+
+        @param Member: Chat member object.
+        @type Member: L{IChatMember}
+        @param Role: New member role.
+        @type Role: L{Chat member role<enums.chatMemberRoleUnknown>}
+        '''
+
+    def ChatMembersChanged(self, Chat, Members):
+        '''This event occurs when a list of chat members change.
+
+        @param Chat: Chat object.
+        @type Chat: L{IChat}
+        @param Members: Chat members.
+        @type Members: tuple of L{IUser}
+        '''
+
+    def Command(self, Command):
+        '''This event is triggered when a command is sent to the Skype API.
+
+        @param Command: Command object.
+        @type Command: L{ICommand}
+        '''
+
+    def ConnectionStatus(self, Status):
+        '''This event is caused by a connection status change.
+
+        @param Status: New connection status.
+        @type Status: L{Connection status<enums.conUnknown>}
+        '''
+
+    def ContactsFocused(self, Username):
+        '''This event is caused by a change in contacts focus.
+
+        @param Username: Name of the user that was focused or empty string if focus was lost.
+        @type Username: unicode
+        '''
+
+    def Error(self, Command, Number, Description):
+        '''This event is triggered when an error occurs during execution of an API command.
+
+        @param Command: Command object that caused the error.
+        @type Command: L{ICommand}
+        @param Number: Error number returned by the Skype API.
+        @type Number: int
+        @param Description: Description of the error.
+        @type Description: unicode
+        '''
+
+    def FileTransferStatusChanged(self, Transfer, Status):
+        '''This event occurs when a file transfer status changes.
+
+        @param Transfer: File transfer object.
+        @type Transfer: L{IFileTransfer}
+        @param Status: New status of the file transfer.
+        @type Status: L{File transfer status<enums.fileTransferStatusNew>}
+        '''
+
+    def GroupDeleted(self, GroupId):
+        '''This event is caused by a user deleting a custom contact group.
+
+        @param GroupId: Id of the deleted group.
+        @type GroupId: int
+        '''
+
+    def GroupExpanded(self, Group, Expanded):
+        '''This event is caused by a user expanding or collapsing a group in the contacts tab.
+
+        @param Group: Group object.
+        @type Group: L{IGroup}
+        @param Expanded: Tells if the group is expanded (True) or collapsed (False).
+        @type Expanded: bool
+        '''
+
+    def GroupUsers(self, Group, Users):
+        '''This event is caused by a change in a contact group members.
+
+        @param Group: Group object.
+        @type Group: L{IGroup}
+        @param Users: Group members.
+        @type Users: tuple of L{IUser}
+        '''
+
+    def GroupVisible(self, Group, Visible):
+        '''This event is caused by a user hiding/showing a group in the contacts tab.
+
+        @param Group: Group object.
+        @type Group: L{IGroup}
+        @param Visible: Tells if the group is visible or not.
+        @type Visible: bool
+        '''
+
+    def MessageHistory(self, Username):
+        '''This event is caused by a change in message history.
+
+        @param Username: Name of the user whose message history changed.
+        @type Username: unicode
+        '''
+
+    def MessageStatus(self, Message, Status):
+        '''This event is caused by a change in chat message status.
+
+        @param Message: Chat message object.
+        @type Message: L{IChatMessage}
+        @param Status: New status of the chat message.
+        @type Status: L{Chat message status<enums.cmsUnknown>}
+        '''
+
+    def Mute(self, Mute):
+        '''This event is caused by a change in mute status.
+
+        @param Mute: New mute status.
+        @type Mute: bool
+        '''
+
+    def Notify(self, Notification):
+        '''This event is triggered whenever Skype client sends a notification.
+
+        @param Notification: Notification string.
+        @type Notification: unicode
+        @note: Use this event only if there is no dedicated one.
+        '''
+
+    def OnlineStatus(self, User, Status):
+        '''This event is caused by a change in the online status of a user.
+
+        @param User: User object.
+        @type User: L{IUser}
+        @param Status: New online status of the user.
+        @type Status: L{Online status<enums.olsUnknown>}
+        '''
+
+    def PluginEventClicked(self, Event):
+        '''This event occurs when a user clicks on a plug-in event.
+
+        @param Event: Plugin event object.
+        @type Event: L{IPluginEvent}
+        '''
+
+    def PluginMenuItemClicked(self, MenuItem, Users, PluginContext, ContextId):
+        '''This event occurs when a user clicks on a plug-in menu item.
+
+        @param MenuItem: Menu item object.
+        @type MenuItem: L{IPluginMenuItem}
+        @param Users: Users this item refers to.
+        @type Users: tuple of L{IUser}
+        @param PluginContext: Plug-in context.
+        @type PluginContext: unicode
+        @param ContextId: Context Id.
+        @type ContextId: unicode
+        @see: L{IPluginMenuItem}
+        '''
+
+    def Reply(self, Command):
+        '''This event is triggered when the API replies to a command object.
+
+        @param Command: Command object.
+        @type Command: L{ICommand}
+        '''
+
+    def SmsMessageStatusChanged(self, Message, Status):
+        '''This event is caused by a change in the SMS message status.
+
+        @param Message: SMS message object.
+        @type Message: L{ISmsMessage}
+        @param Status: New status of the SMS message.
+        @type Status: L{SMS message status<enums.smsMessageStatusUnknown>}
+        '''
+
+    def SmsTargetStatusChanged(self, Target, Status):
+        '''This event is caused by a change in the SMS target status.
+
+        @param Target: SMS target object.
+        @type Target: L{ISmsTarget}
+        @param Status: New status of the SMS target.
+        @type Status: L{SMS target status<enums.smsTargetStatusUnknown>}
+        '''
+
+    def UserMood(self, User, MoodText):
+        '''This event is caused by a change in the mood text of the user.
+
+        @param User: User object.
+        @type User: L{IUser}
+        @param MoodText: New mood text.
+        @type MoodText: unicode
+        '''
+
+    def UserStatus(self, Status):
+        '''This event is caused by a user status change.
+
+        @param Status: New user status.
+        @type Status: L{User status<enums.cusUnknown>}
+        '''
+
+    def VoicemailStatus(self, Mail, Status):
+        '''This event is caused by a change in voicemail status.
+
+        @param Mail: Voicemail object.
+        @type Mail: L{IVoicemail}
+        @param Status: New status of the voicemail.
+        @type Status: L{Voicemail status<enums.vmsUnknown>}
+        '''
+
+    def WallpaperChanged(self, Path):
+        '''This event occurs when client wallpaper changes.
+
+        @param Path: Path to new wallpaper bitmap.
+        @type Path: unicode
         '''
 
 
