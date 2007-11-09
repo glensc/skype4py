@@ -395,3 +395,10 @@ chatTypeLegacyDialog = 'LEGACY_DIALOG'
 chatTypeLegacyUnsubscribed = 'LEGACY_UNSUBSCRIBED'
 chatTypeMultiChat = 'MULTICHAT'
 chatTypeSharedGroup = 'SHAREDGROUP'
+
+#{ Window state
+wndUnknown = 'UNKNOWN'
+wndNormal = 'NORMAL'
+wndMinimized = 'MINIMIZED'
+wndMaximized = 'MAXIMIZED'
+wndHidden = 'HIDDEN'

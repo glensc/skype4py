@@ -257,6 +257,8 @@ class ISkype(EventHandlingBase):
                     o = IChat(ObjectId, self)
                     if PropName == 'MEMBERS':
                         self._CallEventHandler('ChatMembersChanged', o, tuple(IUser(x, self) for x in esplit(Value)))
+                    if PropName in ('OPENED', 'CLOSED'):
+                        self._CallEventHandler('ChatWindowState', o, PropName == 'OPENED')
                 elif ObjectType == 'CHATMEMBER':
                     o = IChatMember(ObjectId, self)
                     if PropName == 'ROLE':
@@ -305,7 +307,7 @@ class ISkype(EventHandlingBase):
             elif a in ('PROFILE', 'PRIVILEGE'):
                 ObjectType, ObjectId, PropName, Value = [a, ''] + chop(b)
                 self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
-            elif a in ('CURRENTUSERHANDLE', 'USERSTATUS', 'CONNSTATUS', 'PREDICTIVE_DIALER_COUNTRY', 'SILENT_MODE', 'AUDIO_IN', 'AUDIO_OUT', 'RINGER', 'MUTE', 'AUTOAWAY'):
+            elif a in ('CURRENTUSERHANDLE', 'USERSTATUS', 'CONNSTATUS', 'PREDICTIVE_DIALER_COUNTRY', 'SILENT_MODE', 'AUDIO_IN', 'AUDIO_OUT', 'RINGER', 'MUTE', 'AUTOAWAY', 'WINDOWSTATE'):
                 ObjectType, ObjectId, PropName, Value = [a, '', '', b]
                 self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
                 if ObjectType == 'MUTE':
@@ -316,6 +318,8 @@ class ISkype(EventHandlingBase):
                     self._CallEventHandler('UserStatus', Value)
                 elif ObjectType == 'AUTOAWAY':
                     self._CallEventHandler('AutoAway', Value == 'ON')
+                elif ObjectType == 'WINDOWSTATE':
+                    self._CallEventHandler('ClientWindowState', Value)
             elif a == 'CALLHISTORYCHANGED':
                 self._CallEventHandler('CallHistory')
             elif a == 'IMHISTORYCHANGED':
@@ -1440,6 +1444,22 @@ class ISkypeEvents(object):
         @type Chat: L{IChat}
         @param Members: Chat members.
         @type Members: tuple of L{IUser}
+        '''
+
+    def ChatWindowState(self, Chat, State):
+        '''This event occurs when chat window is opened or closed.
+
+        @param Chat: Chat object.
+        @type Chat: L{IChat}
+        @param State: True if the window was opened or False if closed.
+        @type State: bool
+        '''
+
+    def ClientWindowState(self, State):
+        '''This event occurs when the state of the client window changes.
+
+        @param State: New window state.
+        @type State: L{Window state<enums.wndUnknown}
         '''
 
     def Command(self, Command):

@@ -272,6 +272,18 @@ class IClient(object):
     @type: unicode
     ''')
 
+    def _GetWindowState(self):
+        return self._Skype.Variable('WINDOWSTATE')
+
+    def _SetWindowState(self, value):
+        self._Skype.Variable('WINDOWSTATE', value)
+
+    WindowState = property(_GetWindowState, _SetWindowState,
+    doc='''WindowState.
+
+    @type: L{Window state<enums.wndUnknown>}
+    ''')
+
 
 class IPluginEvent(Cached):
     '''Represents an event displayed in Skype client.
