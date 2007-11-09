@@ -21,11 +21,14 @@ class ISettings(object):
     def Avatar(self, Id=1, Set=None):
         '''Sets user avatar picture from file.
 
-        @param Id: Id
+        @param Id: Optional avatar Id.
         @type Id: int
-        @param Set: Set
-        @type Set: ?
+        @param Set: New avatar file name.
+        @type Set: unicode
+        @deprecated: Use L{LoadAvatarFromFile} instead.
         '''
+        from warnings import warn
+        warn('ISettings.Avatar: Use ISettings.LoadAvatarFromFile instead.', DeprecationWarning, stacklevel=2)
         if Set == None:
             raise TypeError('Argument \'Set\' is mandatory!')
         self.LoadAvatarFromFile(Set, Id)
@@ -33,39 +36,40 @@ class ISettings(object):
     def LoadAvatarFromFile(self, Filename, AvatarId=1):
         '''Loads user avatar picture from file.
 
-        @param Filename: Filename
+        @param Filename: Name of the avatar file.
         @type Filename: unicode
-        @param AvatarId: AvatarId
+        @param AvatarId: Optional avatar Id.
         @type AvatarId: int
         '''
         s = 'AVATAR %s %s' % (AvatarId, Filename)
         self._Skype._DoCommand('SET %s' % s, s)
 
     def ResetIdleTimer(self):
-        '''ResetIdleTimer.
+        '''Reset Skype idle timer.
         '''
         self._Skype._DoCommand('RESETIDLETIMER')
 
     def RingTone(self, Id=1, Set=None):
-        '''Returns/sets ringtone.
+        '''Returns/sets a ringtone.
 
-        @param Id: Id
+        @param Id: Ringtone Id
         @type Id: int
-        @param Set: Set
-        @type Set: ?
-        @return: ?
-        @rtype: ?
+        @param Set: Path to new ringtone or None if the current path should be queried.
+        @type Set: unicode
+        @return: Current path if Set=None, None otherwise.
+        @rtype: unicode or None
         '''
         return self._Skype._Property('RINGTONE', Id, '', Set)
 
     def RingToneStatus(self, Id=1, Set=None):
-        '''Returns/sets ringtone status.
+        '''Enables/disables a ringtone.
 
-        @param Id: Id
+        @param Id: Ringtone Id
         @type Id: int
-        @param Set: Set
-        @type Set: ?
-        @return: ?
+        @param Set: True/False if the ringtone should be enabled/disabled or None if the current
+        status should be queried.
+        @type Set: bool
+        @return: Current status if Set=None, None otherwise.
         @rtype: bool
         '''
         if Set == None:
@@ -75,9 +79,9 @@ class ISettings(object):
     def SaveAvatarToFile(self, Filename, AvatarId=1):
         '''Saves user avatar picture to file.
 
-        @param Filename: Filename
+        @param Filename: Destination path.
         @type Filename: unicode
-        @param AvatarId: AvatarId
+        @param AvatarId: Avatar Id
         @type AvatarId: int
         '''
         s = 'AVATAR %s %s' % (AvatarId, Filename)
@@ -98,7 +102,7 @@ class ISettings(object):
         self._Skype.Variable('AEC', cndexp(value, 'ON', 'OFF'))
 
     AEC = property(_GetAEC, _SetAEC,
-    doc='''AEC.
+    doc='''Automatic echo cancellation state.
 
     @type: bool
     ''')
@@ -110,7 +114,7 @@ class ISettings(object):
         self._Skype.Variable('AGC', cndexp(value, 'ON', 'OFF'))
 
     AGC = property(_GetAGC, _SetAGC,
-    doc='''AGC.
+    doc='''Automatic gain control state.
 
     @type: bool
     ''')
@@ -122,7 +126,7 @@ class ISettings(object):
         self._Skype.Variable('AUDIO_IN', value)
 
     AudioIn = property(_GetAudioIn, _SetAudioIn,
-    doc='''AudioIn.
+    doc='''Name of an audio input device.
 
     @type: unicode
     ''')
@@ -134,7 +138,7 @@ class ISettings(object):
         self._Skype.Variable('AUDIO_OUT', value)
 
     AudioOut = property(_GetAudioOut, _SetAudioOut,
-    doc='''AudioOut.
+    doc='''Name of an audio output device.
 
     @type: unicode
     ''')
@@ -146,7 +150,7 @@ class ISettings(object):
         self._Skype.Variable('AUTOAWAY', cndexp(value, 'ON', 'OFF'))
 
     AutoAway = property(_GetAutoAway, _SetAutoAway,
-    doc='''AutoAway.
+    doc='''Auto away status.
 
     @type: bool
     ''')
@@ -158,7 +162,7 @@ class ISettings(object):
         self._Skype.Variable('UI_LANGUAGE', value)
 
     Language = property(_GetLanguage, _SetLanguage,
-    doc='''Language.
+    doc='''Language of the Skype client as a two char code.
 
     @type: unicode
     ''')
@@ -170,7 +174,7 @@ class ISettings(object):
         self._Skype.Variable('PCSPEAKER', cndexp(value, 'ON', 'OFF'))
 
     PCSpeaker = property(_GetPCSpeaker, _SetPCSpeaker,
-    doc='''PCSpeaker.
+    doc='''PCSpeaker status.
 
     @type: bool
     ''')
@@ -182,7 +186,7 @@ class ISettings(object):
         self._Skype.Variable('RINGER', value)
 
     Ringer = property(_GetRinger, _SetRinger,
-    doc='''Ringer.
+    doc='''Name of a ringer device.
 
     @type: unicode
     ''')
@@ -194,7 +198,7 @@ class ISettings(object):
         self._Skype.Variable('VIDEO_IN', value)
 
     VideoIn = property(_GetVideoIn, _SetVideoIn,
-    doc='''VideoIn.
+    doc='''Name of a video input device.
 
     @type: unicode
     ''')

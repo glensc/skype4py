@@ -13,8 +13,8 @@ class IProfile(object):
     def __init__(self, Skype):
         '''__init__.
 
-        @param Skype: Skype
-        @type Skype: ?
+        @param Skype: Skype object.
+        @type Skype: L{ISkype}
         '''
         self._SkypeRef = weakref.ref(Skype)
 
@@ -36,7 +36,7 @@ class IProfile(object):
         self._Property('ABOUT', value)
 
     About = property(_GetAbout, _SetAbout,
-    doc='''About.
+    doc='''"About" field of the profile.
 
     @type: unicode
     ''')
@@ -45,16 +45,19 @@ class IProfile(object):
         return int(self._Property('PSTN_BALANCE'))
 
     Balance = property(_GetBalance,
-    doc='''Balance.
+    doc='''Skype credit balance. Note that the precision of profile balance value is currently
+    fixed at 2 decimal places, regardless of currency or any other settings. Use L{BalanceValue}
+    to get the balance expressed in currency.
 
     @type: int
+    @see: L{BalanceValue}
     ''')
 
     def _GetBalanceCurrency(self):
         return self._Property('PSTN_BALANCE_CURRENCY')
 
     BalanceCurrency = property(_GetBalanceCurrency,
-    doc='''BalanceCurrency.
+    doc='''Skype credit balance currency.
 
     @type: unicode
     ''')
@@ -63,7 +66,7 @@ class IProfile(object):
         return (u'%s %.2f' % (self.BalanceCurrency, self.BalanceValue)).strip()
 
     BalanceToText = property(_GetBalanceToText,
-    doc='''BalanceToText.
+    doc='''Skype credit balance as properly formatted text with currency.
 
     @type: unicode
     ''')
@@ -72,7 +75,7 @@ class IProfile(object):
         return float(self._Property('PSTN_BALANCE')) / 100
 
     BalanceValue = property(_GetBalanceValue,
-    doc='''BalanceValue.
+    doc='''Skype credit balance expressed in currency.
 
     @type: float
     ''')
@@ -91,7 +94,7 @@ class IProfile(object):
             self._Property('BIRTHDAY', 0)
 
     Birthday = property(_GetBirthday, _SetBirthday,
-    doc='''Birthday.
+    doc='''"Birthday" field of the profile.
 
     @type: datetime.date
     ''')
@@ -103,7 +106,7 @@ class IProfile(object):
         self._Property('CALL_APPLY_CF', cndexp(value, 'TRUE', 'FALSE'))
 
     CallApplyCF = property(_GetCallApplyCF, _SetCallApplyCF,
-    doc='''CallApplyCF.
+    doc='''Tells if call forwarding is enabled in the profile.
 
     @type: bool
     ''')
@@ -115,7 +118,7 @@ class IProfile(object):
         self._Property('CALL_FORWARD_RULES', value)
 
     CallForwardRules = property(_GetCallForwardRules, _SetCallForwardRules,
-    doc='''CallForwardRules.
+    doc='''Call forwarding rules of the profile.
 
     @type: unicode
     ''')
@@ -127,7 +130,7 @@ class IProfile(object):
         self._Property('CALL_NOANSWER_TIMEOUT', value)
 
     CallNoAnswerTimeout = property(_GetCallNoAnswerTimeout, _SetCallNoAnswerTimeout,
-    doc='''CallNoAnswerTimeout.
+    doc='''Number of seconds a call will ring without being answered before it stops ringing.
 
     @type: int
     ''')
@@ -139,7 +142,7 @@ class IProfile(object):
         self._Property('CALL_SEND_TO_VM', cndexp(value, 'TRUE', 'FALSE'))
 
     CallSendToVM = property(_GetCallSendToVM, _SetCallSendToVM,
-    doc='''CallSendToVM.
+    doc='''Tells whether calls will be sent to the voicemail.
 
     @type: bool
     ''')
@@ -151,7 +154,7 @@ class IProfile(object):
         self._Property('CITY', value)
 
     City = property(_GetCity, _SetCity,
-    doc='''City.
+    doc='''"City" field of the profile.
 
     @type: unicode
     ''')
@@ -163,7 +166,7 @@ class IProfile(object):
         self._Property('COUNTRY', value)
 
     Country = property(_GetCountry, _SetCountry,
-    doc='''Country.
+    doc='''"Country" field of the profile.
 
     @type: unicode
     ''')
@@ -175,7 +178,7 @@ class IProfile(object):
         self._Property('FULLNAME', value)
 
     FullName = property(_GetFullName, _SetFullName,
-    doc='''FullName.
+    doc='''"Full name" field of the profile.
 
     @type: unicode
     ''')
@@ -187,7 +190,7 @@ class IProfile(object):
         self._Property('HOMEPAGE', value)
 
     Homepage = property(_GetHomepage, _SetHomepage,
-    doc='''Homepage.
+    doc='''"Homepage" field of the profile.
 
     @type: unicode
     ''')
@@ -196,21 +199,21 @@ class IProfile(object):
         return self._Property('IPCOUNTRY')
 
     IPCountry = property(_GetIPCountry,
-    doc='''IPCountry.
+    doc='''ISO country code queried by IP address.
 
     @type: unicode
     ''')
 
     def _GetLanguages(self):
-        return self._Property('LANGUAGES')
+        return esplit(self._Property('LANGUAGES'))
 
     def _SetLanguages(self, value):
-        self._Property('LANGUAGES', value)
+        self._Property('LANGUAGES', ' '.join(value))
 
     Languages = property(_GetLanguages, _SetLanguages,
-    doc='''Languages.
+    doc='''"Language codes of the profile.
 
-    @type: unicode
+    @type: tuple of unicode
     ''')
 
     def _GetMoodText(self):
@@ -220,7 +223,7 @@ class IProfile(object):
         self._Property('MOOD_TEXT', value)
 
     MoodText = property(_GetMoodText, _SetMoodText,
-    doc='''MoodText.
+    doc='''"Mood text" field of the profile.
 
     @type: unicode
     ''')
@@ -232,7 +235,7 @@ class IProfile(object):
         self._Property('PHONE_HOME', value)
 
     PhoneHome = property(_GetPhoneHome, _SetPhoneHome,
-    doc='''PhoneHome.
+    doc='''"Phone home" field of the profile.
 
     @type: unicode
     ''')
@@ -244,7 +247,7 @@ class IProfile(object):
         self._Property('PHONE_MOBILE', value)
 
     PhoneMobile = property(_GetPhoneMobile, _SetPhoneMobile,
-    doc='''PhoneMobile.
+    doc='''"Phone mobile" field of the profile.
 
     @type: unicode
     ''')
@@ -256,7 +259,7 @@ class IProfile(object):
         self._Property('PHONE_OFFICE', value)
 
     PhoneOffice = property(_GetPhoneOffice, _SetPhoneOffice,
-    doc='''PhoneOffice.
+    doc='''"Phone office" field of the profile.
 
     @type: unicode
     ''')
@@ -268,7 +271,7 @@ class IProfile(object):
         self._Property('PROVINCE', value)
 
     Province = property(_GetProvince, _SetProvince,
-    doc='''Province.
+    doc='''"Province" field of the profile.
 
     @type: unicode
     ''')
@@ -280,9 +283,10 @@ class IProfile(object):
         self._Property('RICH_MOOD_TEXT', value)
 
     RichMoodText = property(_GetRichMoodText, _SetRichMoodText,
-    doc='''RichMoodText.
+    doc='''Rich mood text of the profile.
 
     @type: unicode
+    @see: U{https://developer.skype.com/Docs/ApiDoc/SET_PROFILE_RICH_MOOD_TEXT}
     ''')
 
     def _GetSex(self):
@@ -292,9 +296,9 @@ class IProfile(object):
         self._Property('SEX', value)
 
     Sex = property(_GetSex, _SetSex,
-    doc='''Sex.
+    doc='''"Sex" field of the profile.
 
-    @type: ?
+    @type: L{User sex<enums.usexUnknown>}
     ''')
 
     def _GetTimezone(self):
@@ -304,16 +308,16 @@ class IProfile(object):
         self._Property('TIMEZONE', value)
 
     Timezone = property(_GetTimezone, _SetTimezone,
-    doc='''Timezone.
+    doc='''Timezone of the current profile in minutes from GMT.
 
     @type: int
     ''')
 
     def _GetValidatedSmsNumbers(self):
-        return self._Property('SMS_VALIDATED_NUMBERS')
+        return esplit(self._Property('SMS_VALIDATED_NUMBERS'), ', ')
 
     ValidatedSmsNumbers = property(_GetValidatedSmsNumbers,
-    doc='''ValidatedSmsNumbers.
+    doc='''List of phone numbers the user has registered for usage in reply-to field of SMS messages.
 
-    @type: unicode
+    @type: tuple of unicode
     ''')

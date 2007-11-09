@@ -22,48 +22,48 @@ class IChat(Cached):
         return self._Skype._Property('CHAT', self._Name, PropName, Value, Cache)
 
     def AcceptAdd(self):
-        '''AcceptAdd.
+        '''Accepts a shared group add request.
         '''
         self._Alter('ACCEPTADD')
 
-    def AddMembers(self, pMembers):
+    def AddMembers(self, *Members):
         '''Adds new members to the chat.
 
-        @param pMembers: pMembers
-        @type pMembers: ?
+        @param Members: One or more users to add.
+        @type Members: L{IUser}
         '''
-        self._Alter('ADDMEMBERS', ', '.join([x.Handle for x in pMembers]))
+        self._Alter('ADDMEMBERS', ', '.join(x.Handle for x in Members))
 
     def Bookmark(self):
-        '''Bookmarks the chat.
+        '''Bookmarks the chat in Skype client.
         '''
         self._Alter('BOOKMARK')
 
     def ClearRecentMessages(self):
-        '''ClearRecentMessages.
+        '''Clears recent chat messages.
         '''
         self._Alter('CLEARRECENTMESSAGES')
 
     def Disband(self):
-        '''Disband.
+        '''Ends the chat.
         '''
         self._Alter('DISBAND')
 
     def EnterPassword(self, Password):
-        '''EnterPassword.
+        '''Enters chat password.
 
         @param Password: Password
-        @type Password: ?
+        @type Password: unicode
         '''
         self._Alter('ENTERPASSWORD', Password)
 
     def Join(self):
-        '''Join.
+        '''Joins the chat.
         '''
         self._Alter('JOIN')
 
     def Kick(self, Handle):
-        '''Kick.
+        '''Kicks a member from chat.
 
         @param Handle: Handle
         @type Handle: unicode
@@ -71,7 +71,7 @@ class IChat(Cached):
         self._Alter('KICK', Handle)
 
     def KickBan(self, Handle):
-        '''KickBan.
+        '''Kicks and bans a member from chat.
 
         @param Handle: Handle
         @type Handle: unicode
@@ -84,17 +84,17 @@ class IChat(Cached):
         self._Alter('LEAVE')
 
     def OpenWindow(self):
-        '''Opens chat window.
+        '''Opens the chat window.
         '''
-        self._Skype._DoCommand('OPEN CHAT %s' % self._Name)
+        self._Skype.Client.OpenDialog('CHAT', self._Name)
 
     def SendMessage(self, MessageText):
-        '''Sends chat message.
+        '''Sends a chat message.
 
-        @param MessageText: MessageText
+        @param MessageText: Message text
         @type MessageText: unicode
-        @return: ?
-        @rtype: ?
+        @return: Message object
+        @rtype: L{IChatMessage}
         '''
         msgs1 = self.RecentMessages
         self._Skype._DoCommand('CHATMESSAGE %s %s' % (self._Name, MessageText))
@@ -104,17 +104,17 @@ class IChat(Cached):
                 return m
 
     def SetPassword(self, Password, Hint=''):
-        '''SetPassword.
+        '''Sets the chat password.
 
         @param Password: Password
-        @type Password: ?
-        @param Hint: Hint
-        @type Hint: ?
+        @type Password: unicode
+        @param Hint: Password hint
+        @type Hint: unicode
         '''
         self._Alter('SETPASSWORD', '%s %s' % (Password, Hint))
 
     def Unbookmark(self):
-        '''Bookmarks the chat.
+        '''Unbookmarks the chat.
         '''
         self._Alter('UNBOOKMARK')
 
@@ -122,9 +122,9 @@ class IChat(Cached):
         return tuple(IUser(x, self._Skype) for x in esplit(self._Property('ACTIVEMEMBERS', Cache=False)))
 
     ActiveMembers = property(_GetActiveMembers,
-    doc='''ActiveMembers.
+    doc='''Active members of a chat.
 
-    @type: ?
+    @type: tuple of L{IUser}
     ''')
 
     def _GetActivityDatetime(self):
@@ -132,7 +132,7 @@ class IChat(Cached):
         return datetime.fromtimestamp(self.ActivityTimestamp)
 
     ActivityDatetime = property(_GetActivityDatetime,
-    doc='''ActivityDatetime.
+    doc='''Returns chat activity timestamp as datetime.
 
     @type: datetime.datetime
     ''')
@@ -141,54 +141,56 @@ class IChat(Cached):
         return float(self._Property('ACTIVITY_TIMESTAMP'))
 
     ActivityTimestamp = property(_GetActivityTimestamp,
-    doc='''ActivityTimestamp.
+    doc='''Returns chat activity timestamp.
 
     @type: float
+    @see: L{ActivityDatetime}
     ''')
 
     def _GetAdder(self):
         return IUser(self._Property('ADDER'), self._Skype)
 
     Adder = property(_GetAdder,
-    doc='''Adder.
+    doc='''Returns the user that added current user to the chat.
 
-    @type: ?
+    @type: L{IUser}
     ''')
 
     def _SetAlertString(self, value):
         self._Alter('SETALERTSTRING', quote('=%s' % value))
 
     AlertString = property(fset=_SetAlertString,
-    doc='''AlertString.
+    doc='''Chat alert string. Only messages containing words from this string will cause a
+    notification to pop up on the screen.
 
-    @type: ?
+    @type: unicode
     ''')
 
     def _GetApplicants(self):
         return tuple(IUser(x, self._Skype) for x in esplit(self._Property('APPLICANTS')))
 
     Applicants = property(_GetApplicants,
-    doc='''Applicants.
+    doc='''Chat applicants.
 
-    @type: ?
+    @type: tuple of L{IUser}
     ''')
 
     def _GetBlob(self):
         return self._Property('BLOB')
 
     Blob = property(_GetBlob,
-    doc='''Blob.
+    doc='''Chat blob.
 
-    @type: ?
+    @type: unicode
     ''')
 
     def _GetBookmarked(self):
         return self._Property('BOOKMARKED') == 'TRUE'
 
     Bookmarked = property(_GetBookmarked,
-    doc='''Bookmarked.
+    doc='''Tells if this chat is bookmarked.
 
-    @type: ?
+    @type: bool
     ''')
 
     def _GetDatetime(self):
@@ -196,7 +198,7 @@ class IChat(Cached):
         return datetime.fromtimestamp(self.Timestamp)
 
     Datetime = property(_GetDatetime,
-    doc='''Datetime.
+    doc='''Chat timestamp as datetime.
 
     @type: datetime.datetime
     ''')
@@ -208,25 +210,25 @@ class IChat(Cached):
         self._Property('DESCRIPTION', value)
 
     Description = property(_GetDescription, _SetDescription,
-    doc='''Description.
+    doc='''Chat description.
 
-    @type: ?
+    @type: unicode
     ''')
 
     def _GetDialogPartner(self):
         return self._Property('DIALOG_PARTNER')
 
     DialogPartner = property(_GetDialogPartner,
-    doc='''DialogPartner.
+    doc='''Skypename of the chat dialog partner.
 
-    @type: ?
+    @type: unicode
     ''')
 
     def _GetFriendlyName(self):
         return self._Property('FRIENDLYNAME')
 
     FriendlyName = property(_GetFriendlyName,
-    doc='''FriendlyName.
+    doc='''Friendly name of the chat.
 
     @type: unicode
     ''')
@@ -238,61 +240,61 @@ class IChat(Cached):
         self._Alter('SETGUIDELINES', value)
 
     GuideLines = property(_GetGuideLines, _SetGuideLines,
-    doc='''GuideLines.
+    doc='''Chat guidelines.
 
-    @type: ?
+    @type: unicode
     ''')
 
     def _GetMemberObjects(self):
         return tuple(IChatMember(x, self._Skype) for x in esplit(self._Property('MEMBEROBJECTS'), ', '))
 
     MemberObjects = property(_GetMemberObjects,
-    doc='''MemberObjects.
+    doc='''Chat members as member objects.
 
-    @type: ?
+    @type: tuple of L{IChatMember}
     ''')
 
     def _GetMembers(self):
         return tuple(IUser(x, self._Skype) for x in esplit(self._Property('MEMBERS')))
 
     Members = property(_GetMembers,
-    doc='''Members.
+    doc='''Chat members.
 
-    @type: ?
+    @type: tuple of L{IUser}
     ''')
 
     def _GetMessages(self):
         return tuple(IChatMessage(x ,self._Skype) for x in esplit(self._Property('CHATMESSAGES', Cache=False), ', '))
 
     Messages = property(_GetMessages,
-    doc='''Messages.
+    doc='''All chat messages.
 
-    @type: ?
+    @type: tuple of L{IChatMessage}
     ''')
 
     def _GetMyRole(self):
         return self._Property('MYROLE')
 
     MyRole = property(_GetMyRole,
-    doc='''MyRole.
+    doc='''My chat role in a public chat.
 
-    @type: ?
+    @type: L{Chat member role<enums.chatMemberRoleUnknown>}
     ''')
 
     def _GetMyStatus(self):
         return self._Property('MYSTATUS')
 
     MyStatus = property(_GetMyStatus,
-    doc='''MyStatus.
+    doc='''My status in a public chat.
 
-    @type: ?
+    @type: L{My chat status<enums.chatStatusUnknown>}
     ''')
 
     def _GetName(self):
         return self._Name
 
     Name = property(_GetName,
-    doc='''Name.
+    doc='''Chat name as used by Skype to identify this chat.
 
     @type: unicode
     ''')
@@ -304,36 +306,36 @@ class IChat(Cached):
         self._Alter('SETOPTIONS', value)
 
     Options = property(_GetOptions, _SetOptions,
-    doc='''Options.
+    doc='''Chat options. A mask.
 
-    @type: ?
+    @type: L{Chat options<enums.chatOptionJoiningEnabled>}
     ''')
 
     def _GetPasswordHint(self):
         return self._Property('PASSWORDHINT')
 
     PasswordHint = property(_GetPasswordHint,
-    doc='''PasswordHint.
+    doc='''Chat password hint.
 
-    @type: ?
+    @type: unicode
     ''')
 
     def _GetPosters(self):
         return tuple(IUser(x, self._Skype) for x in esplit(self._Property('POSTERS')))
 
     Posters = property(_GetPosters,
-    doc='''Posters.
+    doc='''Users who have posted messages to this chat.
 
-    @type: ?
+    @type: tuple of L{IUser}
     ''')
 
     def _GetRecentMessages(self):
         return tuple(IChatMessage(x, self._Skype) for x in esplit(self._Property('RECENTCHATMESSAGES', Cache=False), ', '))
 
     RecentMessages = property(_GetRecentMessages,
-    doc='''RecentMessages.
+    doc='''Most recent chat messages.
 
-    @type: ?
+    @type: tuple of L{IChatMessage}
     ''')
 
     def _GetStatus(self):
@@ -342,16 +344,17 @@ class IChat(Cached):
     Status = property(_GetStatus,
     doc='''Status.
 
-    @type: ?
+    @type: L{Chat status<enums.chsUnknown>}
     ''')
 
     def _GetTimestamp(self):
         return float(self._Property('TIMESTAMP'))
 
     Timestamp = property(_GetTimestamp,
-    doc='''Timestamp.
+    doc='''Chat timestamp.
 
     @type: float
+    @see: L{Datetime}
     ''')
 
     def _GetTopic(self):
@@ -370,9 +373,9 @@ class IChat(Cached):
             self._Alter('SETTOPIC', value)
 
     Topic = property(_GetTopic, _SetTopic,
-    doc='''Topic.
+    doc='''Chat topic.
 
-    @type: ?
+    @type: unicode
     ''')
 
     def _GetTopicXML(self):
@@ -382,18 +385,18 @@ class IChat(Cached):
         self._Property('TOPICXML', value)
 
     TopicXML = property(_GetTopicXML, _SetTopicXML,
-    doc='''TopicXML.
+    doc='''Chat topic in XML format.
 
-    @type: ?
+    @type: unicode
     ''')
 
     def _GetType(self):
         return self._Property('TYPE')
 
     Type = property(_GetType,
-    doc='''Type.
+    doc='''Chat type.
 
-    @type: ?
+    @type: L{Chat type<enums.chatTypeUnknown>}
     ''')
 
 
@@ -408,8 +411,8 @@ class IChatMessage(Cached):
     def _Property(self, PropName, Value=None, Cache=True):
         return self._Skype._Property('CHATMESSAGE', self._Id, PropName, Value, Cache)
 
-    def SetAsSeen(self):
-        '''SetAsSeen.
+    def MarkAsSeen(self):
+        '''Marks a missed chat message as seen.
         '''
         self._Property('SEEN', '')
 
@@ -420,16 +423,16 @@ class IChatMessage(Cached):
         self._Property('BODY', value)
 
     Body = property(_GetBody, _SetBody,
-    doc='''Body.
+    doc='''Chat message body.
 
-    @type: ?
+    @type: unicode
     ''')
 
     def _GetChat(self):
         return IChat(self.ChatName, self._Skype)
 
     Chat = property(_GetChat,
-    doc='''Chat.
+    doc='''Chat this message was posted on.
 
     @type: L{IChat}
     ''')
@@ -438,7 +441,7 @@ class IChatMessage(Cached):
         return self._Property('CHATNAME')
 
     ChatName = property(_GetChatName,
-    doc='''ChatName.
+    doc='''Name of the chat this message was posted on.
 
     @type: unicode
     ''')
@@ -448,16 +451,44 @@ class IChatMessage(Cached):
         return datetime.fromtimestamp(self.Timestamp)
 
     Datetime = property(_GetDatetime,
-    doc='''Datetime.
+    doc='''Chat message timestamp as datetime.
 
     @type: datetime.datetime
+    ''')
+
+    def _GetEditedBy(self):
+        return self._Property('EDITED_BY')
+
+    EditedBy = property(_GetEditedBy,
+    doc='''Skypename of the user who edited this message.
+
+    @type: unicode
+    ''')
+
+    def _GetEditedDatetime(self):
+        from datetime import datetime
+        return datetime.fromtimestamp(self.EditedTimestamp)
+
+    EditedTimestamp = property(_GetEditedDatetime,
+    doc='''Message editing timestamp as datetime.
+
+    @type: datetime.datetime
+    ''')
+
+    def _GetEditedTimestamp(self):
+        return float(self._Property('EDITED_TIMESTAMP'))
+
+    EditedTimestamp = property(_GetEditedTimestamp,
+    doc='''Message editing timestamp.
+
+    @type: float
     ''')
 
     def _GetFromDisplayName(self):
         return self._Property('FROM_DISPNAME')
 
     FromDisplayName = property(_GetFromDisplayName,
-    doc='''FromDisplayName.
+    doc='''DisplayName of the message sender.
 
     @type: unicode
     ''')
@@ -466,7 +497,7 @@ class IChatMessage(Cached):
         return self._Property('FROM_HANDLE')
 
     FromHandle = property(_GetFromHandle,
-    doc='''FromHandle.
+    doc='''Skypename of the message sender.
 
     @type: unicode
     ''')
@@ -475,9 +506,18 @@ class IChatMessage(Cached):
         return self._Id
 
     Id = property(_GetId,
-    doc='''Id.
+    doc='''Chat message Id.
 
-    @type: ?
+    @type: int
+    ''')
+
+    def _GetIsEditable(self):
+        return self._Property('IS_EDITABLE') == 'TRUE'
+
+    IsEditable = property(_GetIsEditable,
+    doc='''Tells if message body is editable.
+
+    @type: bool
     ''')
 
     def _GetLeaveReason(self):
@@ -486,64 +526,66 @@ class IChatMessage(Cached):
     LeaveReason = property(_GetLeaveReason,
     doc='''LeaveReason.
 
-    @type: ?
+    @type: L{Chat leave reason<enums.leaUnknown>}
     ''')
 
     def _SetSeen(self, value):
         from warnings import warn
-        warn('IChat.Seen = x: Use IChat.SetAsSeen instead.', DeprecationWarning, stacklevel=2)
+        warn('IChat.Seen = x: Use IChat.MarkAsSeen instead.', DeprecationWarning, stacklevel=2)
         if value:
             self.SetAsSeen()
         else:
             raise ISkypeError(0, 'Seen can only be set to True')
 
     Seen = property(fset=_SetSeen,
-    doc='''Seen.
+    doc='''Marks a missed chat message as seen.
 
-    @type: ?
+    @type: bool
+    @deprecated: Unpythonic, use L{MarkAsSeen} instead.
     ''')
 
     def _GetSender(self):
         return IUser(self.FromHandle, self._Skype)
 
     Sender = property(_GetSender,
-    doc='''Sender.
+    doc='''Sender of the chat message.
 
-    @type: ?
+    @type: L{IUser}
     ''')
 
     def _GetStatus(self):
         return self._Property('STATUS')
 
     Status = property(_GetStatus,
-    doc='''Status.
+    doc='''Status of the chat messsage.
 
-    @type: ?
+    @type: L{Chat message status<enums.cmsUnknown>}
     ''')
 
     def _GetTimestamp(self):
         return float(self._Property('TIMESTAMP'))
 
     Timestamp = property(_GetTimestamp,
-    doc='''Timestamp.
+    doc='''Chat message timestamp.
 
     @type: float
+    @see: L{Datetime}
     ''')
 
     def _GetType(self):
         return self._Property('TYPE')
 
     Type = property(_GetType,
-    doc='''Type.
+    doc='''Type of chat message.
 
-    @type: ?
+    @type: L{Chat message type<enums.cmeUnknown>}
     ''')
 
     def _GetUsers(self):
         return tuple(IUser(self._Skype, x) for x in esplit(self._Property('USERS')))
 
     Users = property(_GetUsers,
-    doc='''Users.
+    doc='''Users added to the chat.
 
     @type: tuple of L{IUser}
     ''')
@@ -564,12 +606,12 @@ class IChatMember(Cached):
         return self._Skype._Property('CHATMEMBER', self._Id, PropName, Value, Cache)
 
     def CanSetRoleTo(self, Role):
-        '''CanSetRoleTo.
+        '''Checks if the new role can be applied to the member.
 
-        @param Role: Role
-        @type Role: ?
-        @return: ?
-        @rtype: ?
+        @param Role: New chat member role.
+        @type Role: L{Chat member role<enums.chatMemberRoleUnknown>}
+        @return: True if the new role can be applied, False otherwise.
+        @rtype: bool
         '''
         return self._Alter('CANSETROLETO', Role) == 'TRUE'
 
@@ -577,7 +619,7 @@ class IChatMember(Cached):
         return IChat(self._Property('CHATNAME'), self._Skype)
 
     Chat = property(_GetChat,
-    doc='''Chat.
+    doc='''Chat this member belongs to.
 
     @type: L{IChat}
     ''')
@@ -586,7 +628,7 @@ class IChatMember(Cached):
         return self._Property('IDENTITY')
 
     Handle = property(_GetHandle,
-    doc='''Handle.
+    doc='''Member Skypename.
 
     @type: unicode
     ''')
@@ -595,16 +637,16 @@ class IChatMember(Cached):
         return self._Id
 
     Id = property(_GetId,
-    doc='''Id.
+    doc='''Chat member Id.
 
-    @type: ?
+    @type: int
     ''')
 
     def _GetIsActive(self):
         return self._Property('IS_ACTIVE') == 'TRUE'
 
     IsActive = property(_GetIsActive,
-    doc='''IsActive.
+    doc='''Member activity status.
 
     @type: bool
     ''')
@@ -616,7 +658,7 @@ class IChatMember(Cached):
         self._Alter('SETROLETO', value)
 
     Role = property(_GetRole, _SetRole,
-    doc='''Role.
+    doc='''Chat Member role.
 
-    @type: ?
+    @type: L{Chat member role<enums.chatMemberRoleUnknown>}
     ''')

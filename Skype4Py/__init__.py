@@ -45,7 +45,7 @@ Multiplatform Python wrapper for Skype.
              print '    ', user.FullName
 
 @author: U{Arkadiusz Wahlig<yak@nokix.pasjagsm.pl>}
-@requires: Python 2.5+
+@requires: Python 2.4 or newer
 @see: U{The Skype4Py webpage<https://developer.skype.com/wiki/Skype4Py>}
 @license: BSD License (see the accompanying LICENSE file for more information)
 @copyright: S{copy} 2007 Arkadiusz Wahlig

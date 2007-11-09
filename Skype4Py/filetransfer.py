@@ -24,7 +24,7 @@ class IFileTransfer(Cached):
         return int(self._Property('BYTESPERSECOND'))
 
     BytesPerSecond = property(_GetBytesPerSecond,
-    doc='''BytesPerSecond.
+    doc='''Transfer speed in bytes per second.
 
     @type: int
     ''')
@@ -33,7 +33,7 @@ class IFileTransfer(Cached):
         return long(self._Property('BYTESTRANSFERRED'))
 
     BytesTransferred = property(_GetBytesTransferred,
-    doc='''BytesTransferred.
+    doc='''Number of bytes transferred.
 
     @type: long
     ''')
@@ -42,16 +42,16 @@ class IFileTransfer(Cached):
         return self._Property('FAILUREREASON')
 
     FailureReason = property(_GetFailureReason,
-    doc='''FailureReason.
+    doc='''Transfer failure reason.
 
-    @type: ?
+    @type: L{File transfer failure reason<enums.fileTransferFailureReasonSenderNotAuthorized>}
     ''')
 
     def _GetFileName(self):
         return os.path.split(self.FilePath)[1]
 
     FileName = property(_GetFileName,
-    doc='''FileName.
+    doc='''Name of the transferred file.
 
     @type: unicode
     ''')
@@ -60,7 +60,7 @@ class IFileTransfer(Cached):
         return self._Property('FILEPATH')
 
     FilePath = property(_GetFilePath,
-    doc='''FilePath.
+    doc='''Full path to the transferred file.
 
     @type: unicode
     ''')
@@ -69,7 +69,7 @@ class IFileTransfer(Cached):
         return long(self._Property('FILESIZE'))
 
     FileSize = property(_GetFileSize,
-    doc='''FileSize.
+    doc='''Size of the transferred file in bytes.
 
     @type: long
     ''')
@@ -79,7 +79,7 @@ class IFileTransfer(Cached):
         return datetime.fromtimestamp(self.FinishTime)
 
     FinishDatetime = property(_GetFinishDatetime,
-    doc='''FinishDatetime.
+    doc='''File transfer end date and time.
 
     @type: datetime.datetime
     ''')
@@ -88,7 +88,7 @@ class IFileTransfer(Cached):
         return float(self._Property('FINISHTIME'))
 
     FinishTime = property(_GetFinishTime,
-    doc='''FinishTime.
+    doc='''File transfer end timestamp.
 
     @type: float
     ''')
@@ -97,7 +97,7 @@ class IFileTransfer(Cached):
         return self._Id
 
     Id = property(_GetId,
-    doc='''Id.
+    doc='''Unique file transfer Id.
 
     @type: int
     ''')
@@ -106,7 +106,7 @@ class IFileTransfer(Cached):
         return self._Property('PARTNER_DISPNAME')
 
     PartnerDisplayName = property(_GetPartnerDisplayName,
-    doc='''PartnerDisplayName.
+    doc='''File transfer partner DisplayName.
 
     @type: unicode
     ''')
@@ -115,7 +115,7 @@ class IFileTransfer(Cached):
         return self._Property('PARTNER_HANDLE')
 
     PartnerHandle = property(_GetPartnerHandle,
-    doc='''PartnerHandle.
+    doc='''File transfer partner Skypename.
 
     @type: unicode
     ''')
@@ -125,7 +125,7 @@ class IFileTransfer(Cached):
         return datetime.fromtimestamp(self.StartTime)
 
     StartDatetime = property(_GetStartDatetime,
-    doc='''StartDatetime.
+    doc='''File transfer start date and time.
 
     @type: datetime.datetime
     ''')
@@ -134,7 +134,7 @@ class IFileTransfer(Cached):
         return float(self._Property('STARTTIME'))
 
     StartTime = property(_GetStartTime,
-    doc='''StartTime.
+    doc='''File transfer start timestamp.
 
     @type: float
     ''')
@@ -143,16 +143,16 @@ class IFileTransfer(Cached):
         return self._Property('STATUS')
 
     Status = property(_GetStatus,
-    doc='''Status.
+    doc='''File transfer status.
 
-    @type: ?
+    @type: L{File transfer status<enums.fileTransferStatusNew>}
     ''')
 
     def _GetType(self):
         return self._Property('TYPE')
 
     Type = property(_GetType,
-    doc='''Type.
+    doc='''File transfer type.
 
-    @type: ?
+    @type: L{File transfer type<enums.fileTransferTypeIncoming>}
     ''')
