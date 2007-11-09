@@ -1,8 +1,13 @@
 '''
-All Skype4Py constants. Access them at the Skype4Py package level::
-    import Skype4Py
+Skype4Py constants.
 
-    status = Skype4Py.apiAttachUnknown
+  1. Usage.
+
+    All constants are available at the C{Skype4Py} package level. Example::
+
+        import Skype4Py
+
+        status = Skype4Py.apiAttachUnknown
 '''
 
 from utils import *
