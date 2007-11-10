@@ -47,12 +47,12 @@ class IVoicemail(Cached):
             raise TypeError('DeviceType must be specified if Set is used')
 
     def Delete(self):
-        '''Deletes voicemail.
+        '''Deletes this voicemail.
         '''
         self._Alter('DELETE')
 
     def Download(self):
-        '''Downloads voicemail.
+        '''Downloads this voicemail object from the voicemail server to a local computer.
         '''
         self._Alter('DOWNLOAD')
 
@@ -83,7 +83,7 @@ class IVoicemail(Cached):
             raise TypeError('DeviceType must be specified if Set is used')
 
     def Open(self):
-        '''Opens voicemail.
+        '''Opens and plays this voicemail.
         '''
         self._Skype._DoCommand('OPEN VOICEMAIL %s' % self._Id)
 
@@ -114,37 +114,37 @@ class IVoicemail(Cached):
             raise TypeError('DeviceType must be specified if Set is used')
 
     def SetUnplayed(self):
-        '''Changes played voicemail status back to unplayed.
+        '''Changes the status of a voicemail from played to unplayed.
         '''
         self._Property('STATUS', vmsUnplayed)
 
     def StartPlayback(self):
-        '''Starts voicemail playback.
+        '''Starts playing downloaded voicemail.
         '''
         self._Alter('STARTPLAYBACK')
 
     def StartPlaybackInCall(self):
-        '''Starts playback in call.
+        '''Starts playing downloaded voicemail during a call.
         '''
         self._Alter('STARTPLAYBACKINCALL')
 
     def StartRecording(self):
-        '''Starts voicemail recording.
+        '''Stops playing a voicemail greeting and starts recording a voicemail message.
         '''
         self._Alter('STARTRECORDING')
 
     def StopPlayback(self):
-        '''Stops voicemail playback.
+        '''Stops playing downloaded voicemail.
         '''
         self._Alter('STOPPLAYBACK')
 
     def StopRecording(self):
-        '''Stops voicemail recording.
+        '''Ends the recording of a voicemail message.
         '''
         self._Alter('STOPRECORDING')
 
     def Upload(self):
-        '''Uploads voicemail.
+        '''Uploads recorded voicemail from a local computer to the voicemail server.
         '''
         self._Alter('UPLOAD')
 
@@ -152,7 +152,7 @@ class IVoicemail(Cached):
         return int(self._Property('ALLOWED_DURATION'))
 
     AllowedDuration = property(_GetAllowedDuration,
-    doc='''AllowedDuration.
+    doc='''Maximum voicemail duration in seconds allowed to leave to partner
 
     @type: int
     ''')
@@ -162,7 +162,7 @@ class IVoicemail(Cached):
         return datetime.fromtimestamp(self.Timestamp)
 
     Datetime = property(_GetDatetime,
-    doc='''Datetime.
+    doc='''Timestamp of this voicemail expressed using datetime.
 
     @type: datetime.datetime
     ''')
@@ -171,7 +171,7 @@ class IVoicemail(Cached):
         return int(self._Property('DURATION'))
 
     Duration = property(_GetDuration,
-    doc='''Duration.
+    doc='''Actual voicemail duration in seconds.
 
     @type: int
     ''')
@@ -180,16 +180,16 @@ class IVoicemail(Cached):
         return self._Property('FAILUREREASON')
 
     FailureReason = property(_GetFailureReason,
-    doc='''FailureReason.
+    doc='''Voicemail failure reason. Read if L{Status} == L{vmsFailed<enums.vmsFailed>}.
 
-    @type: ?
+    @type: L{Voicemail failure reason<enums.vmrUnknown>}
     ''')
 
     def _GetId(self):
         return self._Id
 
     Id = property(_GetId,
-    doc='''Id.
+    doc='''Unique voicemail Id.
 
     @type: int
     ''')
@@ -198,7 +198,7 @@ class IVoicemail(Cached):
         return self._Property('PARTNER_DISPNAME')
 
     PartnerDisplayName = property(_GetPartnerDisplayName,
-    doc='''PartnerDisplayName.
+    doc='''DisplayName for voicemail sender (for incoming) or recipient (for outgoing).
 
     @type: unicode
     ''')
@@ -207,7 +207,7 @@ class IVoicemail(Cached):
         return self._Property('PARTNER_HANDLE')
 
     PartnerHandle = property(_GetPartnerHandle,
-    doc='''PartnerHandle.
+    doc='''Skypename for voicemail sender (for incoming) or recipient (for outgoing).
 
     @type: unicode
     ''')
@@ -216,16 +216,16 @@ class IVoicemail(Cached):
         return self._Property('STATUS')
 
     Status = property(_GetStatus,
-    doc='''Status.
+    doc='''Voicemail status.
 
-    @type: ?
+    @type: L{Voicemail status<enums.vmsUnknown>}
     ''')
 
     def _GetTimestamp(self):
         return float(self._Property('TIMESTAMP'))
 
     Timestamp = property(_GetTimestamp,
-    doc='''Timestamp.
+    doc='''Timestamp of this voicemail.
 
     @type: float
     ''')
@@ -234,7 +234,7 @@ class IVoicemail(Cached):
         return self._Property('TYPE')
 
     Type = property(_GetType,
-    doc='''Type.
+    doc='''Voicemail type.
 
-    @type: ?
+    @type: L{Voicemail type<enums.vmtUnknown>}
     ''')

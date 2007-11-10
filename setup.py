@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-
 '''
+Skype4Py
+
 Copyright (c) 2007, Arkadiusz Wahlig
 
 All rights reserved.
@@ -39,8 +40,19 @@ class build_doc(Command):
             cli.cli()
             sys.argv[1:] = old_argv
 
+            if not self.pdf:
+                print 'zipping the documentation'
+                import zipfile
+                name = 'Skype4Py-%s-htmldoc' % __version__
+                z = zipfile.ZipFile(os.path.join('doc', '%s.zip' % name),
+                        'w', zipfile.ZIP_DEFLATED)
+                path = os.path.join('doc', 'html')
+                for f in os.listdir(path):
+                    z.write(os.path.join(path, f), os.path.join(name, f))
+                z.close()
+
         except ImportError:
-            print >>sys.stderr, 'epydoc not installed, skipping doc build.'
+            print >>sys.stderr, 'epydoc not installed, skipping build_doc.'
 
 
 setup(name='Skype4Py',

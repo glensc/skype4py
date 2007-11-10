@@ -29,7 +29,7 @@ class ISmsChunk(Cached):
         return self._Id
 
     Id = property(_GetId,
-    doc='''Id.
+    doc='''SMS chunk Id.
 
     @type: int
     ''')
@@ -38,7 +38,7 @@ class ISmsChunk(Cached):
         return self._Message
 
     Message = property(_GetMessage,
-    doc='''Message.
+    doc='''SMS message associated with this chunk.
 
     @type: L{ISmsMessage}
     ''')
@@ -47,7 +47,7 @@ class ISmsChunk(Cached):
         return self._Message._Property('CHUNK %s' % self._Id)
 
     Text = property(_GetText,
-    doc='''Text.
+    doc='''Text (body) of this SMS chunk.
 
     @type: unicode
     ''')
@@ -68,12 +68,12 @@ class ISmsMessage(Cached):
         return self._Skype._Property('SMS', self._Id, PropName, Set, Cache)
 
     def Delete(self):
-        '''Deletes the message.
+        '''Deletes this SMS message.
         '''
         self._Skype._DoCommand('DELETE SMS %s' % self._Id)
 
     def Send(self):
-        '''Sends the message.
+        '''Sends this SMS message.
         '''
         self._Alter('SEND')
 
@@ -84,7 +84,7 @@ class ISmsMessage(Cached):
         self._Property('BODY', value)
 
     Body = property(_GetBody, _SetBody,
-    doc='''Body.
+    doc='''Text of this SMS message.
 
     @type: unicode
     ''')
@@ -93,7 +93,7 @@ class ISmsMessage(Cached):
         return tuple(ISmsChunk((x, self)) for x in range(int(chop(self._Property('CHUNKING', Cache=False))[0])))
 
     Chunks = property(_GetChunks,
-    doc='''Chunks.
+    doc='''Chunks of this SMS message. More than one if this is a multi-part message.
 
     @type: tuple of L{ISmsChunk}
     ''')
@@ -103,7 +103,7 @@ class ISmsMessage(Cached):
         return datetime.fromtimestamp(self.Timestamp)
 
     Datetime = property(_GetDatetime,
-    doc='''Datetime.
+    doc='''Timestamp of this SMS message as datetime object.
 
     @type: datetime.datetime
     ''')
@@ -112,16 +112,16 @@ class ISmsMessage(Cached):
         return self._Property('FAILUREREASON')
 
     FailureReason = property(_GetFailureReason,
-    doc='''FailureReason.
+    doc='''Reason an SMS message failed. Read this if L{Status} == L{smsMessageStatusFailed<enums.smsMessageStatusFailed>}.
 
-    @type: ?
+    @type: L{SMS failure reason<enums.smsFailureReasonUnknown>}
     ''')
 
     def _GetId(self):
         return self._Id
 
     Id = property(_GetId,
-    doc='''Id.
+    doc='''Unique SMS message Id.
 
     @type: int
     ''')
@@ -130,7 +130,7 @@ class ISmsMessage(Cached):
         return self._Property('IS_FAILED_UNSEEN') == 'TRUE'
 
     IsFailedUnseen = property(_GetIsFailedUnseen,
-    doc='''IsFailedUnseen.
+    doc='''Tells if a failed SMS message was unseen.
 
     @type: bool
     ''')
@@ -139,36 +139,40 @@ class ISmsMessage(Cached):
         return int(self._Property('PRICE'))
 
     Price = property(_GetPrice,
-    doc='''Price.
+    doc='''SMS price. Expressed using L{PricePrecision}. For a value expressed using L{PriceCurrency}, use L{PriceValue}.
 
     @type: int
+    @see: L{PriceCurrency}, L{PricePrecision}, L{PriceToText}, L{PriceValue}
     ''')
 
     def _GetPriceCurrency(self):
         return self._Property('PRICE_CURRENCY')
 
     PriceCurrency = property(_GetPriceCurrency,
-    doc='''PriceCurrency.
+    doc='''SMS price currency.
 
     @type: unicode
+    @see: L{Price}, L{PricePrecision}, L{PriceToText}, L{PriceValue}
     ''')
 
     def _GetPricePrecision(self):
         return int(self._Property('PRICE_PRECISION'))
 
     PricePrecision = property(_GetPricePrecision,
-    doc='''PricePrecision.
+    doc='''SMS price precision.
 
     @type: int
+    @see: L{Price}, L{PriceCurrency}, L{PriceToText}, L{PriceValue}
     ''')
 
     def _GetPriceToText(self):
-        return (u'%s %.2f' % (self.PriceCurrency, self.PriceValue)).strip()
+        return (u'%s %.3f' % (self.PriceCurrency, self.PriceValue)).strip()
 
     PriceToText = property(_GetPriceToText,
-    doc='''PriceToText.
+    doc='''SMS price as properly formatted text with currency.
 
     @type: unicode
+    @see: L{Price}, L{PriceCurrency}, L{PricePrecision}, L{PriceValue}
     ''')
 
     def _GetPriceValue(self):
@@ -177,9 +181,10 @@ class ISmsMessage(Cached):
         return float(self.Price) / (10 ** self.PricePrecision)
 
     PriceValue = property(_GetPriceValue,
-    doc='''PriceValue.
+    doc='''SMS price. Expressed in L{PriceCurrency}.
 
     @type: float
+    @see: L{Price}, L{PriceCurrency}, L{PricePrecision}, L{PriceToText}
     ''')
 
     def _GetReplyToNumber(self):
@@ -189,7 +194,7 @@ class ISmsMessage(Cached):
         self._Property('REPLY_TO_NUMBER', value)
 
     ReplyToNumber = property(_GetReplyToNumber, _SetReplyToNumber,
-    doc='''ReplyToNumber.
+    doc='''Reply-to number for this SMS message.
 
     @type: unicode
     ''')
@@ -198,7 +203,7 @@ class ISmsMessage(Cached):
         self._Property('SEEN', cndexp(value, 'TRUE', 'FALSE'))
 
     Seen = property(fset=_SetSeen,
-    doc='''Seen.
+    doc='''Read status of the SMS message.
 
     @type: bool
     ''')
@@ -207,9 +212,9 @@ class ISmsMessage(Cached):
         return self._Property('STATUS')
 
     Status = property(_GetStatus,
-    doc='''Status.
+    doc='''SMS message status.
 
-    @type: ?
+    @type: L{SMS message status<enums.smsMessageStatusUnknown>}
     ''')
 
     def _GetTargetNumbers(self):
@@ -219,7 +224,7 @@ class ISmsMessage(Cached):
         self._Property('TARGET_NUMBERS', ', '.join(value))
 
     TargetNumbers = property(_GetTargetNumbers, _SetTargetNumbers,
-    doc='''TargetNumbers.
+    doc='''Target phone numbers.
 
     @type: tuple of unicode
     ''')
@@ -228,7 +233,7 @@ class ISmsMessage(Cached):
         return tuple(ISmsTarget((x, self)) for x in esplit(self._Property('TARGET_NUMBERS'), ', '))
 
     Targets = property(_GetTargets,
-    doc='''Targets.
+    doc='''Target objects.
 
     @type: tuple of L{ISmsTarget}
     ''')
@@ -237,18 +242,19 @@ class ISmsMessage(Cached):
         return float(self._Property('TIMESTAMP'))
 
     Timestamp = property(_GetTimestamp,
-    doc='''Timestamp.
+    doc='''Timestamp of this SMS message.
 
     @type: float
+    @see: L{Datetime}
     ''')
 
     def _GetType(self):
         return self._Property('TYPE')
 
     Type = property(_GetType,
-    doc='''Type.
+    doc='''SMS message type
 
-    @type: ?
+    @type: L{SMS message type<enums.smsMessageTypeUnknown>}
     ''')
 
 
@@ -264,7 +270,7 @@ class ISmsTarget(Cached):
         return self._Message
 
     Message = property(_GetMessage,
-    doc='''Message.
+    doc='''An SMS message object this target refers to.
 
     @type: L{ISmsMessage}
     ''')
@@ -273,7 +279,7 @@ class ISmsTarget(Cached):
         return self._Number
 
     Number = property(_GetNumber,
-    doc='''Number.
+    doc='''Target phone number.
 
     @type: unicode
     ''')
@@ -285,7 +291,7 @@ class ISmsTarget(Cached):
                 return status
 
     Status = property(_GetStatus,
-    doc='''Status.
+    doc='''Status of this target.
 
-    @type: ?
+    @type: L{SMS target status<enums.smsTargetStatusUnknown>}
     ''')

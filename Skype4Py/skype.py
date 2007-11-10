@@ -423,7 +423,7 @@ class ISkype(EventHandlingBase):
         com = 'SEARCH %s' % ObjectType
         if Args != None:
             com = '%s %s' % (com, Args)
-        return esplit(chop(self._DoCommand(com))[-1], ', ')
+        return tuple(esplit(chop(self._DoCommand(com))[-1], ', '))
 
     def ApiSecurityContextEnabled(self, Context):
         '''Queries if an API security context for Internet Explorer is enabled.

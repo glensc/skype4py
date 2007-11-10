@@ -306,7 +306,7 @@ class ICall(Cached):
     expressed in current currency, use L{RateValue} instead.
 
     @type: int
-    @see: L{RatePrecision}, L{RateValue}
+    @see: L{RateCurrency}, L{RatePrecision}, L{RateToText}, L{RateValue}
     ''')
 
     def _GetRateCurrency(self):
@@ -316,6 +316,7 @@ class ICall(Cached):
     doc='''Call rate currency.
 
     @type: unicode
+    @see: L{Rate}, L{RatePrecision}, L{RateToText}, L{RateValue}
     ''')
 
     def _GetRatePrecision(self):
@@ -325,16 +326,17 @@ class ICall(Cached):
     doc='''Call rate precision. Expressed as a number of times the call rate has to be divided by 10.
 
     @type: int
-    @see: L{Rate}, L{RateValue}
+    @see: L{Rate}, L{RateCurrency}, L{RateToText}, L{RateValue}
     ''')
 
     def _GetRateToText(self):
-        return (u'%s %.2f' % (self.RateCurrency, self.RateValue)).strip()
+        return (u'%s %.3f' % (self.RateCurrency, self.RateValue)).strip()
 
     RateToText = property(_GetRateToText,
     doc='''Returns the call rate as a text with currency and properly formatted value.
 
     @type: unicode
+    @see: L{Rate}, L{RateCurrency}, L{RatePrecision}, L{RateValue}
     ''')
 
     def _GetRateValue(self):
@@ -346,6 +348,7 @@ class ICall(Cached):
     doc='''Call rate value. Expressed in current currency.
 
     @type: float
+    @see: L{Rate}, L{RateCurrency}, L{RatePrecision}, L{RateToText}
     ''')
 
     def _GetSeen(self):

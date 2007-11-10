@@ -50,7 +50,7 @@ class IProfile(object):
     to get the balance expressed in currency.
 
     @type: int
-    @see: L{BalanceValue}
+    @see: L{BalanceCurrency}, L{BalanceToText}, L{BalanceValue}
     ''')
 
     def _GetBalanceCurrency(self):
@@ -60,15 +60,17 @@ class IProfile(object):
     doc='''Skype credit balance currency.
 
     @type: unicode
+    @see: L{Balance}, L{BalanceToText}, L{BalanceValue}
     ''')
 
     def _GetBalanceToText(self):
-        return (u'%s %.2f' % (self.BalanceCurrency, self.BalanceValue)).strip()
+        return (u'%s %.3f' % (self.BalanceCurrency, self.BalanceValue)).strip()
 
     BalanceToText = property(_GetBalanceToText,
     doc='''Skype credit balance as properly formatted text with currency.
 
     @type: unicode
+    @see: L{Balance}, L{BalanceCurrency}, L{BalanceValue}
     ''')
 
     def _GetBalanceValue(self):
@@ -78,6 +80,7 @@ class IProfile(object):
     doc='''Skype credit balance expressed in currency.
 
     @type: float
+    @see: L{Balance}, L{BalanceCurrency}, L{BalanceToText}
     ''')
 
     def _GetBirthday(self):
@@ -205,13 +208,13 @@ class IProfile(object):
     ''')
 
     def _GetLanguages(self):
-        return esplit(self._Property('LANGUAGES'))
+        return tuple(esplit(self._Property('LANGUAGES')))
 
     def _SetLanguages(self, value):
         self._Property('LANGUAGES', ' '.join(value))
 
     Languages = property(_GetLanguages, _SetLanguages,
-    doc='''"Language codes of the profile.
+    doc='''"ISO language codes of the profile.
 
     @type: tuple of unicode
     ''')
@@ -314,7 +317,7 @@ class IProfile(object):
     ''')
 
     def _GetValidatedSmsNumbers(self):
-        return esplit(self._Property('SMS_VALIDATED_NUMBERS'), ', ')
+        return tuple(esplit(self._Property('SMS_VALIDATED_NUMBERS'), ', '))
 
     ValidatedSmsNumbers = property(_GetValidatedSmsNumbers,
     doc='''List of phone numbers the user has registered for usage in reply-to field of SMS messages.

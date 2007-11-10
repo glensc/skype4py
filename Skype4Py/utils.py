@@ -14,8 +14,8 @@ def chop(s, n=1, d=None):
     @type s: str or unicode
     @param n: Number of words to chop.
     @type n: int
-    @param d: d
-    @type d: ?
+    @param d: Optional delimeter. Any white-char by default.
+    @type d: str or unicode
     @return: A list of n first words from the string followed by the rest of the string
     (C{[w1, w2, ..., wn, rest_of_string]}).
     @rtype: list of str or unicode
@@ -42,10 +42,10 @@ def chop(s, n=1, d=None):
 def args2dict(s):
     '''Converts a string in 'ARG="value", ARG2="value2"' format into a dictionary.
 
-    @param s: s
-    @type s: ?
-    @return: ?
-    @rtype: ?
+    @param s: Input string with comma-separated 'ARG="value"' strings.
+    @type s: str or unicode
+    @return: C{{'ARG': 'value'}} dictionary.
+    @rtype: dict
     '''
 
     d = {}
@@ -85,11 +85,11 @@ def quote(s, always=False):
 
     @param s: String to add double-quotes to.
     @type s: str or unicode
-    @param always: always
-    @type always: ?
-    @return: If the given string contains spaces, returns the string enclosed in double-quotes
-    (if it contained quotes too, they are preceded with a backslash). If the string doesn't
-    contain spaces, returns the string unchanged.
+    @param always: If True, adds quotes even if the input string contains no spaces.
+    @type always: bool
+    @return: If the given string contains spaces or always=True, returns the string enclosed
+    in double-quotes (if it contained quotes too, they are preceded with a backslash).
+    Otherwise returns the string unchnaged.
     @rtype: str or unicode
     '''
 
@@ -103,7 +103,7 @@ def esplit(s, d=None):
 
     @param s: String to split.
     @type s: str or unicode
-    @param d: Optional delimeter. By default any white char.
+    @param d: Optional delimeter. Any white-char by default.
     @type d: str or unicode
     @return: A list of words or C{[]} if the string was empty.
     @rtype: list of str or unicode
@@ -122,11 +122,11 @@ def cndexp(condition, truevalue, falsevalue):
     @param condition: Boolean value telling what should be returned.
     @type condition: bool, see note
     @param truevalue: Value returned if condition was True.
-    @type truevalue: ?
+    @type truevalue: any
     @param falsevalue: Value returned if condition was False.
-    @type falsevalue: ?
+    @type falsevalue: any
     @return: Either truevalue or falsevalue depending on condition.
-    @rtype: ?
+    @rtype: same as type of truevalue or falsevalue
     @note: The type of condition parameter can be anything as long as
     C{bool(condition)} returns a bool value.
     '''
@@ -144,10 +144,10 @@ class _WeakMethod(object):
     def __init__(self, method, callback=None):
         '''__init__.
 
-        @param method: method
-        @type method: ?
-        @param callback: callback
-        @type callback: ?
+        @param method: Method to be referenced.
+        @type method: method
+        @param callback: Callback to be called when the method is collected.
+        @type callback: callable
         '''
         self.im_func = method.im_func
         try:
@@ -178,12 +178,12 @@ def WeakCallableRef(c, callback=None):
     In contrast to weakref.ref() works on all kinds of callables.
     Usage is same as weakref.ref().
 
-    @param c: c
-    @type c: ?
-    @param callback: callback
-    @type callback: ?
-    @return: ?
-    @rtype: ?
+    @param c: A callable that the weak reference should point at.
+    @type c: callable
+    @param callback: Callback called when the callable is collected (freed).
+    @type callback: callable
+    @return: A weak callable reference.
+    @rtype: weakref
     '''
 
     try:
@@ -207,17 +207,17 @@ class _EventHandlingThread(threading.Thread):
     def enqueue(self, target, args, kwargs):
         '''enqueue.
 
-        @param target: target
-        @type target: ?
-        @param args: args
-        @type args: ?
-        @param kwargs: kwargs
-        @type kwargs: ?
+        @param target: Callable to be called.
+        @type target: callable
+        @param args: Positional arguments for the callable.
+        @type args: tuple
+        @param kwargs: Keyword arguments for the callable.
+        @type kwargs: dict
         '''
         self.queue.append((target, args, kwargs))
 
     def run(self):
-        '''run.
+        '''Executes all enqueued targets.
         '''
         while True:
             try:

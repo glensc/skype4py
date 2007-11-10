@@ -162,7 +162,7 @@ class ISettings(object):
         self._Skype.Variable('UI_LANGUAGE', value)
 
     Language = property(_GetLanguage, _SetLanguage,
-    doc='''Language of the Skype client as a two char code.
+    doc='''Language of the Skype client as an ISO code.
 
     @type: unicode
     ''')
