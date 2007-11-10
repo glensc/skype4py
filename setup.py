@@ -13,10 +13,60 @@ accompanying LICENSE file for more information.
 import sys, os
 from distutils.core import setup
 from distutils.cmd import Command
+from distutils.command.install_lib import install_lib as old_install_lib
+
+
+# Change the current dir to where the setup.py is in case we're not there.
+os.chdir(os.path.split(sys.argv[0])[0])
+
+
+# Import Skype4Py version from the uninstalled package.
 from Skype4Py import __version__
 
 
+class install_lib(old_install_lib):
+    '''Handles the 'install_lib' command.
+
+    This modified version of install_lib command installs only the necessary
+    platform modules from the Skype4Py.API package.
+    '''
+
+    def install(self):
+        # The build is done here, now we have to adapt it to current platform
+        # before installing.
+        self.adapt_build_to_platform()
+
+        # Let the original method do the hard work or copying the files.
+        old_install_lib.install(self)
+
+    def adapt_build_to_platform(self):
+        # We have to remove unneded files from the build directory. First,
+        # decide what platform we're on; this code is simmilar to the one
+        # in Skype4Py/API/__init__.py which decides what submodule to
+        # import at runtime.
+        if sys.platform[:3] == 'win':
+            platform = 'windows'
+        elif sys.platform == 'darwin':
+            platform = 'darwin'
+        else:
+            platform = 'posix'
+
+        # Scan the <build_dir>/Skype4Py/API directory and remove all file
+        # which names do not start with either '__' (for __init__) or the
+        # detected platform.
+        path = os.path.join(self.build_dir, os.path.join('Skype4Py', 'API'))
+        for name in os.listdir(path):
+            if not (name.startswith('__') or name.startswith(platform)):
+                os.remove(os.path.join(path, name))
+
+
 class build_doc(Command):
+    '''Handles the 'build_doc' command.
+
+    This command builds the documentation using epydoc. The documentation is then
+    zipped using zipfile standard module.
+    '''
+
     description = 'build the documentation'
     user_options = [('pdf', None, 'Builds a PDF documentation instead of a HTML one.')]
 
@@ -66,6 +116,7 @@ class build_doc(Command):
             print >>sys.stderr, 'epydoc not installed, skipping build_doc.'
 
 
+# start the distutils setup
 setup(name='Skype4Py',
       version=__version__,
       description='Skype API wrapper for Python.',
@@ -79,4 +130,5 @@ setup(name='Skype4Py',
       platforms=('Windows 2000/XP', 'Linux'),
       packages=('Skype4Py', 'Skype4Py.API', 'Skype4Py.Languages'),
       provides=('Skype4Py',),
-      cmdclass={'build_doc': build_doc})
+      cmdclass={'build_doc': build_doc,
+                'install_lib': install_lib})
