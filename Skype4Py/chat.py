@@ -469,7 +469,7 @@ class IChatMessage(Cached):
         from datetime import datetime
         return datetime.fromtimestamp(self.EditedTimestamp)
 
-    EditedTimestamp = property(_GetEditedDatetime,
+    EditedDatetime = property(_GetEditedDatetime,
     doc='''Message editing timestamp as datetime.
 
     @type: datetime.datetime

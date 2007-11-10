@@ -64,7 +64,7 @@ class IProfile(object):
     ''')
 
     def _GetBalanceToText(self):
-        return (u'%s %.3f' % (self.BalanceCurrency, self.BalanceValue)).strip()
+        return (u'%s %.2f' % (self.BalanceCurrency, self.BalanceValue)).strip()
 
     BalanceToText = property(_GetBalanceToText,
     doc='''Skype credit balance as properly formatted text with currency.
