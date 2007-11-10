@@ -17,7 +17,9 @@ from distutils.command.install_lib import install_lib as old_install_lib
 
 
 # Change the current dir to where the setup.py is in case we're not there.
-os.chdir(os.path.split(sys.argv[0])[0])
+path = os.path.split(sys.argv[0])[0]
+if path:
+    os.chdir(path)
 
 
 # Import Skype4Py version from the uninstalled package.
