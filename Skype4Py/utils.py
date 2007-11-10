@@ -21,22 +21,10 @@ def chop(s, n=1, d=None):
     @rtype: list of str or unicode
     '''
 
-    spl = s.split(d)
-    res = []
-    while len(res) < n:
-        if len(spl) == 0:
-            raise ValueError('chop: Could not chop %d words from \'%s\'' % (n, s))
-        if spl[0]:
-            res.append(spl[0])
-            s = s[s.index(spl[0])+len(spl[0]):]
-        del spl[0]
-    if d == None:
-        s = s.lstrip()
-    else:
-        while s.startswith(d):
-            s = s[len(d):]
-    res.append(s)
-    return res
+    spl = s.split(d, n)
+    if len(spl) != n + 1:
+        raise ValueError('chop: Could not chop %d words from \'%s\'' % (n, s))
+    return spl
 
 
 def args2dict(s):
@@ -107,7 +95,7 @@ def esplit(s, d=None):
     @type d: str or unicode
     @return: A list of words or C{[]} if the string was empty.
     @rtype: list of str or unicode
-    @note: This function works like C{s.split(d)} except that it returns an
+    @note: This function works like C{s.split(d)} except that it always returns an
     empty list instead of C{['']} for empty strings.
     '''
 
