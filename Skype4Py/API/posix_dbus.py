@@ -3,7 +3,7 @@ Low level Skype for Linux interface implemented
 using python-dbus package.
 
 This module handles the options that you can pass to L{ISkype.__init__} for Linux machines
-when the transport is set to DBus.
+when the transport is set to DBus. See below.
 
 @newfield option: Option, Options
 
@@ -16,6 +16,8 @@ also run on a separate thread upon attaching to Skype. If you want to use glib
 mainloop but you want to run the loop yourself (for example because your GUI toolkit
 does it for you), pass C{dbus.mainloop.glib.DBusGMainLoop()} object as C{MainLoop}
 parameter.
+
+@requires: Skype for Linux 2.0 (beta) or newer.
 '''
 
 import threading

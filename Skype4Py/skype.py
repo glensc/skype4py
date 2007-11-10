@@ -1318,7 +1318,7 @@ class ISkypeEvents(object):
         @type Cookie: int
         @param Users: Found users.
         @type Users: tuple of L{IUser}
-        @see: L{ICall.InputDevice}
+        @see: L{ISkype.AsyncSearchUsers}
         '''
 
     def AttachmentStatus(self, Status):
