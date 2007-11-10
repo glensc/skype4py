@@ -419,10 +419,10 @@ class IConversion(object):
 
     def _SetLanguage(self, Language):
         try:
-            self._Module = __import__('Languages.%s' % str(Language), globals(), locals(), ['Languages'])
+            self._Module = __import__('Languages.%s' % Language, globals(), locals(), ['Languages'])
             self._Language = unicode(Language)
         except ImportError:
-            pass
+            raise ValueError('Unknown language: %s' % Language)
 
     Language = property(_GetLanguage, _SetLanguage,
     doc='''Language used for all "ToText" conversions.
