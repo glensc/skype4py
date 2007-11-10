@@ -29,9 +29,9 @@ class build_doc(Command):
     def run(self):
         try:
             from epydoc import cli
-            
+
             epydoc_config = os.path.join('doc', 'epydoc.conf')
-            
+
             old_argv = sys.argv[1:]
             sys.argv[1:] = ['--config=%s' % epydoc_config,
                             '--no-private'] # epydoc bug, not read from config
@@ -41,7 +41,7 @@ class build_doc(Command):
             else:
                 sys.argv.append('--html')
                 sys.argv.append('--output=doc/html/')
-            
+
             cli.cli()
             sys.argv[1:] = old_argv
 

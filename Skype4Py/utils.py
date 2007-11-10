@@ -232,7 +232,101 @@ class _EventHandlingThread(threading.Thread):
             h[0](*h[1], **h[2])
 
 class EventHandlingBase(object):
-    '''Class used as a base by all classes implementing event handlers.'''
+    '''This class is used as a base by all classes implementing event handlers.
+
+    Look at known subclasses (above in epydoc) to see which classes will allow you to
+    attach your own callables (event handlers) to certain events occuring in them.
+
+    Read the respective classes documentations to learn what events are provided by them. The
+    events are always defined in a class whose name consist of the name of the class it provides
+    events for followed by C{Events}). For example class L{ISkype} provides events defined in
+    L{ISkypeEvents}. The events class is always defined in the same submodule as the main class.
+
+    The events class is just informative. It tells you what events you can assign your event
+    handlers to, when do they occur and what arguments lists should your event handlers
+    accept.
+
+    There are three ways of attaching an event handler to an event.
+
+      1. C{Events} object.
+
+         Use this method if you need to attach many event handlers to many events.
+
+         Write your event handlers as methods of a class. The superclass of your class
+         doesn't matter, Skype4Py will just look for methods with apropriate names.
+         The names of the methods and their arguments lists can be found in respective
+         events classes (see above).
+
+         Pass an instance of this class as the C{Events} argument to the constructor of
+         a class whose events you are interested in. For example::
+
+             import Skype4Py
+
+             class MySkypeEvents:
+                 def UserStatus(self, Status):
+                     print 'The status of the user changed'
+
+             skype = Skype4Py.Skype(Events=MySkypeEvents())
+
+         The C{UserStatus} method will be called when the status of the user currently logged
+         into skype is changed.
+
+      2. C{On...} properties.
+
+         This method lets you use any callables as event handlers. Simply assign them to C{On...}
+         properties (where "C{...}" is the name of the event) of the object whose events you are
+         interested in. For example::
+
+             import Skype4Py
+
+             def user_status(Status):
+                 print 'The status of the user changed'
+
+             skype = Skype4Py.Skype()
+             skype.OnUserStatus = user_status
+
+         The C{user_status} function will be called when the status of the user currently logged
+         into skype is changed.
+
+         The names of the events and their arguments lists should be taken from respective events
+         classes (see above). Note that there is no C{self} argument (which can be seen in the events
+         classes) simply because our event handler is a function, not a method.
+
+      3. C{RegisterEventHandler} / C{UnregisterEventHandler} methods.
+
+         This method, like the second one, also let you use any callables as event handlers. However,
+         it additionally let you assign many event handlers to a single event.
+
+         In this case, you use L{RegisterEventHandler} and L{UnregisterEventHandler} methods
+         of the object whose events you are interested in. For example::
+
+             import Skype4Py
+
+             def user_status(Status):
+                 print 'The status of the user changed'
+
+             skype = Skype4Py.Skype()
+             skype.RegisterEventHandler('UserStatus', user_status)
+
+         The C{user_status} function will be called when the status of the user currently logged
+         into skype is changed.
+
+         The names of the events and their arguments lists should be taken from respective events
+         classes (see above). Note that there is no C{self} argument (which can be seen in the events
+         classes) simply because our event handler is a function, not a method.
+
+    B{Important notes!}
+
+    The event handlers are always called on a separate thread. At any given time, there is at most
+    one handling thread per event type. This means that when a lot of events of the same type are
+    generated at once, handling of an event will start only after the previous one is handled.
+    Handling of events of different types may happen simultaneously.
+
+    In case of second and third method, only weak references to the event handlers are stored. This
+    means that you must make sure that Skype4Py is not the only one having a reference to the callable
+    or else it will be garbage collected and silently removed from Skype4Py's handlers list. On the
+    other hand, it frees you from worrying about cyclic references.
+    '''
 
     _EventNames = []
 
@@ -292,14 +386,15 @@ class EventHandlingBase(object):
             t.start()
 
     def RegisterEventHandler(self, Event, Target):
-        '''Registers an event handler.
+        '''Registers any callable as an event handler.
 
-        @param Event: Name of the event.
+        @param Event: Name of the event. For event names, see the respective C{...Events} class.
         @type Event: str
         @param Target: Callable to register as the event handler.
         @type Target: callable
         @return: Always True.
         @rtype: bool
+        @see: L{EventHandlingBase}
         '''
 
         if not callable(Target):
@@ -310,14 +405,15 @@ class EventHandlingBase(object):
         return True
 
     def UnregisterEventHandler(self, Event, Target):
-        '''Unregisters an event handler.
+        '''Unregisters a previously registered event handler (a callable).
 
-        @param Event: Name of the event.
+        @param Event: Name of the event. For event names, see the respective C{...Events} class.
         @type Event: str
         @param Target: Callable to unregister.
         @type Target: callable
         @return: True if callable was successfully unregistered, False if it wasn't registered first.
         @rtype: bool
+        @see: L{EventHandlingBase}
         '''
 
         if not callable(Target):

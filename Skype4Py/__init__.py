@@ -3,7 +3,7 @@
 #
 
 '''
-Multiplatform Python wrapper for Skype.
+Skype4Py is a multiplatform Skype API wrapper for Python.
 
   1. Usage.
 
@@ -22,6 +22,7 @@ Multiplatform Python wrapper for Skype.
 
      The first two are the only classes that you will be instatinating directly. Calling their methods/properties
      will give you the access to instances of all other classes, you won't have to instatinate them yourself.
+     The two classes are also the only ones that provide event handlers (see [3]).
 
      Every Skype4Py script instatinates the C{Skype4Py.Skype} class at least once. That's what you want to do
      first in your script. Then follow the L{Skype4Py.skype.ISkype} reference to see where you can get from
@@ -34,9 +35,10 @@ Multiplatform Python wrapper for Skype.
 
          import Skype4Py
 
+         # Create Skype instance
          skype = Skype4Py.Skype()
 
-         # Connects Skype object to Skype client
+         # Connect Skype object to Skype client
          skype.Attach()
 
          print 'Your full name:', skype.CurrentUser.FullName
