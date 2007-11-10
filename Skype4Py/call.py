@@ -176,7 +176,7 @@ class ICall(Cached):
         @type Targets: unicode
         @see: L{CanTransfer}
         '''
-        self._Alter('TRANSFER', Target)
+        self._Alter('TRANSFER', ', '.join(Targets))
 
     def _GetConferenceId(self):
         return int(self._Property('CONF_ID'))
