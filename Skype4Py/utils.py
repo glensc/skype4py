@@ -22,6 +22,8 @@ def chop(s, n=1, d=None):
     '''
 
     spl = s.split(d, n)
+    if len(spl) == n:
+        spl.append(s[:0])
     if len(spl) != n + 1:
         raise ValueError('chop: Could not chop %d words from \'%s\'' % (n, s))
     return spl
@@ -334,14 +336,13 @@ class EventHandlingBase(object):
         will be passed unchanged to event handlers, all event handlers are fired on
         separate threads.
         '''
-
         # get list of relevant handlers
-        allhandlers = [x() for x in self._EventHandlers[Event]]
-        handlers = filter(bool, allhandlers)
-        if len(allhandlers) != len(handlers):
+        handlers = dict((x, x()) for x in self._EventHandlers[Event])
+        if None in handlers.values():
             # cleanup
-            self._EventHandlers[Event] = list(x for x in self._EventHandlers[Event] if x())
-        # try the OnX handlers
+            self._EventHandlers[Event] = list(x[0] for x in handlers.items() if x[1] != None)
+        handlers = filter(None, handlers.values())
+        # try the On... handlers
         try:
             h = self._DefaultEventHandlers[Event]()
             if h:
@@ -380,7 +381,7 @@ class EventHandlingBase(object):
         @type Event: str
         @param Target: Callable to register as the event handler.
         @type Target: callable
-        @return: Always True.
+        @return: True is callable was successfully registered, False if it was already registered.
         @rtype: bool
         @see: L{EventHandlingBase}
         '''
@@ -389,6 +390,13 @@ class EventHandlingBase(object):
             raise TypeError('%s is not callable' % repr(Target))
         if Event not in self._EventHandlers:
             raise ValueError('%s is not a valid %s event name' % (Event, self.__class__.__name__))
+        # get list of relevant handlers
+        handlers = dict((x, x()) for x in self._EventHandlers[Event])
+        if None in handlers.values():
+            # cleanup
+            self._EventHandlers[Event] = list(x[0] for x in handlers.items() if x[1] != None)
+        if Target in handlers.values():
+            return False
         self._EventHandlers[Event].append(WeakCallableRef(Target))
         return True
 
@@ -408,9 +416,14 @@ class EventHandlingBase(object):
             raise TypeError('%s is not callable' % repr(Target))
         if Event not in self._EventHandlers:
             raise ValueError('%s is not a valid %s event name' % (Event, self.__class__.__name__))
-        for e in self._EventHandlers[Event]:
-            if e() == Target:
-                self._EventHandlers[Event].remove(e)
+        # get list of relevant handlers
+        handlers = dict((x, x()) for x in self._EventHandlers[Event])
+        if None in handlers.values():
+            # cleanup
+            self._EventHandlers[Event] = list(x[0] for x in handlers.items() if x[1] != None)
+        for wref, trg in handlers.items():
+            if trg == Target:
+                self._EventHandlers[Event].remove(wref)
                 return True
         return False
 
