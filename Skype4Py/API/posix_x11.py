@@ -399,8 +399,6 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 else:
                     Command._timer.cancel()
                     del Command._timer
-                if Command._Notify:
-                    self.CallHandler('rece_api', Command.Reply)
                 self.CallHandler('rece', Command)
             else:
                 self.CallHandler('rece_api', com[p + 1:])

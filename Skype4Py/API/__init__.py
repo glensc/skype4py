@@ -48,10 +48,6 @@ class ICommand(object):
         '''Reply after the command has been sent and Skype has replied.
         @type: unicode'''
 
-        # If reset to True (after object creation) causes the response to this command
-        # to be passed to event handling code.
-        self._Notify = False
-
     def __repr__(self):
         '''Returns a string representing the command with all its parameters.
 
