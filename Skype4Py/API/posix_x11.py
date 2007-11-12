@@ -399,7 +399,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 else:
                     Command._timer.cancel()
                     del Command._timer
-                if not Command.Command.startswith('GET '):
+                if Command._Notify:
                     self.CallHandler('rece_api', Command.Reply)
                 self.CallHandler('rece', Command)
             else:

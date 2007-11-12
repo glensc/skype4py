@@ -9,7 +9,7 @@ No options are currently supported.
 '''
 
 import threading
-import time
+import time, sys
 import weakref
 from ctypes import *
 from Skype4Py.API import ICommand, _ISkypeAPIBase
@@ -207,6 +207,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         elif uMsg == _WM_COPYDATA and wParam == self.Skype and lParam:
             copydata = cast(lParam, PCOPYDATASTRUCT).contents
             com8 = copydata.lpData[:copydata.cbData - 1]
+            print >>sys.stderr, '<<< %s' % com8
             com = com8.decode('utf-8')
             if com.startswith(u'#'):
                 p = com.find(u' ')
@@ -219,7 +220,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
                     else:
                         Command._timer.cancel()
                         del Command._timer
-                    if not Command.Command.startswith('GET '):
+                    if Command._Notify:
                         self.CallHandler('rece_api', Command.Reply)
                     self.CallHandler('rece', Command)
                 else:
@@ -236,6 +237,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.CallHandler('send', Command)
         com = u'#%d %s' % (Command.Id, Command.Command)
         com8 = com.encode('utf-8') + '\0'
+        print >>sys.stderr, '>>> %s' % com8
         copydata = _COPYDATASTRUCT(None, len(com8), com8)
         if Command.Blocking:
             Command._event = event = threading.Event()
