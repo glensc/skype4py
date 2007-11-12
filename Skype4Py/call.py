@@ -571,7 +571,7 @@ class IConference(Cached):
             c.Resume()
 
     def _GetActiveCalls(self):
-        return tuple(x for x in self._Skype.ActiveCalls if c.ConferenceId == self._Id)
+        return tuple(x for x in self._Skype.ActiveCalls if x.ConferenceId == self._Id)
 
     ActiveCalls = property(_GetActiveCalls,
     doc='''Active calls with the same conference ID.
@@ -580,7 +580,7 @@ class IConference(Cached):
     ''')
 
     def _GetCalls(self):
-        return tuple(x for x in self._Skype.Calls() if c.ConferenceId == self._Id)
+        return tuple(x for x in self._Skype.Calls() if x.ConferenceId == self._Id)
 
     Calls = property(_GetCalls,
     doc='''Calls with the same conference ID.
