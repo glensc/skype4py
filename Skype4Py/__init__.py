@@ -59,7 +59,7 @@ from enums import *
 from errors import *
 
 
-__version__ = '0.9.28.5'
+__version__ = '0.9.28.6'
 '''The version of Skype4Py.'''
 
 Skype = ISkype
