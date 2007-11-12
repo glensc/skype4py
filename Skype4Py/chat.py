@@ -96,12 +96,13 @@ class IChat(Cached):
         @return: Message object
         @rtype: L{IChatMessage}
         '''
-        msgs1 = self.RecentMessages
-        self._Skype._DoCommand('CHATMESSAGE %s %s' % (self._Name, MessageText))
-        msgs2 = self.RecentMessages
-        for m in msgs2:
-            if m not in msgs1:
-                return m
+        #msgs1 = self.RecentMessages
+        #self._Skype._DoCommand('CHATMESSAGE %s %s' % (self._Name, MessageText))
+        #msgs2 = self.RecentMessages
+        #for m in msgs2:
+        #    if m not in msgs1:
+        #        return m
+        return IChatMessage(chop(self._Skype._DoCommand('CHATMESSAGE %s %s' % (self._Name, MessageText)), 2)[1], self)
 
     def SetPassword(self, Password, Hint=''):
         '''Sets the chat password.
