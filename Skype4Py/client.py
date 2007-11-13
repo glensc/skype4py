@@ -292,6 +292,9 @@ class IPluginEvent(Cached):
     '''Represents an event displayed in Skype client's events pane.
     '''
 
+    def __repr__(self):
+        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
+
     def _Init(self, Id, Skype):
         self._Skype = Skype
         self._Id = unicode(Id)
@@ -314,6 +317,9 @@ class IPluginEvent(Cached):
 class IPluginMenuItem(Cached):
     '''Represents a menu item displayed in Skype client's "Do More" menus.
     '''
+
+    def __repr__(self):
+        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
     def _Init(self, Id, Skype, Caption=None, Hint=None, Enabled=None):
         self._Skype = Skype

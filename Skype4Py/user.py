@@ -9,6 +9,9 @@ class IUser(Cached):
     '''Represents a Skype user.
     '''
 
+    def __repr__(self):
+        return '<%s with Handle=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Handle))
+
     def _Init(self, Handle, Skype):
         self._Skype = Skype
         self.Handle = unicode(Handle)
@@ -378,6 +381,9 @@ class IUser(Cached):
 class IGroup(Cached):
     '''Represents a group of Skype users.
     '''
+
+    def __repr__(self):
+        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
     def _Alter(self, AlterName, Args=None):
         return self._Skype._Alter('GROUP', self._Id, AlterName, Args)

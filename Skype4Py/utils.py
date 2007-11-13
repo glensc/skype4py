@@ -147,11 +147,6 @@ class _WeakMethod(object):
         self.im_class = method.im_class
         self.callback = callback
 
-    def _dies(self, ref):
-        self.im_func = self.im_class = None
-        if self.callback != None:
-            self.callback(self)
-
     def __call__(self):
         if self.weak_im_self:
             im_self = self.weak_im_self()
@@ -160,6 +155,19 @@ class _WeakMethod(object):
         else:
             im_self = None
         return instancemethod(self.im_func, im_self, self.im_class)
+
+    def __repr__(self):
+        obj = self()
+        objrepr = repr(obj)
+        if obj == None:
+            objrepr = 'dead'
+        return '<weakref at 0x%x; %s>' % (id(self), objrepr)
+
+    def _dies(self, ref):
+        # weakref to im_self died
+        self.im_func = self.im_class = None
+        if self.callback != None:
+            self.callback(self)
 
 
 def WeakCallableRef(c, callback=None):

@@ -10,6 +10,9 @@ class ICall(Cached):
     '''Represents a voice/video call.
     '''
 
+    def __repr__(self):
+        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
+
     def _Alter(self, AlterName, Args=None):
         return self._Skype._Alter('CALL', self._Id, AlterName, Args)
 
@@ -498,6 +501,9 @@ class IParticipant(Cached):
     '''Represents a conference call participant.
     '''
 
+    def __repr__(self):
+        return '<%s with Id=%s, Handle=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Handle))
+
     def _Init(self, (Id, Idx), Skype):
         self._Skype = Skype
         self._Id = Id
@@ -547,6 +553,9 @@ class IParticipant(Cached):
 class IConference(Cached):
     '''Represents a conference call.
     '''
+
+    def __repr__(self):
+        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
     def _Init(self, Id, Skype):
         self._Skype = Skype

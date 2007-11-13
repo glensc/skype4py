@@ -10,6 +10,9 @@ class IVoicemail(Cached):
     '''Represents a voicemail.
     '''
 
+    def __repr__(self):
+        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
+
     def _Alter(self, AlterName, Args=None):
         return self._Skype._Alter('VOICEMAIL', self._Id, AlterName, Args)
 

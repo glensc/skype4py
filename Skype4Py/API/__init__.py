@@ -49,13 +49,8 @@ class ICommand(object):
         @type: unicode'''
 
     def __repr__(self):
-        '''Returns a string representing the command with all its parameters.
-
-        @return: Representation string.
-        @rtype: str
-        '''
-        return 'ICommand(Id=%s, Command=%s, Expected=%s, Blocking=%s, Timeout=%s, Reply=%s)' % \
-            (self.Id, repr(self.Command), repr(self.Expected), self.Blocking, self.Timeout, repr(self.Reply))
+        return '<%s with Id=%s, Command=%s, Blocking=%s, Reply=%s>' % \
+            (object.__repr__(self)[1:-1], self.Id, repr(self.Command), self.Blocking, repr(self.Reply))
 
 
 class _ISkypeAPIBase(threading.Thread):

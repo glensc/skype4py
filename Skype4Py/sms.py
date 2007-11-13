@@ -9,6 +9,9 @@ class ISmsChunk(Cached):
     '''Represents a single chunk of a multi-part SMS message.
     '''
 
+    def __repr__(self):
+        return '<%s with Id=%s, Message=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Message))
+
     def _Init(self, (Id, Message)):
         self._Id = int(Id)
         self._Message = Message
@@ -56,6 +59,9 @@ class ISmsChunk(Cached):
 class ISmsMessage(Cached):
     '''Represents an SMS message.
     '''
+
+    def __repr__(self):
+        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
     def _Alter(self, AlterName, Args=None):
         return self._Skype._Alter('SMS', self._Id, AlterName, Args)
@@ -261,6 +267,9 @@ class ISmsMessage(Cached):
 class ISmsTarget(Cached):
     '''Represents a single target of a multi-target SMS message.
     '''
+
+    def __repr__(self):
+        return '<%s with Number=%s, Message=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Number), repr(self.Message))
 
     def _Init(self, (Number, Message)):
         self._Number = Number

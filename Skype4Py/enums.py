@@ -10,8 +10,6 @@ Skype4Py constants.
         status = Skype4Py.apiAttachUnknown
 '''
 
-from utils import *
-
 
 #{ Attachment status
 apiAttachUnknown = -1

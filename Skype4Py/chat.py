@@ -11,6 +11,9 @@ class IChat(Cached):
     '''Represents a Skype chat.
     '''
 
+    def __repr__(self):
+        return '<%s with Name=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Name))
+
     def _Alter(self, AlterName, Args=None):
         return self._Skype._Alter('CHAT', self._Name, AlterName, Args, 'ALTER CHAT %s' % AlterName)
 
@@ -399,6 +402,9 @@ class IChatMessage(Cached):
     '''Represents a single chat message.
     '''
 
+    def __repr__(self):
+        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
+
     def _Init(self, Id, Skype):
         self._Skype = Skype
         self._Id = int(Id)
@@ -589,6 +595,9 @@ class IChatMessage(Cached):
 class IChatMember(Cached):
     '''Represents a member of a public chat.
     '''
+
+    def __repr__(self):
+        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
     def _Alter(self, AlterName, Args=None):
         return self._Skype._Alter('CHATMEMBER', self._Id, AlterName, Args, 'ALTER CHATMEMBER %s' % AlterName)

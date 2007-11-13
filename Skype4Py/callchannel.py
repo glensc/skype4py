@@ -28,6 +28,9 @@ class ICallChannel(object):
         self._Stream = Stream
         self._Type = Type
 
+    def __repr__(self):
+        return '<%s with Manager=%s, Call=%s, Stream=%s>' % (object.__repr__(self)[1:-1], repr(self.Manager), repr(self.Call), repr(self.Stream))
+
     def SendTextMessage(self, Text):
         '''Sends text message over channel.
 

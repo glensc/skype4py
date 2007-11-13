@@ -10,6 +10,9 @@ class IApplication(Cached):
     '''Represents an application in APP2APP protocol. Use L{ISkype.Application} to instatinate.
     '''
 
+    def __repr__(self):
+        return '<%s with Name=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Name))
+
     def _Alter(self, AlterName, Args=None):
         return self._Skype._Alter('APPLICATION', self._Name, AlterName, Args)
 
@@ -133,6 +136,9 @@ class IApplicationStream(Cached):
 
     def __len__(self):
         return self.DataLength
+
+    def __repr__(self):
+        return '<%s with Handle=%s, Application=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Handle), repr(self.Application))
 
     def _Init(self, Handle, Application):
         self._Handle = Handle
