@@ -201,7 +201,7 @@ class ICallChannelManager(EventHandlingBase):
 
     def CreateApplication(self, ApplicationName=None):
         '''Creates an APP2APP application context. The application is automatically created using
-        L{IApplication.Create}.
+        L{IApplication.Create<application.IApplication.Create>}.
 
         @param ApplicationName: Application name
         @type ApplicationName: unicode

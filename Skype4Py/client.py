@@ -8,7 +8,7 @@ import weakref
 
 
 class IClient(object):
-    '''Represents a Skype client. Access using L{ISkype.Client}.
+    '''Represents a Skype client. Access using L{ISkype.Client<skype.ISkype.Client>}.
     '''
 
     def __init__(self, Skype):

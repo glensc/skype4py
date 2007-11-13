@@ -15,13 +15,13 @@ from Skype4Py.enums import *
 
 
 class ICommand(object):
-    '''Represents an API command. Use L{ISkype.Command} to instatinate.
+    '''Represents an API command. Use L{ISkype.Command<skype.ISkype.Command>} to instatinate.
 
-    To send a command to Skype, use L{ISkype.SendCommand}.
+    To send a command to Skype, use L{ISkype.SendCommand<skype.ISkype.SendCommand>}.
     '''
 
     def __init__(self, Id, Command, Expected=u'', Blocking=False, Timeout=30000):
-        '''Use L{ISkype.Command} to instatinate the object instead.
+        '''Use L{ISkype.Command<skype.ISkype.Command>} to instatinate the object instead.
         '''
 
         self.Id = Id
@@ -37,7 +37,7 @@ class ICommand(object):
         @type: unicode'''
 
         self.Blocking = Blocking
-        '''If set to True, L{ISkype.SendCommand} will block until the reply is received.
+        '''If set to True, L{ISkype.SendCommand<skype.ISkype.SendCommand>} will block until the reply is received.
         @type: bool'''
 
         self.Timeout = Timeout

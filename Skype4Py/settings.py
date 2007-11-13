@@ -7,7 +7,7 @@ from utils import *
 
 
 class ISettings(object):
-    '''Represents Skype settings. Access using L{ISkype.Settings}.
+    '''Represents Skype settings. Access using L{ISkype.Settings<skype.ISkype.Settings>}.
     '''
 
     def __init__(self, Skype):

@@ -7,7 +7,7 @@ import os
 
 
 class IConversion(object):
-    '''Allows conversion between constants and text. Access using L{ISkype.Convert}.
+    '''Allows conversion between constants and text. Access using L{ISkype.Convert<skype.ISkype.Convert>}.
     '''
 
     def __init__(self, Skype):

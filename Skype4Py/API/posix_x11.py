@@ -3,8 +3,8 @@ Low level Skype for Linux interface implemented
 using XWindows messaging. Uses direct Xlib calls
 through ctypes module.
 
-This module handles the options that you can pass to L{ISkype.__init__} for Linux machines
-when the transport is set to X11.
+This module handles the options that you can pass to L{ISkype.__init__<skype.ISkype.__init__>}
+for Linux machines when the transport is set to X11.
 
 No further options are currently supported.
 '''

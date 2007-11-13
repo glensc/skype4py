@@ -2,8 +2,8 @@
 Low level Skype for Linux interface implemented
 using python-dbus package.
 
-This module handles the options that you can pass to L{ISkype.__init__} for Linux machines
-when the transport is set to DBus. See below.
+This module handles the options that you can pass to L{ISkype.__init__<skype.ISkype.__init__>}
+for Linux machines when the transport is set to DBus. See below.
 
 @newfield option: Option, Options
 

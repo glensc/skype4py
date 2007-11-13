@@ -1,7 +1,7 @@
 '''
 Low level Skype for Linux interface.
 
-This module handles the options that you can pass to L{ISkype.__init__} for Linux machines.
+This module handles the options that you can pass to L{ISkype.__init__<skype.ISkype.__init__>} for Linux machines.
 The options include:
 
 @newfield option: Option, Options

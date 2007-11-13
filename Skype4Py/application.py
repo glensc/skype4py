@@ -7,7 +7,7 @@ import threading
 
 
 class IApplication(Cached):
-    '''Represents an application in APP2APP protocol. Use L{ISkype.Application} to instatinate.
+    '''Represents an application in APP2APP protocol. Use L{ISkype.Application<skype.ISkype.Application>} to instatinate.
     '''
 
     def __repr__(self):

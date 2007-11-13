@@ -7,7 +7,7 @@ import weakref
 
 
 class IProfile(object):
-    '''Represents the profile of currently logged in user. Access using L{ISkype.CurrentUserProfile}.
+    '''Represents the profile of currently logged in user. Access using L{ISkype.CurrentUserProfile<skype.ISkype.CurrentUserProfile>}.
     '''
 
     def __init__(self, Skype):

@@ -3,7 +3,8 @@ Low level Skype for Windows interface implemented
 using Windows messaging. Uses direct WinAPI calls
 through ctypes module.
 
-This module handles the options that you can pass to L{ISkype.__init__} for Windows machines.
+This module handles the options that you can pass to L{ISkype.__init__<skype.ISkype.__init__>}
+for Windows machines.
 
 No options are currently supported.
 '''
