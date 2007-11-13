@@ -53,17 +53,12 @@ Skype4Py is a multiplatform Skype API wrapper for Python.
 @copyright: S{copy} 2007 Arkadiusz Wahlig
 '''
 
-from skype import *
-from callchannel import *
+from skype import ISkype as Skype
+from callchannel import ICallChannelManager as CallChannelManager
+from errors import ISkypeError as SkypeError, ISkypeAPIError as SkypeAPIError
 from enums import *
-from errors import *
 
 
 __version__ = '0.9.28.6'
 '''The version of Skype4Py.'''
 
-Skype = ISkype
-CallChannelManager = ICallChannelManager
-
-SkypeError = ISkypeError
-SkypeAPIError = ISkypeAPIError
