@@ -105,6 +105,8 @@ class ISettings(object):
     doc='''Automatic echo cancellation state.
 
     @type: bool
+    @warning: Starting with Skype for Windows 3.6, this property has no effect.
+    It can still be set for backwards compatibility reasons.
     ''')
 
     def _GetAGC(self):
@@ -117,6 +119,8 @@ class ISettings(object):
     doc='''Automatic gain control state.
 
     @type: bool
+    @warning: Starting with Skype for Windows 3.6, this property has no effect.
+    It can still be set for backwards compatibility reasons.
     ''')
 
     def _GetAudioIn(self):
