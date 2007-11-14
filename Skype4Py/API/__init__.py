@@ -24,9 +24,9 @@ class ICommand(object):
         '''Use L{ISkype.Command<skype.ISkype.Command>} to instatinate the object instead.
         '''
 
-        self.Id = Id
-        '''Command Id.
-        @type: int'''
+        self.Blocking = Blocking
+        '''If set to True, L{ISkype.SendCommand<skype.ISkype.SendCommand>} will block until the reply is received.
+        @type: bool'''
 
         self.Command = unicode(Command)
         '''Command string.
@@ -36,17 +36,17 @@ class ICommand(object):
         '''Expected reply.
         @type: unicode'''
 
-        self.Blocking = Blocking
-        '''If set to True, L{ISkype.SendCommand<skype.ISkype.SendCommand>} will block until the reply is received.
-        @type: bool'''
-
-        self.Timeout = Timeout
-        '''Timeout in milliseconds if Blocking=True.
+        self.Id = Id
+        '''Command Id.
         @type: int'''
 
         self.Reply = u''
         '''Reply after the command has been sent and Skype has replied.
         @type: unicode'''
+
+        self.Timeout = Timeout
+        '''Timeout in milliseconds if Blocking=True.
+        @type: int'''
 
     def __repr__(self):
         return '<%s with Id=%s, Command=%s, Blocking=%s, Reply=%s>' % \
