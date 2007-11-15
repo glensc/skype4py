@@ -486,9 +486,9 @@ class Cached(object):
             return cls._cache_[h]
         except KeyError:
             o = object.__new__(cls)
+            cls._cache_[h] = o
             if hasattr(o, '_Init'):
                 o._Init(Id, *args, **kwargs)
-            cls._cache_[h] = o
             return o
 
     def __copy__(self):
