@@ -162,13 +162,11 @@ class _WeakMethod(object):
         if obj == None:
             objrepr = 'dead'
         return '<weakref at 0x%x; %s>' % (id(self), objrepr)
-
     def _dies(self, ref):
         # weakref to im_self died
         self.im_func = self.im_class = None
         if self.callback != None:
             self.callback(self)
-
 
 def WeakCallableRef(c, callback=None):
     '''Creates and returns a new weak reference to a callable object.
