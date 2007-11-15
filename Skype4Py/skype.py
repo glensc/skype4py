@@ -493,6 +493,8 @@ class ISkype(EventHandlingBase):
         @note: This function waits until the online status changes. Alternatively, use
         the L{CurrentUserStatus} property to perform an immediate change of status.
         '''
+        if self.CurrentUserStatus.upper() == Val.upper():
+            return
         event = threading.Event()
         def userstatus_handler(status):
             if status.upper() == Val.upper():
