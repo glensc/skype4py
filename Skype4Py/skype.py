@@ -168,6 +168,12 @@ class ISkype(EventHandlingBase):
 
     @ivar OnCallVideoStatusChanged: Event handler for L{ISkypeEvents.CallVideoStatusChanged} event. See L{EventHandlingBase} for more information on events.
     @type OnCallVideoStatusChanged: callable
+
+    @ivar OnChatWindowState: Event handler for L{ISkypeEvents.ChatWindowState} event. See L{EventHandlingBase} for more information on events.
+    @type OnChatWindowState: callable
+
+    @ivar OnClientWindowState: Event handler for L{ISkypeEvents.ClientWindowState} event. See L{EventHandlingBase} for more information on events.
+    @type OnClientWindowState: callable
     '''
 
     def __init__(self, Events=None, **Options):
@@ -569,19 +575,6 @@ class ISkype(EventHandlingBase):
         if Id <= 0 or not o.Calls:
             raise ISkypeError(0, 'Unknown conference')
         return o
-
-    def CreateChatMultiple(self, Members):
-        '''CreateChatMultiple.
-
-        @param Members: Members
-        @type Members: ?
-        @return: ?
-        @rtype: ?
-        @deprecated: Use L{CreateChatWith} instead.
-        '''
-        from warnings import warn
-        warn('ISkype.CreateChatMultiple: Use ISkype.CreateChatWith instead.', DeprecationWarning, stacklevel=2)
-        return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join(x.Handle for x in Members)), 2)[1], self)
 
     def CreateChatUsingBlob(self, Blob):
         '''Returns existing or joins a new chat using given blob.
