@@ -502,7 +502,7 @@ class IParticipant(Cached):
     '''
 
     def __repr__(self):
-        return '<%s with Id=%s, Handle=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Handle))
+        return '<%s with Id=%s, Idx=%s, Handle=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Idx), repr(self.Handle))
 
     def _Init(self, (Id, Idx), Skype):
         self._Skype = Skype
@@ -547,6 +547,24 @@ class IParticipant(Cached):
     doc='''Skypename of a participant in a conference call.
 
     @type: unicode
+    ''')
+
+    def _GetId(self):
+        return self._Id
+
+    Id = property(_GetId,
+    doc='''Call Id.
+
+    @type: int
+    ''')
+
+    def _GetIdx(self):
+        return self._Idx
+
+    Idx = property(_GetIdx,
+    doc='''Call participant index.
+
+    @type: int
     ''')
 
 
