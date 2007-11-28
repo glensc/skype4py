@@ -511,10 +511,10 @@ class IParticipant(Cached):
 
     def _Property(self, Prop):
         reply = self._Skype._Property('CALL', self._Id, 'CONF_PARTICIPANT %d' % self._Idx)
-        return chop(reply, 7)[Prop]
+        return chop(reply, 3)[Prop]
 
     def _GetCallStatus(self):
-        return self._Property(6)
+        return self._Property(2)
 
     CallStatus = property(_GetCallStatus,
     doc='''Call status of a participant in a conference call.
@@ -523,7 +523,7 @@ class IParticipant(Cached):
     ''')
 
     def _GetCallType(self):
-        return self._Property(5)
+        return self._Property(1)
 
     CallType = property(_GetCallType,
     doc='''Call type in a conference call.
@@ -532,7 +532,7 @@ class IParticipant(Cached):
     ''')
 
     def _GetDisplayName(self):
-        return self._Property(7)
+        return self._Property(3)
 
     DisplayName = property(_GetDisplayName,
     doc='''DisplayName of a participant in a conference call.
@@ -541,7 +541,7 @@ class IParticipant(Cached):
     ''')
 
     def _GetHandle(self):
-        return self._Property(4)
+        return self._Property(0)
 
     Handle = property(_GetHandle,
     doc='''Skypename of a participant in a conference call.
