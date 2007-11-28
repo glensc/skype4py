@@ -39,7 +39,13 @@ class install_lib(old_install_lib):
         self.adapt_build_to_platform()
 
         # Let the original method do the hard work or copying the files.
-        old_install_lib.install(self)
+        outfiles = old_install_lib.install(self)
+
+        # Also byte_compile for distribution usage.
+        if outfiles is not None:
+            self.byte_compile(outfiles)
+
+        return outfiles
 
     def adapt_build_to_platform(self):
         # We have to remove unneded files from the build directory. First,
