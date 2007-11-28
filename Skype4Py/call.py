@@ -257,7 +257,7 @@ class ICall(Cached):
 
     def _GetParticipants(self):
         count = int(self._Property('CONF_PARTICIPANTS_COUNT'))
-        return tuple(IParticipant((self._Id, x), self._Skype) for x in xrange(1, count + 1))
+        return tuple(IParticipant((self._Id, x), self._Skype) for x in xrange(count))
 
     Participants = property(_GetParticipants,
     doc='''Participants of a conference call not hosted by the user.
@@ -506,8 +506,8 @@ class IParticipant(Cached):
 
     def _Init(self, (Id, Idx), Skype):
         self._Skype = Skype
-        self._Id = Id
-        self._Idx = Idx
+        self._Id = int(Id)
+        self._Idx = int(Idx)
 
     def _Property(self, Prop):
         reply = self._Skype._Property('CALL', self._Id, 'CONF_PARTICIPANT %d' % self._Idx)
