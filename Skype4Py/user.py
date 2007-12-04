@@ -14,7 +14,7 @@ class IUser(Cached):
 
     def _Init(self, Handle, Skype):
         self._Skype = Skype
-        self.Handle = unicode(Handle)
+        self._Handle = unicode(Handle)
 
     def _Property(self, PropName, Set=None, Cache=True):
         return self._Skype._Property('USER', self.Handle, PropName, Set, Cache)
@@ -126,6 +126,15 @@ class IUser(Cached):
 
     DisplayName = property(_GetDisplayName, _SetDisplayName,
     doc='''Display name of the user.
+
+    @type: unicode
+    ''')
+
+    def _GetHandle(self):
+        return self._Handle
+
+    Handle = property(_GetHandle,
+    doc='''Skypename of the user.
 
     @type: unicode
     ''')
