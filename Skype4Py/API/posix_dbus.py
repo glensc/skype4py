@@ -36,7 +36,7 @@ except ImportError:
     if sys.argv == ['(imported)']:
         # we get here if we're building docs on windows, to let the module
         # import without exceptions, we import our faked dbus module
-        from _faked_dbus import dbus
+        from faked_dbus import dbus
     else:
         raise
 
