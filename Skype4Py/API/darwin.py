@@ -1,13 +1,22 @@
 '''
-Low level Skype for Mac OS X interface.
+Low level Skype for Mac OS X interface implemented
+using Carbon distributed notifications. Uses direct
+Carbon/CoreFoundation calls through ctypes module.
 
-WORK IN PROGRESS
+This module handles the options that you can pass to L{ISkype.__init__<skype.ISkype.__init__>}
+for Linux machines when the transport is set to X11.
+
+No further options are currently supported.
+
+Thanks to Eion Robb for reversing Skype for Mac API protocol.
 '''
 
 from Skype4Py.API import ICommand, _ISkypeAPIBase
 from ctypes import *
 from ctypes.util import find_library
 from Skype4Py.errors import ISkypeAPIError
+from Skype4Py.enums import *
+import threading, time
 
 
 class Carbon(object):
@@ -302,6 +311,12 @@ class CFDistributedNotificationCenter(CFType):
 
 
 class _ISkypeAPI(_ISkypeAPIBase):
+    '''Skype for Mac API wrapper.
+
+    Based with permission on code included in Skype Plugin for Pidgin.
+    http://code.google.com/p/skype4pidgin/
+    '''
+
     def __init__(self, handler, **opts):
         _ISkypeAPIBase.__init__(self)
         self.RegisterHandler(handler)
@@ -309,23 +324,91 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.coref = CoreFoundation()
         self.center = self.coref.CFDistributedNotificationCenter()
         self.is_available = False
+        self.client_id = -1
 
     def run(self):
         self.loop = self.carbon.GetCurrentEventLoop()
-
         self.carbon.RunCurrentEventLoop()
 
     def Close(self):
         if hasattr(self, 'loop'):
             self.loop.quit()
 
-    def Attach(self, Timeout=30000, Wait=True):
-        self.set_notifications()
-        self.center.post_notification('SKSkypeAPIAttachRequest', self.observer, immediate=True)
+    def SetFriendlyName(self, FriendlyName):
+        self.FriendlyName = FriendlyName
+        if self.AttachmentStatus == apiAttachSuccess:
+            # reattach with the new name
+            self.SetAttachmentStatus(apiAttachUnknown)
+            self.Attach()
 
-    def set_notifications(self):
-        if hasattr(self, 'observer'):
-            self.clear_notifications()
+    def Attach(self, Timeout=30000, Wait=True):
+        if self.AttachmentStatus in (apiAttachPendingAuthorization, apiAttachSuccess):
+            return
+        try:
+            self.start()
+        except AssertionError:
+            pass
+        try:
+            self.init_observer()
+            self.SetAttachmentStatus(apiAttachPendingAuthorization)
+            self.post('SKSkypeAPIAttachRequest')
+            self.wait = True
+            def ftimeout():
+                self.wait = False
+            t = threading.Timer(Timeout / 1000.0, ftimeout)
+            if Wait:
+                t.start()
+            while self.wait and self.AttachmentStatus == apiAttachPendingAuthorization:
+                time.sleep(1.0)
+        finally:
+            t.cancel()
+        if not self.wait:
+            self.SetAttachmentStatus(apiAttachUnknown)
+            raise ISkypeAPIError('Skype attach timeout')
+        self.SendCommand(ICommand(-1, 'PROTOCOL %s' % self.Protocol))
+
+    def IsRunning(self):
+        try:
+            self.start()
+        except AssertionError:
+            pass
+        self.init_observer()
+        self.is_available = False
+        self.post('SKSkypeAPIAvailabilityRequest')
+        time.sleep(1.0)
+        return self.is_available
+
+    def Start(self, Minimized=False, Nosplash=False):
+        if not self.IsRunning():
+            from subprocess import Popen
+            nul = file('/dev/null')
+            Popen(['/Applications/Skype.app/Contents/MacOS/Skype'], stdin=nul, stdout=nul, stderr=nul)
+
+    def SendCommand(self, Command):
+        if not self.AttachmentStatus == apiAttachSuccess:
+            self.Attach(Command.Timeout)
+        self.CommandsStackPush(Command)
+        self.CallHandler('send', Command)
+        com = u'#%d %s' % (Command.Id, Command.Command)
+        if Command.Blocking:
+            Command._event = event = threading.Event()
+        else:
+            Command._timer = timer = threading.Timer(Command.Timeout / 1000.0, self.CommandsStackPop, (Command.Id,))
+
+        userInfo = self.coref.CFDictionary({self.coref.CFSTR('SKYPE_API_COMMAND'): self.coref.CFString(com),
+                                            self.coref.CFSTR('SKYPE_API_CLIENT_ID'): self.coref.CFNumber(self.client_id)})
+        self.post('SKSkypeAPICommand', userInfo)
+
+        if Command.Blocking:
+            event.wait(Command.Timeout / 1000.0)
+            if not event.isSet():
+                raise ISkypeAPIError('Skype command timeout')
+        else:
+            timer.start()
+
+    def init_observer(self):
+        if self.has_observer():
+            self.delete_observer()
         self.observer = self.coref.CFString(self.FriendlyName)
         self.center.add_observer(self.observer, self.SKSkypeAPINotification, 'SKSkypeAPINotification', immediate=True)
         self.center.add_observer(self.observer, self.SKSkypeWillQuit, 'SKSkypeWillQuit', immediate=True)
@@ -333,8 +416,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.center.add_observer(self.observer, self.SKAvailabilityUpdate, 'SKAvailabilityUpdate', immediate=True)
         self.center.add_observer(self.observer, self.SKSkypeAttachResponse, 'SKSkypeAttachResponse', immediate=True)
 
-    def clear_notifications(self):
-        if not hasattr(self, 'observer'):
+    def delete_observer(self):
+        if not self.has_observer():
             return
         self.center.remove_observer(self.observer, 'SKSkypeAPINotification')
         self.center.remove_observer(self.observer, 'SKSkypeWillQuit')
@@ -343,31 +426,48 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.center.remove_observer(self.observer, 'SKSkypeAttachResponse')
         del self.observer
 
+    def has_observer(self):
+        return hasattr(self, 'observer')
+
+    def post(self, name, userInfo=None):
+        if not self.has_observer():
+            self.init_observer()
+        self.center.post_notification(name, self.observer, userInfo, immediate=True)
+
     def SKSkypeAPINotification(self, center, observer, name, obj, userInfo):
-        print 'SKSkypeAPINotification'
+        client_id = int(CFNumber(userInfo[self.coref.CFSTR('SKYPE_API_CLIENT_ID')]))
+        if client_id != 999 and (client_id == 0 or client_id != self.client_id):
+            return
+        com = unicode(CFString(userInfo[self.coref.CFSTR('SKYPE_API_NOTIFICATION_STRING')]))
+        if com.startswith(u'#'):
+            p = com.find(u' ')
+            Command = self.CommandsStackPop(int(com[1:p]))
+            if Command:
+                Command.Reply = com[p + 1:]
+                if Command.Blocking:
+                    Command._event.set()
+                    del Command._event
+                else:
+                    Command._timer.cancel()
+                    del Command._timer
+                self.CallHandler('rece', Command)
+            else:
+                self.CallHandler('rece_api', com[p + 1:])
+        else:
+            self.CallHandler('rece_api', com)
 
     def SKSkypeWillQuit(self, center, observer, name, obj, userInfo):
-        print 'SKSkypeWillQuit'
+        self.SetAttachmentStatus(apiAttachNotAvailable)
 
     def SKSkypeBecameAvailable(self, center, observer, name, obj, userInfo):
-        print 'SKSkypeBecameAvailable'
+        self.SetAttachmentStatus(apiAttachAvailable)
 
     def SKAvailabilityUpdate(self, center, observer, name, obj, userInfo):
-        print 'SKSkypeAvailabilityUpdate'
-        self.is_available = bool(int(CFNumber(userInfo[self.coref.CFString('SKYPE_API_AVAILABILITY')])))
+        self.is_available = bool(int(CFNumber(userInfo[self.coref.CFSTR('SKYPE_API_AVAILABILITY')])))
 
     def SKSkypeAttachResponse(self, center, observer, name, obj, userInfo):
-        print 'SKSkypeAttachResponse'
-        response = int(CFNumber(userInfo[self.coref.CFString('SKYPE_API_ATTACH_RESPONSE')]))
-        if response:
+        # It seems that this notification is not called if the access is refused. Therefore we can't
+        # distinguish between attach timeout and access refuse.
+        self.client_id = int(CFNumber(userInfo[self.coref.CFSTR('SKYPE_API_ATTACH_RESPONSE')]))
+        if self.client_id:
             self.SetAttachmentStatus(apiAttachSuccess)
-        else:
-            self.SetAttachmentStatus(apiAttachSuccess)
-
-
-    def IsRunning(self):
-        self.set_notifications()
-        self.is_available = False
-        self.center.post_notification('SKSkypeAPIAvailabilityRequest', immediate=True)
-        self.carbon.RunCurrentEventLoop(1)
-        return self.is_available
