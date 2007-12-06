@@ -415,7 +415,7 @@ class IChatMessage(Cached):
     def MarkAsSeen(self):
         '''Marks a missed chat message as seen.
         '''
-        self._Property('SEEN', '')
+        self._Skype._DoCommand('SET CHATMESSAGE %d SEEN' % self._Id, 'CHATMESSAGE %d STATUS READ' % self._Id)
 
     def _GetBody(self):
         return self._Property('BODY')
@@ -532,9 +532,9 @@ class IChatMessage(Cached):
 
     def _SetSeen(self, value):
         from warnings import warn
-        warn('IChat.Seen = x: Use IChat.MarkAsSeen instead.', DeprecationWarning, stacklevel=2)
+        warn('IChatMessage.Seen = x: Use IChatMessage.MarkAsSeen() instead.', DeprecationWarning, stacklevel=2)
         if value:
-            self.SetAsSeen()
+            self.MarkAsSeen()
         else:
             raise ISkypeError(0, 'Seen can only be set to True')
 
