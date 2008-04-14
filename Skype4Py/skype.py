@@ -359,7 +359,8 @@ class ISkype(EventHandlingBase):
             self._CallEventHandler('Error', command, int(errnum), errstr)
             raise ISkypeError(int(errnum), errstr)
         if not command.Reply.startswith(command.Expected):
-            raise ISkypeError(0, 'Unexpected reply from Skype')
+            raise ISkypeError(0, 'Unexpected reply from Skype, got [%s], expected [%s]' % \
+                (command.Reply, command.Expected))
         return command.Reply
 
     def _Property(self, ObjectType, ObjectId, PropName, Set=None, Cache=True):
