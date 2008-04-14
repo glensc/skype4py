@@ -376,7 +376,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
             if self.x11.XSendEvent(self.disp, self.win_skype, False, 0, byref(event)) == 0:
                 self.error_check()
             event.xclient.message_type = self.atom_msg
-        self.x11.XFlush(self.disp)
+        self.x11.XSync(self.disp, False)
         self.error_check()
         if Command.Blocking:
             bevent.wait(Command.Timeout / 1000.0)
