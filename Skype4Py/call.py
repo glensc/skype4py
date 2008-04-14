@@ -113,8 +113,9 @@ class ICall(Cached):
         @return: Conference object.
         @rtype: L{IConference}
         '''
-        self._Property('JOIN_CONFERENCE', Id)
-        return IConference(self.ConferenceId, self._Skype)
+        reply = self._Skype._DoCommand('SET CALL %s JOIN_CONFERENCE %s' % (self._Id, Id),
+            'CALL %s CONF_ID' % self._Id)
+        return IConference(reply.split()[-1], self._Skype)
 
     def OutputDevice(self, DeviceType=None, Set=None):
         '''Queries or sets the sound output device.
