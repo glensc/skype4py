@@ -70,6 +70,10 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.RegisterHandler(handler)
         self._SkypeControlAPIDiscover = windll.user32.RegisterWindowMessageA('SkypeControlAPIDiscover')
         self._SkypeControlAPIAttach = windll.user32.RegisterWindowMessageA('SkypeControlAPIAttach')
+        self.start()
+        # wait till the thread initializes
+        while not self.hwnd:
+            time.sleep(0.01)
 
     def run(self):
         if not self.CreateWindow():
@@ -103,13 +107,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         if self.Skype:
             return
         if not self.isAlive():
-            try:
-                self.start()
-            except AssertionError:
-                raise ISkypeAPIError('Skype API closed')
-            # wait till the thread initializes
-            while not self.hwnd:
-                time.sleep(0.01)
+            raise ISkypeAPIError('Skype API closed')
         if not windll.user32.SendMessageTimeoutA(_HWND_BROADCAST, self._SkypeControlAPIDiscover,
                                                  self.hwnd, None, 2, 5000, None):
             raise ISkypeAPIError('Could not broadcast Skype discover message')
@@ -120,7 +118,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         t = threading.Timer(Timeout / 1000, ftimeout)
         if Wait:
             t.start()
-        while self.Wait and self.AttachmentStatus not in [apiAttachSuccess, apiAttachRefused]:
+        while self.Wait and self.AttachmentStatus not in (apiAttachSuccess, apiAttachRefused):
             if self.AttachmentStatus == apiAttachPendingAuthorization:
                 # disable the timeout
                 t.cancel()
@@ -161,10 +159,14 @@ class _ISkypeAPI(_ISkypeAPIBase):
             args.append('/MINIMIZED')
         if Nosplash:
             args.append('/NOSPLASH')
+        if self.hwnd:
+            windll.user32.SetForegroundWindow(self.hwnd)
         if windll.shell32.ShellExecuteA(None, 'open', self.get_skype_path(), ' '.join(args), None, 0) <= 32:
             raise ISkypeAPIError('Could not start Skype')
 
     def Shutdown(self):
+        if self.hwnd:
+            windll.user32.SetForegroundWindow(self.hwnd)
         if windll.shell32.ShellExecuteA(None, 'open', self.get_skype_path(), '/SHUTDOWN', None, 0) <= 32:
             raise ISkypeAPIError('Could not shutdown Skype')
 
@@ -180,7 +182,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
 
         self.hwnd = windll.user32.CreateWindowExA(0, 'Skype4Py.%d' % id(self), 'Skype4Py',
                                                   0xCF0000, 0x80000000, 0x80000000,
-                                                  0x80000000, 0x80000000, 0xfffffffd, None,
+                                                  0x80000000, 0x80000000, None, None,
                                                   self.window_class.hInstance, 0)
         if self.hwnd == 0:
             windll.user32.UnregisterClassA('Skype4Py.%d' % id(self), None)
@@ -201,7 +203,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         if uMsg == self._SkypeControlAPIAttach:
             if lParam == apiAttachSuccess:
                 self.Skype = wParam
-            elif lParam in [apiAttachRefused, apiAttachNotAvailable, apiAttachAvailable]:
+            elif lParam in (apiAttachRefused, apiAttachNotAvailable, apiAttachAvailable):
                 self.Skype = None
             self.SetAttachmentStatus(lParam)
             return 1
@@ -226,28 +228,38 @@ class _ISkypeAPI(_ISkypeAPIBase):
             else:
                 self.CallHandler('rece_api', com)
             return 1
+        elif uMsg == apiAttachAvailable:
+            self.Skype = None
+            self.SetAttachmentStatus(uMsg)
+            return 1
         return windll.user32.DefWindowProcA(c_int(hwnd), c_int(uMsg), c_int(wParam), c_int(lParam))
 
     def SendCommand(self, Command):
-        if not self.Skype:
-            self.Attach(Command.Timeout)
-        self.CommandsStackPush(Command)
-        self.CallHandler('send', Command)
-        com = u'#%d %s' % (Command.Id, Command.Command)
-        com8 = com.encode('utf-8') + '\0'
-        copydata = _COPYDATASTRUCT(None, len(com8), com8)
-        if Command.Blocking:
-            Command._event = event = threading.Event()
-        else:
-            Command._timer = timer = threading.Timer(Command.Timeout / 1000.0, self.CommandsStackPop, (Command.Id,))
-        windll.user32.SetForegroundWindow(self.hwnd)
-        if windll.user32.SendMessageA(self.Skype, _WM_COPYDATA, self.hwnd, byref(copydata)):
+        for retry in xrange(2):
+            if not self.Skype:
+                self.Attach(Command.Timeout)
+            self.CommandsStackPush(Command)
+            self.CallHandler('send', Command)
+            com = u'#%d %s' % (Command.Id, Command.Command)
+            com8 = com.encode('utf-8') + '\0'
+            copydata = _COPYDATASTRUCT(None, len(com8), com8)
             if Command.Blocking:
-                event.wait(Command.Timeout / 1000.0)
-                if not event.isSet():
-                    raise ISkypeAPIError('Skype command timeout')
+                Command._event = event = threading.Event()
             else:
-                timer.start()
+                Command._timer = timer = threading.Timer(Command.Timeout / 1000.0, self.CommandsStackPop, (Command.Id,))
+            windll.user32.SetForegroundWindow(self.hwnd)
+            if windll.user32.SendMessageA(self.Skype, _WM_COPYDATA, self.hwnd, byref(copydata)):
+                if Command.Blocking:
+                    event.wait(Command.Timeout / 1000.0)
+                    if not event.isSet():
+                        raise ISkypeAPIError('Skype command timeout')
+                else:
+                    timer.start()
+                break
+            else:
+                self.CommandsStackPop(Command.Id)
+                self.Skype = None
+                # let the loop go back and try to reattach but only once
         else:
             raise ISkypeAPIError('Skype API error, check if Skype wasn\'t closed')
-
+    
