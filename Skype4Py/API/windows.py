@@ -180,8 +180,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
 
         self.hwnd = windll.user32.CreateWindowExA(0, 'Skype4Py.%d' % id(self), 'Skype4Py',
                                                   0xCF0000, 0x80000000, 0x80000000,
-                                                  0x80000000, 0x80000000, None, None,
-                                                  self.window_class.hInstance, None)
+                                                  0x80000000, 0x80000000, 0xfffffffd, None,
+                                                  self.window_class.hInstance, 0)
         if self.hwnd == 0:
             windll.user32.UnregisterClassA('Skype4Py.%d' % id(self), None)
             return False
@@ -240,6 +240,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
             Command._event = event = threading.Event()
         else:
             Command._timer = timer = threading.Timer(Command.Timeout / 1000.0, self.CommandsStackPop, (Command.Id,))
+        windll.user32.SetForegroundWindow(self.hwnd)
         if windll.user32.SendMessageA(self.Skype, _WM_COPYDATA, self.hwnd, byref(copydata)):
             if Command.Blocking:
                 event.wait(Command.Timeout / 1000.0)
