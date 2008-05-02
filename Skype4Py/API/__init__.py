@@ -12,6 +12,7 @@ import sys
 import threading
 from Skype4Py.utils import *
 from Skype4Py.enums import *
+from Skype4Py.errors import ISkypeAPIError
 
 
 class ICommand(object):
