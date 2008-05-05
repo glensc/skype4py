@@ -108,6 +108,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
             return
         if not self.isAlive():
             raise ISkypeAPIError('Skype API closed')
+        windll.user32.SetForegroundWindow(self.hwnd)
         if not windll.user32.SendMessageTimeoutA(_HWND_BROADCAST, self._SkypeControlAPIDiscover,
                                                  self.hwnd, None, 2, 5000, None):
             raise ISkypeAPIError('Could not broadcast Skype discover message')
@@ -124,6 +125,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 t.cancel()
             elif self.AttachmentStatus == apiAttachAvailable:
                 # rebroadcast
+                windll.user32.SetForegroundWindow(self.hwnd)
                 if not windll.user32.SendMessageTimeoutA(_HWND_BROADCAST, self._SkypeControlAPIDiscover,
                                                          self.hwnd, None, 2, 5000, None):
                     raise ISkypeAPIError('Could not broadcast Skype discover message')
