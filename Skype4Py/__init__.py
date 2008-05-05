@@ -59,6 +59,6 @@ from errors import ISkypeError as SkypeError, ISkypeAPIError as SkypeAPIError
 from enums import *
 
 
-__version__ = '0.9.28.8'
+__version__ = '1.0.29.0'
 '''The version of Skype4Py.'''
 
