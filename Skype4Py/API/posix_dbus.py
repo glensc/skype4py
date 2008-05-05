@@ -57,8 +57,8 @@ class _SkypeNotifyCallback(dbus.service.Object):
 
 
 class _ISkypeAPI(_ISkypeAPIBase):
-    def __init__(self, handler, **opts):
-        _ISkypeAPIBase.__init__(self)
+    def __init__(self, handler, opts):
+        _ISkypeAPIBase.__init__(self, opts)
         self.RegisterHandler(handler)
         self.skype_in = self.skype_out = self.dbus_name_owner_watch = None
         self.bus = opts.pop('Bus', None)
@@ -81,8 +81,10 @@ class _ISkypeAPI(_ISkypeAPIBase):
             raise TypeError('Unexpected parameter(s): %s' % ', '.join(opts.keys()))
 
     def run(self):
+        self.DebugPrint('thread started')
         if hasattr(self, 'mainloop'):
             self.mainloop.run()
+        self.DebugPrint('thread finished')
 
     def Close(self):
         if hasattr(self, 'mainloop'):
@@ -91,6 +93,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         if self.dbus_name_owner_watch != None:
             self.bus.remove_signal_receiver(self.dbus_name_owner_watch)
         self.dbus_name_owner_watch = None
+        self.DebugPrint('closed')
 
     def SetFriendlyName(self, FriendlyName):
         self.FriendlyName = FriendlyName
@@ -169,6 +172,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.CommandsStackPush(Command)
         self.CallHandler('send', Command)
         com = u'#%d %s' % (Command.Id, Command.Command)
+        self.DebugPrint('->', repr(com))
         if Command.Blocking:
             Command._event = event = threading.Event()
         else:
@@ -187,6 +191,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
             timer.start()
 
     def notify(self, com):
+        self.DebugPrint('<-', repr(com))
         if com.startswith(u'#'):
             p = com.find(u' ')
             Command = self.CommandsStackPop(int(com[1:p]))
@@ -205,6 +210,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
             self.CallHandler('rece_api', com)
 
     def dbus_name_owner_changed(self, owned, old_owner, new_owner):
+        self.DebugPrint('<-', 'dbus_name_owner_changed')
         self.SetAttachmentStatus(cndexp(new_owner == '',
             apiAttachNotAvailable,
             apiAttachAvailable))

@@ -131,8 +131,8 @@ XErrorHandlerP = CFUNCTYPE(c_int, DisplayP, POINTER(_XErrorEvent))
 
 
 class _ISkypeAPI(_ISkypeAPIBase):
-    def __init__(self, handler, **opts):
-        _ISkypeAPIBase.__init__(self)
+    def __init__(self, handler, opts):
+        _ISkypeAPIBase.__init__(self, opts)
         self.RegisterHandler(handler)
 
         # check options
@@ -208,6 +208,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 self.x11.XCloseDisplay(self.disp)
 
     def run(self):
+        self.DebugPrint('thread started')
         # main loop
         event = _XEvent()
         data = ''
@@ -240,10 +241,12 @@ class _ISkypeAPI(_ISkypeAPIBase):
                     elif event.xproperty.state == _PropertyDelete:
                         self.win_skype = None
                         self.SetAttachmentStatus(apiAttachNotAvailable)
+        self.DebugPrint('thread finished')
 
     def _error_handler(self, disp, error):
         # called from within Xlib when error occures
         self.error = error.contents.error_code
+        self.DebugPrint('Xlib error', self.error)
         # stop all pending commands
         for command in self.Commands.values():
             if hasattr(command, '_event'):
@@ -287,6 +290,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.x11.XFlush(self.disp)
         while self.isAlive():
             time.sleep(0.01)
+        self.DebugPrint('closed')
 
     def SetFriendlyName(self, FriendlyName):
         self.FriendlyName = FriendlyName
@@ -360,6 +364,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.CommandsStackPush(Command)
         self.CallHandler('send', Command)
         com = u'#%d %s' % (Command.Id, Command.Command)
+        self.DebugPrint('->', repr(com))
         if Command.Blocking:
             Command._event = bevent = threading.Event()
         else:
@@ -387,6 +392,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
             timer.start()
 
     def notify(self, com):
+        self.DebugPrint('<-', repr(com))
         # Called by main loop for all received Skype commands.
         if com.startswith(u'#'):
             p = com.find(u' ')

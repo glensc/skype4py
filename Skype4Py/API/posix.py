@@ -23,7 +23,7 @@ The options include:
 from Skype4Py.errors import ISkypeAPIError
 
 
-def _ISkypeAPI(handler, **opts):
+def _ISkypeAPI(handler, opts):
     trans = opts.pop('Transport', 'x11')
     if trans == 'dbus':
         from posix_dbus import _ISkypeAPI
@@ -31,4 +31,4 @@ def _ISkypeAPI(handler, **opts):
         from posix_x11 import _ISkypeAPI
     else:
         raise ISkypeAPIError('Unknown transport: %s' % trans)
-    return _ISkypeAPI(handler, **opts)
+    return _ISkypeAPI(handler, opts)

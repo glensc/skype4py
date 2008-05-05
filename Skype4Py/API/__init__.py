@@ -55,9 +55,10 @@ class ICommand(object):
 
 
 class _ISkypeAPIBase(threading.Thread):
-    def __init__(self):
+    def __init__(self, opts):
         threading.Thread.__init__(self)
         self.setDaemon(True)
+        self.DebugLevel = opts.pop('ApiDebugLevel', 0)
         self.FriendlyName = u'Skype4Py'
         self.Protocol = 5
         self.Commands = {}
@@ -112,11 +113,19 @@ class _ISkypeAPIBase(threading.Thread):
     def Close(self):
         pass
 
+    def SetDebugLevel(self, Level):
+        self.DebugLevel = Level
+
+    def DebugPrint(self, *args, **kwargs):
+        if self.DebugLevel >= kwargs.get('Level', 1):
+            print >>sys.stderr, 'Skype4Py/API', ' '.join(('%s',) * len(args)) % args
+
     def SetFriendlyName(self, FriendlyName):
         self.FriendlyName = FriendlyName
 
     def SetAttachmentStatus(self, AttachmentStatus):
         if AttachmentStatus != self.AttachmentStatus:
+            self.DebugPrint('AttachmentStatus', AttachmentStatus)
             self.AttachmentStatus = AttachmentStatus
             self.CallHandler('attach', AttachmentStatus)
 

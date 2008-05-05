@@ -189,7 +189,7 @@ class ISkype(EventHandlingBase):
         if Events:
             self._SetEventHandlerObj(Events)
 
-        self._API = _ISkypeAPI(self._Handler, **Options)
+        self._API = _ISkypeAPI(self._Handler, Options)
 
         self._Cache = True
         self.ResetCache()
@@ -223,6 +223,8 @@ class ISkype(EventHandlingBase):
                         self._CallEventHandler('OnlineStatus', o, Value)
                     elif PropName == 'MOOD_TEXT' or PropName == 'RICH_MOOD_TEXT':
                         self._CallEventHandler('UserMood', o, Value)
+                    elif PropName == 'RECEIVEDAUTHREQUEST':
+                        self._CallEventHandler('UserAuthorizationRequestReceived', o)
                 elif ObjectType == 'CALL':
                     o = ICall(ObjectId, self)
                     if PropName == 'STATUS':
@@ -308,6 +310,8 @@ class ISkype(EventHandlingBase):
                     self._CallEventHandler('AutoAway', Value == 'ON')
                 elif ObjectType == 'WINDOWSTATE':
                     self._CallEventHandler('ClientWindowState', Value)
+                elif ObjectType == 'SILENT_MODE':
+                    self._CallEventHandler('SilentModeStatusChanged', Value == 'ON')
             elif a == 'CALLHISTORYCHANGED':
                 self._CallEventHandler('CallHistory')
             elif a == 'IMHISTORYCHANGED':
@@ -895,6 +899,20 @@ class ISkype(EventHandlingBase):
     @type: tuple of L{IFileTransfer}
     ''')
 
+    def _GetApiDebugLevel(self):
+        return self._API.DebugLevel
+
+    def _SetApiDebugLevel(self, value):
+        self._API.SetDebugLevel(int(value))
+
+    ApiDebugLevel = property(_GetApiDebugLevel, _SetApiDebugLevel,
+    doc='''Queries/sets the debug level of the underlying API. Currently there are
+    only two levels, 0 which means no debug information and 1 which means that the
+    commands sent to / received from the Skype client are printed to the sys.stderr.
+    
+    @type: int
+    ''')
+
     def _GetApiWrapperVersion(self):
         from Skype4Py import __version__
         return unicode(__version__)
@@ -1059,7 +1077,9 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetFocusedContacts(self):
-        return tuple(IUser(x, self) for x in esplit(chop(self.Variable('CONTACTS_FOCUSED'), 2)[-1]))
+        # we have to use _DoCommand() directly because for unknown reason the API returns
+        # "CONTACTS FOCUSED" instead of "CONTACTS_FOCUSED" (note the space instead of "_")
+        return tuple(IUser(x, self) for x in esplit(chop(self._DoCommand('GET CONTACTS_FOCUSED', 'CONTACTS FOCUSED'), 2)[-1]))
 
     FocusedContacts = property(_GetFocusedContacts,
     doc='''Queries a list of contacts selected in the contacts list.
@@ -1164,6 +1184,15 @@ class ISkype(EventHandlingBase):
     @type: bool
     ''')
 
+    def _GetPredictiveDialerCountry(self):
+        return self.Variable('PREDICTIVE_DIALER_COUNTRY')
+
+    PredictiveDialerCountry = property(_GetPredictiveDialerCountry,
+    doc='''Returns predictive dialer coutry code.
+
+    @type: unicode
+    ''')
+
     def _GetProtocol(self):
         return self._API.Protocol
 
@@ -1196,10 +1225,10 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetSilentMode(self):
-        return self.Variable('SILENT_MODE') == 'ON'
+        return self._Property('SILENT_MODE', '', '', Cache=False) == 'ON'
 
     def _SetSilentMode(self, value):
-        self.SendCommand(ICommand(-1, 'SET SILENT_MODE %s' % cndexp(value, 'ON', 'OFF')))
+        self._Property('SILENT_MODE', '', '', cndexp(value, 'ON', 'OFF'), Cache=False)
 
     SilentMode = property(_GetSilentMode, _SetSilentMode,
     doc='''Returns/sets Skype silent mode status.
@@ -1589,6 +1618,13 @@ class ISkypeEvents(object):
         @type Command: L{ICommand}
         '''
 
+    def SilentModeStatusChanged(self, Silent):
+        '''This event occurs when a silent mode is switched off.
+        
+        @param Silent: Skype client silent status.
+        @type Silent: bool
+        '''
+
     def SmsMessageStatusChanged(self, Message, Status):
         '''This event is caused by a change in the SMS message status.
 
@@ -1605,6 +1641,13 @@ class ISkypeEvents(object):
         @type Target: L{ISmsTarget}
         @param Status: New status of the SMS target.
         @type Status: L{SMS target status<enums.smsTargetStatusUnknown>}
+        '''
+
+    def UserAuthorizationRequestReceived(self, User):
+        '''This event occurs when user sends you an authorization request.
+
+        @param User: User object.
+        @type User: L{IUser}
         '''
 
     def UserMood(self, User, MoodText):
