@@ -20,7 +20,7 @@ class IUser(Cached):
         return self._Skype._Property('USER', self.Handle, PropName, Set, Cache)
 
     def SaveAvatarToFile(self, Filename, AvatarId=1):
-        '''SaveAvatarToFile.
+        '''Saves user avatar to a file.
 
         @param Filename: Destination path.
         @type Filename: unicode
@@ -29,6 +29,16 @@ class IUser(Cached):
         '''
         s = 'USER %s AVATAR %s %s' % (self.Handle, AvatarId, Filename)
         self._Skype._DoCommand('GET %s' % s, s)
+
+    def SetBuddyStatusPendingAuthorization(self, Text=''):
+        '''Sets the BuddyStaus property to L{budPendingAuthorization<enums.budPendingAuthorization>}
+        additionaly specifying the authorization text.
+        
+        @param Text: The authorization text.
+        @type Text: unicode
+        @see: L{BuddyStatus}
+        '''
+        self._Property('BUDDYSTATUS', '%d %s' % (budPendingAuthorization, Text), Cache=False)
 
     def _GetAbout(self):
         return self._Property('ABOUT')
@@ -65,7 +75,7 @@ class IUser(Cached):
         return int(self._Property('BUDDYSTATUS'))
 
     def _SetBuddyStatus(self, value):
-        self._Property('BUDDYSTATUS', int(value))
+        self._Property('BUDDYSTATUS', int(value), Cache=False)
 
     BuddyStatus = property(_GetBuddyStatus, _SetBuddyStatus,
     doc='''Buddy status of the user.
