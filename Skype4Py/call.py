@@ -50,6 +50,8 @@ class ICall(Cached):
         DeviceType is not None but Set is None, returns the current value of the device or
         None if the device wasn't set. If Set is not None, sets a new value for the device.
         @rtype: unicode, dict or None
+
+        @note: This command functions for active calls only.
         '''
         if Set == None: # get
             args = args2dict(self._Property('CAPTURE_MIC', Cache=False))
@@ -91,6 +93,8 @@ class ICall(Cached):
         DeviceType is not None but Set is None, returns the current value of the device or
         None if the device wasn't set. If Set is not None, sets a new value for the device.
         @rtype: unicode, dict or None
+
+        @note: This command functions for active calls only.
         '''
         if Set == None: # get
             args = args2dict(self._Property('INPUT', Cache=False))
@@ -129,6 +133,8 @@ class ICall(Cached):
         DeviceType is not None but Set is None, returns the current value of the device or
         None if the device wasn't set. If Set is not None, sets a new value for the device.
         @rtype: unicode, dict or None
+        
+        @note: This command functions for active calls only.
         '''
         if Set == None: # get
             args = args2dict(self._Property('OUTPUT', Cache=False))
@@ -179,6 +185,9 @@ class ICall(Cached):
         @param Targets: one or more phone numbers or Skypenames the call is beeing transferred to.
         @type Targets: unicode
         @see: L{CanTransfer}
+
+        @note: You can transfer an incoming call to a group by specifying more than one
+        target, first one of the group to answer will get the call.
         '''
         self._Alter('TRANSFER', ', '.join(Targets))
 
@@ -209,6 +218,8 @@ class ICall(Cached):
     doc='''Set this property to send DTMF codes.
 
     @type: unicode
+
+    @note: This command functions for active calls only.
     ''')
 
     def _GetDuration(self):
@@ -365,6 +376,8 @@ class ICall(Cached):
     doc='''Queries/sets the seen status of the call. True if the call was seen, False otherwise.
 
     @type: bool
+    
+    @note: You cannot alter the call seen status from seen to unseen.
     ''')
 
     def _GetStatus(self):
