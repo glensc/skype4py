@@ -404,7 +404,7 @@ class ICall(Cached):
     doc='''Call date and time expressed as a timestamp.
 
     @type: float
-    @see L{Datetime}
+    @see: L{Datetime}
     ''')
 
     def _GetTransferActive(self):
