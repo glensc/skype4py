@@ -6,6 +6,17 @@ from errors import *
 import os
 
 
+# Following code is needed when building executable files using py2exe.
+# Together with the Languages.__init__ it makes sure that all languages
+# are included in the package built by py2exe. The tool lookes just at
+# the imports, it ignores the 'if' statement.
+#
+# More about py2exe: http://www.py2exe.org/
+
+if False:
+    import Languages
+    
+
 class IConversion(object):
     '''Allows conversion between constants and text. Access using L{ISkype.Convert<skype.ISkype.Convert>}.
     '''
