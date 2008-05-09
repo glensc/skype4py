@@ -121,6 +121,11 @@ class ICall(Cached):
             'CALL %s CONF_ID' % self._Id)
         return IConference(reply.split()[-1], self._Skype)
 
+    def MarkAsSeen(self):
+        '''Marks the call as seen.
+        '''
+        self.Seen = True
+
     def OutputDevice(self, DeviceType=None, Set=None):
         '''Queries or sets the sound output device.
 
