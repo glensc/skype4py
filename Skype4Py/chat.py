@@ -109,6 +109,8 @@ class IChat(Cached):
         @param Hint: Password hint
         @type Hint: unicode
         '''
+        if ' ' in Password:
+            raise ValueError('Password mut be one word')
         self._Alter('SETPASSWORD', '%s %s' % (Password, Hint))
 
     def Unbookmark(self):
