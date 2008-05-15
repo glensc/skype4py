@@ -442,6 +442,15 @@ class ISkype(EventHandlingBase):
         '''
         return IApplication(Name, self)
 
+    def _AsyncSearchUsersReplyHandler(self, Command):
+        if Command in self._AsyncSearchUsersCommands:
+            self._AsyncSearchUsersCommands.remove(Command)
+            self._CallEventHandler('AsyncSearchUsersFinished', Command.Id,
+                tuple(IUser(x, self) for x in esplit(chop(Command.Reply)[-1], ', ')))
+            if len(self._AsyncSearchUsersCommands) == 0:
+                self.UnregisterEventHandler('Reply', self._AsyncSearchUsersReplyHandler)
+                del self._AsyncSearchUsersCommands
+
     def AsyncSearchUsers(self, Target):
         '''Asynchronously searches for Skype users.
 
@@ -451,15 +460,14 @@ class ISkype(EventHandlingBase):
         L{ISkypeEvents.AsyncSearchUsersFinished} event after the search is completed.
         @rtype: int
         '''
-        def reply_handler(command):
-            if command.Command.startswith('SEARCH USERS'):
-                self._CallEventHandler('AsyncSearchUsersFinished', command.Id, tuple(IUser(x, self) for x in esplit(chop(command.Reply)[-1], ', ')))
-                self.UnregisterEventHandler('Reply', reply_handler)
-        command = ICommand(-1, 'SEARCH USERS %s' % Target, 'USERS', False, self.Timeout)
-        self.RegisterEventHandler('Reply', reply_handler)
-        self.SendCommand(command)
+        if not hasattr(self, '_AsyncSearchUsersCommands'):
+            self._AsyncSearchUsersCommands = []
+            self.RegisterEventHandler('Reply', self._AsyncSearchUsersReplyHandler)
+        Command = ICommand(-1, 'SEARCH USERS %s' % Target, 'USERS', False, self.Timeout)
+        self._AsyncSearchUsersCommands.append(Command)
+        self.SendCommand(Command)
         # return pCookie - search identifier
-        return command.Id
+        return Command.Id
 
     def Attach(self, Protocol=5, Wait=True):
         '''Establishes a connection to Skype.
