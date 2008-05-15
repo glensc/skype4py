@@ -20,9 +20,10 @@ Skype4Py is a multiplatform Skype API wrapper for Python.
          - C{Skype4Py.SkypeError = L{Skype4Py.errors.ISkypeError}}
          - C{Skype4Py.SkypeAPIError = L{Skype4Py.errors.ISkypeAPIError}}
 
-     The first two are the only classes that you will be instatinating directly. Calling their methods/properties
-     will give you the access to instances of all other classes, you won't have to instatinate them yourself.
-     The two classes are also the only ones that provide event handlers (see [3]).
+     The first two are the only classes that you will be instantiating directly. Calling their methods/properties
+     will give you the access to instances of all other classes, you won't have to instantiate them yourself.
+     The two classes are also the only ones that provide event handlers (for more information about events,
+     see the L{EventHandlingBase} class which is a baseclass of the above two classes).
 
      Every Skype4Py script instatinates the C{Skype4Py.Skype} class at least once. That's what you want to do
      first in your script. Then follow the L{Skype4Py.skype.ISkype} reference to see where you can get from
@@ -59,6 +60,6 @@ from errors import ISkypeError as SkypeError, ISkypeAPIError as SkypeAPIError
 from enums import *
 
 
-__version__ = '1.0.29.0'
+__version__ = '1.0.29.1'
 '''The version of Skype4Py.'''
 
