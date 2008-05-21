@@ -157,8 +157,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.x11.XDeleteProperty.restype = None
         self.x11.XDestroyWindow.argtypes = (DisplayP, Window)
         self.x11.XDestroyWindow.restype = None
-        self.x11.XFlush.argtypes = (DisplayP,)
-        self.x11.XFlush.restype = None
+        self.x11.XSync.argtypes = (DisplayP, Bool)
+        self.x11.XSync.restype = None
         self.x11.XGetAtomName.argtypes = (DisplayP, Atom)
         self.x11.XGetAtomName.restype = c_char_p
         self.x11.XGetErrorText.argtypes = (DisplayP, c_int, c_char_p, c_int)
@@ -287,7 +287,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         event.xclient.message_type = self.atom_stop_loop
         event.xclient.format = 8
         self.x11.XSendEvent(self.disp, self.win_self, True, 0, byref(event))
-        self.x11.XFlush(self.disp)
+        self.x11.XSync(self.disp, False)
         while self.isAlive():
             time.sleep(0.01)
         self.DebugPrint('closed')
