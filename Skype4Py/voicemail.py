@@ -119,7 +119,14 @@ class IVoicemail(Cached):
     def SetUnplayed(self):
         '''Changes the status of a voicemail from played to unplayed.
         '''
-        self._Property('STATUS', vmsUnplayed)
+        # Note. Due to a bug in Skype (tested using 3.8.0.115) the reply from
+        # [ALTER VOICEMAIL <id> SETUNPLAYED] is [ALTER VOICEMAIL <id> DELETE]
+        # causing the _Alter method to fail. Therefore we have to use a direct
+        # _DoCommand instead.
+        
+        #self._Alter('SETUNPLAYED')
+        self._Skype._DoCommand('ALTER VOICEMAIL %d SETUNPLAYED' % self._Id,
+                               'ALTER VOICEMAIL %d' % self._Id)
 
     def StartPlayback(self):
         '''Starts playing downloaded voicemail.
