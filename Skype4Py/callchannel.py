@@ -1,9 +1,9 @@
 '''Data channels for calls.
 '''
 
-from utils import *
+from utils import EventHandlingBase
 from enums import *
-from errors import *
+from errors import ISkypeError
 import time
 
 

@@ -1,8 +1,7 @@
 '''File transfers.
 '''
 
-from utils import *
-from enums import *
+from utils import Cached
 import os
 
 

@@ -1,8 +1,7 @@
 '''Current user profile.
 '''
 
-from enums import *
-from utils import *
+from utils import cndexp, esplit, chop
 import weakref
 
 

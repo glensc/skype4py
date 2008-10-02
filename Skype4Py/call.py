@@ -1,9 +1,8 @@
 '''Calls, conferences.
 '''
 
-from utils import *
+from utils import Cached
 from enums import *
-from errors import *
 
 
 class ICall(Cached):
@@ -274,7 +273,7 @@ class ICall(Cached):
 
     def _GetParticipants(self):
         count = int(self._Property('CONF_PARTICIPANTS_COUNT'))
-        return tuple(IParticipant((self._Id, x), self._Skype) for x in xrange(count))
+        return tuple([IParticipant((self._Id, x), self._Skype) for x in xrange(count)])
 
     Participants = property(_GetParticipants,
     doc='''Participants of a conference call not hosted by the user.
@@ -523,8 +522,9 @@ class IParticipant(Cached):
     def __repr__(self):
         return '<%s with Id=%s, Idx=%s, Handle=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Idx), repr(self.Handle))
 
-    def _Init(self, (Id, Idx), Skype):
+    def _Init(self, Id_Idx, Skype):
         self._Skype = Skype
+        Id, Idx = Id_Idx
         self._Id = int(Id)
         self._Idx = int(Idx)
 
@@ -617,7 +617,7 @@ class IConference(Cached):
             c.Resume()
 
     def _GetActiveCalls(self):
-        return tuple(x for x in self._Skype.ActiveCalls if x.ConferenceId == self._Id)
+        return tuple([x for x in self._Skype.ActiveCalls if x.ConferenceId == self._Id])
 
     ActiveCalls = property(_GetActiveCalls,
     doc='''Active calls with the same conference ID.
@@ -626,7 +626,7 @@ class IConference(Cached):
     ''')
 
     def _GetCalls(self):
-        return tuple(x for x in self._Skype.Calls() if x.ConferenceId == self._Id)
+        return tuple([x for x in self._Skype.Calls() if x.ConferenceId == self._Id])
 
     Calls = property(_GetCalls,
     doc='''Calls with the same conference ID.

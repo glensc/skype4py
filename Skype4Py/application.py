@@ -1,8 +1,8 @@
 '''APP2APP protocol.
 '''
 
-from utils import *
-from user import *
+from utils import esplit, Cached
+from user import IUser
 import threading
 
 
@@ -23,6 +23,13 @@ class IApplication(Cached):
     def _Property(self, PropName, Set=None):
         return self._Skype._Property('APPLICATION', self._Name, PropName, Set)
 
+    def __Connect_app_streams(self, App, Streams):
+        if App == self:
+            s = [x for x in Streams if x.PartnerHandle == self.__Connect_username]
+            if s:
+                self.__Connect_stream[0] = s[0]
+                self.__Connect_event.set()
+
     def Connect(self, Username, WaitConnected=False):
         '''Connects application to user.
 
@@ -35,20 +42,18 @@ class IApplication(Cached):
         @rtype: L{IApplicationStream} or None
         '''
         if WaitConnected:
-            event = threading.Event()
-            stream = [None]
-            def app_streams(App, Streams):
-                if App == self:
-                    s = [x for x in Streams if x.PartnerHandle == Username]
-                    if s:
-                        stream[0] = s[0]
-                        event.set()
-            app_streams(self, self.Streams)
-            self._Skype.RegisterEventHandler('ApplicationStreams', app_streams)
+            self.__Connect_event = threading.Event()
+            self.__Connect_stream = [None]
+            self.__Connect_username = Username
+            self.__Connect_app_streams(self, self.Streams)
+            self._Skype.RegisterEventHandler('ApplicationStreams', self.__Connect_app_streams)
             self._Alter('CONNECT', Username)
-            event.wait()
-            self._Skype.UnregisterEventHandler('ApplicationStreams', app_streams)
-            return stream[0]
+            self.__Connect_event.wait()
+            self._Skype.UnregisterEventHandler('ApplicationStreams', self.__Connect_app_streams)
+            try:
+                return self.__Connect_stream[0]
+            finally:
+                del self.__Connect_stream, self.__Connect_event, self.__Connect_username
         else:
             self._Alter('CONNECT', Username)
 
@@ -76,7 +81,7 @@ class IApplication(Cached):
             s.SendDatagram(Text)
 
     def _GetConnectableUsers(self):
-        return tuple(IUser(x, self._Skype) for x in esplit(self._Property('CONNECTABLE')))
+        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('CONNECTABLE'))])
 
     ConnectableUsers = property(_GetConnectableUsers,
     doc='''All connectable users.
@@ -85,7 +90,7 @@ class IApplication(Cached):
     ''')
 
     def _GetConnectingUsers(self):
-        return tuple(IUser(x, self._Skype) for x in esplit(self._Property('CONNECTING')))
+        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('CONNECTING'))])
 
     ConnectingUsers = property(_GetConnectingUsers,
     doc='''All users connecting at the moment.
@@ -103,7 +108,7 @@ class IApplication(Cached):
     ''')
 
     def _GetReceivedStreams(self):
-        return tuple(IApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('RECEIVED')))
+        return tuple([IApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('RECEIVED'))])
 
     ReceivedStreams = property(_GetReceivedStreams,
     doc='''All streams that received data and can be read.
@@ -112,7 +117,7 @@ class IApplication(Cached):
     ''')
 
     def _GetSendingStreams(self):
-        return tuple(IApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('SENDING')))
+        return tuple([IApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('SENDING'))])
 
     SendingStreams = property(_GetSendingStreams,
     doc='''All streams that send data and at the moment.
@@ -121,7 +126,7 @@ class IApplication(Cached):
     ''')
 
     def _GetStreams(self):
-        return tuple(IApplicationStream(x, self) for x in esplit(self._Property('STREAMS')))
+        return tuple([IApplicationStream(x, self) for x in esplit(self._Property('STREAMS'))])
 
     Streams = property(_GetStreams,
     doc='''All currently connected application streams.
@@ -197,16 +202,17 @@ class IApplicationStream(Cached):
     @type: unicode
     ''')
 
+    def __GetDataLength_GetStreamLength(self, Type):
+        for s in esplit(self._Application._Property(Type)):
+            h, i = s.split('=')
+            if h == self._Handle:
+                return int(i)
+
     def _GetDataLength(self):
-        def GetStreamLength(Type):
-            for s in esplit(self._Application._Property(Type)):
-                h, i = s.split('=')
-                if h == self._Handle:
-                    return int(i)
-        i = GetStreamLength('SENDING')
+        i = self.__GetDataLength_GetStreamLength('SENDING')
         if i != None:
             return i
-        i = GetStreamLength('RECEIVED')
+        i = self.__GetDataLength_GetStreamLength('RECEIVED')
         if i != None:
             return i
         return 0

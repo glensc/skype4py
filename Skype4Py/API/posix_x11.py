@@ -157,8 +157,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.x11.XDeleteProperty.restype = None
         self.x11.XDestroyWindow.argtypes = (DisplayP, Window)
         self.x11.XDestroyWindow.restype = None
-        self.x11.XSync.argtypes = (DisplayP, Bool)
-        self.x11.XSync.restype = None
+        self.x11.XPending.argtypes = (DisplayP,)
+        self.x11.XPending.restype = c_int
         self.x11.XGetAtomName.argtypes = (DisplayP, Atom)
         self.x11.XGetAtomName.restype = c_char_p
         self.x11.XGetErrorText.argtypes = (DisplayP, c_int, c_char_p, c_int)
@@ -180,6 +180,10 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.x11.XSendEvent.restype = Status
         self.x11.XSetErrorHandler.argtypes = (XErrorHandlerP,)
         self.x11.XSetErrorHandler.restype = None
+        self.x11.XLockDisplay.argtypes = (DisplayP,)
+        self.x11.XLockDisplay.restype = None
+        self.x11.XUnlockDisplay.argtypes = (DisplayP,)
+        self.x11.XUnlockDisplay.restype = None
 
         # init Xlib
         self.x11.XInitThreads()
@@ -198,7 +202,10 @@ class _ISkypeAPI(_ISkypeAPIBase):
         ctrl = 'SKYPECONTROLAPI_MESSAGE'
         self.atom_msg = self.x11.XInternAtom(self.disp, ctrl, False)
         self.atom_msg_begin = self.x11.XInternAtom(self.disp, ctrl + '_BEGIN', False)
-        self.atom_stop_loop = self.x11.XInternAtom(self.disp, 'STOP_LOOP', False)
+
+        self.loop_event = threading.Event()
+        self.loop_timeout = 0.0001
+        self.loop_break = False
 
     def __del__(self):
         if hasattr(self, 'x11'):
@@ -212,37 +219,49 @@ class _ISkypeAPI(_ISkypeAPIBase):
         # main loop
         event = _XEvent()
         data = ''
-        while True:
-            self.x11.XNextEvent(self.disp, byref(event))
-            if event.type == _ClientMessage:
-                if event.xclient.format == 8:
-                    if event.xclient.message_type == self.atom_msg_begin:
-                        data = str(event.xclient.data)
-                    elif event.xclient.message_type == self.atom_msg:
-                        if data != '':
-                            data += str(event.xclient.data)
+        while not self.loop_break:
+            pending = self.x11.XPending(self.disp)
+            if not pending:
+                self.loop_event.wait(self.loop_timeout)
+                if not self.loop_event.isSet():
+                    if self.loop_timeout < 1.0:
+                        self.loop_timeout *= 2
+                self.loop_event.clear()
+                continue
+            self.loop_timeout = 0.0001
+            for i in xrange(pending):
+                self.x11.XLockDisplay(self.disp)
+                self.x11.XNextEvent(self.disp, byref(event))
+                self.x11.XUnlockDisplay(self.disp)
+                if event.type == _ClientMessage:
+                    if event.xclient.format == 8:
+                        if event.xclient.message_type == self.atom_msg_begin:
+                            data = str(event.xclient.data)
+                        elif event.xclient.message_type == self.atom_msg:
+                            if data != '':
+                                data += str(event.xclient.data)
+                            else:
+                                print 'Warning! Middle of message received with no beginning!'
                         else:
-                            print 'Warning! Middle of message received with no beginning!'
-                    elif event.xclient.message_type == self.atom_stop_loop:
-                        break
-                    if len(event.xclient.data) != 20 and data:
-                        self.notify(data.decode('utf-8'))
-                        data = ''
-            elif event.type == _PropertyNotify:
-                if self.x11.XGetAtomName(self.disp, event.xproperty.atom) == '_SKYPE_INSTANCE':
-                    if event.xproperty.state == _PropertyNewValue:
-                        self.win_skype = self.get_skype()
-                        # changing attachment status can cause an event handler to be fired, in
-                        # turn it could try to call Attach() and doing this immediately seems to
-                        # confuse Skype (command '#0 NAME xxx' returns '#0 CONNSTATUS OFFLINE' :D);
-                        # to fix this, we give Skype some time to initialize itself
-                        time.sleep(1.0)
-                        self.SetAttachmentStatus(apiAttachAvailable)
-                    elif event.xproperty.state == _PropertyDelete:
-                        self.win_skype = None
-                        self.SetAttachmentStatus(apiAttachNotAvailable)
+                            continue
+                        if len(event.xclient.data) != 20 and data:
+                            self.notify(data.decode('utf-8'))
+                            data = ''
+                elif event.type == _PropertyNotify:
+                    if self.x11.XGetAtomName(self.disp, event.xproperty.atom) == '_SKYPE_INSTANCE':
+                        if event.xproperty.state == _PropertyNewValue:
+                            self.win_skype = self.get_skype()
+                            # changing attachment status can cause an event handler to be fired, in
+                            # turn it could try to call Attach() and doing this immediately seems to
+                            # confuse Skype (command '#0 NAME xxx' returns '#0 CONNSTATUS OFFLINE' :D);
+                            # to fix this, we give Skype some time to initialize itself
+                            time.sleep(1.0)
+                            self.SetAttachmentStatus(apiAttachAvailable)
+                        elif event.xproperty.state == _PropertyDelete:
+                            self.win_skype = None
+                            self.SetAttachmentStatus(apiAttachNotAvailable)
         self.DebugPrint('thread finished')
-
+    
     def _error_handler(self, disp, error):
         # called from within Xlib when error occures
         self.error = error.contents.error_code
@@ -280,14 +299,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
             return winp.contents.value
 
     def Close(self):
-        event = _XEvent()
-        event.xclient.type = _ClientMessage
-        event.xclient.display = self.disp
-        event.xclient.window = self.win_self
-        event.xclient.message_type = self.atom_stop_loop
-        event.xclient.format = 8
-        self.x11.XSendEvent(self.disp, self.win_self, True, 0, byref(event))
-        self.x11.XSync(self.disp, False)
+        self.loop_break = True
+        self.loop_event.set()
         while self.isAlive():
             time.sleep(0.01)
         self.DebugPrint('closed')
@@ -299,6 +312,9 @@ class _ISkypeAPI(_ISkypeAPIBase):
             self.SetAttachmentStatus(apiAttachUnknown)
             self.Attach()
 
+    def __Attach_ftimeout(self):
+        self.wait = False
+
     def Attach(self, Timeout=30000, Wait=True):
         if self.AttachmentStatus == apiAttachSuccess:
             return
@@ -309,9 +325,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 raise ISkypeAPIError('Skype API closed')
         try:
             self.wait = True
-            def ftimeout():
-                self.wait = False
-            t = threading.Timer(Timeout / 1000.0, ftimeout)
+            t = threading.Timer(Timeout / 1000.0, self.__Attach_ftimeout)
             if Wait:
                 t.start()
             while self.wait:
@@ -381,7 +395,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
             if self.x11.XSendEvent(self.disp, self.win_skype, False, 0, byref(event)) == 0:
                 self.error_check()
             event.xclient.message_type = self.atom_msg
-        self.x11.XSync(self.disp, False)
+        self.loop_event.set()
         self.error_check()
         if Command.Blocking:
             bevent.wait(Command.Timeout / 1000.0)

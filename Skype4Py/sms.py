@@ -1,8 +1,7 @@
 '''Short messaging to cell phones.
 '''
 
-from utils import *
-from enums import *
+from utils import chop, esplit, cndexp, Cached
 
 
 class ISmsChunk(Cached):
@@ -12,7 +11,8 @@ class ISmsChunk(Cached):
     def __repr__(self):
         return '<%s with Id=%s, Message=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Message))
 
-    def _Init(self, (Id, Message)):
+    def _Init(self, Id_Message):
+        Id, Message = Id_Message
         self._Id = int(Id)
         self._Message = Message
 
@@ -96,7 +96,7 @@ class ISmsMessage(Cached):
     ''')
 
     def _GetChunks(self):
-        return tuple(ISmsChunk((x, self)) for x in range(int(chop(self._Property('CHUNKING', Cache=False))[0])))
+        return tuple([ISmsChunk((x, self)) for x in range(int(chop(self._Property('CHUNKING', Cache=False))[0]))])
 
     Chunks = property(_GetChunks,
     doc='''Chunks of this SMS message. More than one if this is a multi-part message.
@@ -236,7 +236,7 @@ class ISmsMessage(Cached):
     ''')
 
     def _GetTargets(self):
-        return tuple(ISmsTarget((x, self)) for x in esplit(self._Property('TARGET_NUMBERS'), ', '))
+        return tuple([ISmsTarget((x, self)) for x in esplit(self._Property('TARGET_NUMBERS'), ', ')])
 
     Targets = property(_GetTargets,
     doc='''Target objects.
@@ -271,7 +271,8 @@ class ISmsTarget(Cached):
     def __repr__(self):
         return '<%s with Number=%s, Message=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Number), repr(self.Message))
 
-    def _Init(self, (Number, Message)):
+    def _Init(self, Number_Message):
+        Number, Message = Number_Message
         self._Number = Number
         self._Message = Message
 

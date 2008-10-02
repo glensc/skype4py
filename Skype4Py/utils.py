@@ -343,10 +343,10 @@ class EventHandlingBase(object):
         separate threads.
         '''
         # get list of relevant handlers
-        handlers = dict((x, x()) for x in self._EventHandlers[Event])
+        handlers = dict([(x, x()) for x in self._EventHandlers[Event]])
         if None in handlers.values():
             # cleanup
-            self._EventHandlers[Event] = list(x[0] for x in handlers.items() if x[1] != None)
+            self._EventHandlers[Event] = list([x[0] for x in handlers.items() if x[1] != None])
         handlers = filter(None, handlers.values())
         # try the On... handlers
         try:
@@ -397,10 +397,10 @@ class EventHandlingBase(object):
         if Event not in self._EventHandlers:
             raise ValueError('%s is not a valid %s event name' % (Event, self.__class__.__name__))
         # get list of relevant handlers
-        handlers = dict((x, x()) for x in self._EventHandlers[Event])
+        handlers = dict([(x, x()) for x in self._EventHandlers[Event]])
         if None in handlers.values():
             # cleanup
-            self._EventHandlers[Event] = list(x[0] for x in handlers.items() if x[1] != None)
+            self._EventHandlers[Event] = list([x[0] for x in handlers.items() if x[1] != None])
         if Target in handlers.values():
             return False
         self._EventHandlers[Event].append(WeakCallableRef(Target))
@@ -423,10 +423,10 @@ class EventHandlingBase(object):
         if Event not in self._EventHandlers:
             raise ValueError('%s is not a valid %s event name' % (Event, self.__class__.__name__))
         # get list of relevant handlers
-        handlers = dict((x, x()) for x in self._EventHandlers[Event])
+        handlers = dict([(x, x()) for x in self._EventHandlers[Event]])
         if None in handlers.values():
             # cleanup
-            self._EventHandlers[Event] = list(x[0] for x in handlers.items() if x[1] != None)
+            self._EventHandlers[Event] = list([x[0] for x in handlers.items() if x[1] != None])
         for wref, trg in handlers.items():
             if trg == Target:
                 self._EventHandlers[Event].remove(wref)
@@ -456,15 +456,18 @@ class EventHandlingBase(object):
         '''
         self._EventHandlerObj = Obj
 
+    @staticmethod
+    def __AddEvents_make_event(Event):
+        # TODO: rework to make compatible with cython
+        return property(lambda self: self._GetDefaultEventHandler(Event),
+                        lambda self, value: self._SetDefaultEventHandler(Event, value))
+
     @classmethod
     def _AddEvents(cls, klass):
         '''Adds events to class based on 'klass' attributes.'''
-        def make_event(Event):
-            return property(lambda self: self._GetDefaultEventHandler(Event),
-                            lambda self, value: self._SetDefaultEventHandler(Event, value))
         for event in dir(klass):
             if not event.startswith('_'):
-                setattr(cls, 'On%s' % event, make_event(event))
+                setattr(cls, 'On%s' % event, cls.__AddEvents_make_event(event))
                 cls._EventNames.append(event)
 
 

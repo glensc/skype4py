@@ -3,7 +3,7 @@
 
 import weakref
 import sys
-from utils import *
+from utils import cndexp
 
 
 class ISettings(object):

@@ -1,9 +1,8 @@
 '''Voicemails.
 '''
 
-from utils import *
+from utils import quote, args2dict, Cached
 from enums import *
-from errors import *
 
 
 class IVoicemail(Cached):

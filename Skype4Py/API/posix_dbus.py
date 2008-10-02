@@ -100,6 +100,9 @@ class _ISkypeAPI(_ISkypeAPIBase):
         if self.skype_out:
             self.SendCommand(ICommand(-1, 'NAME %s' % FriendlyName))
 
+    def __Attach_ftimeout(self):
+        self.wait = False
+
     def Attach(self, Timeout=30000, Wait=True):
         if self.skype_out:
             return
@@ -109,9 +112,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
             pass
         try:
             self.wait = True
-            def ftimeout():
-                self.wait = False
-            t = threading.Timer(Timeout / 1000.0, ftimeout)
+            t = threading.Timer(Timeout / 1000.0, self.__Attach_ftimeout)
             if Wait:
                 t.start()
             while self.wait:

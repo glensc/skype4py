@@ -2,8 +2,8 @@
 '''
 
 from enums import *
-from errors import *
-from utils import *
+from errors import ISkypeError
+from utils import cndexp, quote, Cached
 import weakref
 
 

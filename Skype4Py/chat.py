@@ -1,10 +1,9 @@
 '''Chats.
 '''
 
-from utils import *
-from user import *
-from enums import *
-from errors import *
+from utils import Cached, esplit, quote, chop
+from user import IUser
+from errors import ISkypeError
 
 
 class IChat(Cached):
@@ -35,7 +34,7 @@ class IChat(Cached):
         @param Members: One or more users to add.
         @type Members: L{IUser}
         '''
-        self._Alter('ADDMEMBERS', ', '.join(x.Handle for x in Members))
+        self._Alter('ADDMEMBERS', ', '.join([x.Handle for x in Members]))
 
     def Bookmark(self):
         '''Bookmarks the chat in Skype client.
@@ -119,7 +118,7 @@ class IChat(Cached):
         self._Alter('UNBOOKMARK')
 
     def _GetActiveMembers(self):
-        return tuple(IUser(x, self._Skype) for x in esplit(self._Property('ACTIVEMEMBERS', Cache=False)))
+        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('ACTIVEMEMBERS', Cache=False))])
 
     ActiveMembers = property(_GetActiveMembers,
     doc='''Active members of a chat.
@@ -167,7 +166,7 @@ class IChat(Cached):
     ''')
 
     def _GetApplicants(self):
-        return tuple(IUser(x, self._Skype) for x in esplit(self._Property('APPLICANTS')))
+        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('APPLICANTS'))])
 
     Applicants = property(_GetApplicants,
     doc='''Chat applicants.
@@ -246,7 +245,7 @@ class IChat(Cached):
     ''')
 
     def _GetMemberObjects(self):
-        return tuple(IChatMember(x, self._Skype) for x in esplit(self._Property('MEMBEROBJECTS'), ', '))
+        return tuple([IChatMember(x, self._Skype) for x in esplit(self._Property('MEMBEROBJECTS'), ', ')])
 
     MemberObjects = property(_GetMemberObjects,
     doc='''Chat members as member objects.
@@ -255,7 +254,7 @@ class IChat(Cached):
     ''')
 
     def _GetMembers(self):
-        return tuple(IUser(x, self._Skype) for x in esplit(self._Property('MEMBERS')))
+        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('MEMBERS'))])
 
     Members = property(_GetMembers,
     doc='''Chat members.
@@ -264,7 +263,7 @@ class IChat(Cached):
     ''')
 
     def _GetMessages(self):
-        return tuple(IChatMessage(x ,self._Skype) for x in esplit(self._Property('CHATMESSAGES', Cache=False), ', '))
+        return tuple([IChatMessage(x ,self._Skype) for x in esplit(self._Property('CHATMESSAGES', Cache=False), ', ')])
 
     Messages = property(_GetMessages,
     doc='''All chat messages.
@@ -321,7 +320,7 @@ class IChat(Cached):
     ''')
 
     def _GetPosters(self):
-        return tuple(IUser(x, self._Skype) for x in esplit(self._Property('POSTERS')))
+        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('POSTERS'))])
 
     Posters = property(_GetPosters,
     doc='''Users who have posted messages to this chat.
@@ -330,7 +329,7 @@ class IChat(Cached):
     ''')
 
     def _GetRecentMessages(self):
-        return tuple(IChatMessage(x, self._Skype) for x in esplit(self._Property('RECENTCHATMESSAGES', Cache=False), ', '))
+        return tuple([IChatMessage(x, self._Skype) for x in esplit(self._Property('RECENTCHATMESSAGES', Cache=False), ', ')])
 
     RecentMessages = property(_GetRecentMessages,
     doc='''Most recent chat messages.
@@ -585,7 +584,7 @@ class IChatMessage(Cached):
     ''')
 
     def _GetUsers(self):
-        return tuple(IUser(self._Skype, x) for x in esplit(self._Property('USERS')))
+        return tuple([IUser(self._Skype, x) for x in esplit(self._Property('USERS'))])
 
     Users = property(_GetUsers,
     doc='''Users added to the chat.

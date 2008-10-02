@@ -497,7 +497,7 @@ class IGroup(Cached):
     ''')
 
     def _GetOnlineUsers(self):
-        return tuple(x for x in self.Users if x.OnlineStatus == olsOnline)
+        return tuple([x for x in self.Users if x.OnlineStatus == olsOnline])
 
     OnlineUsers = property(_GetOnlineUsers,
     doc='''Users of the group that are online
@@ -515,7 +515,7 @@ class IGroup(Cached):
     ''')
 
     def _GetUsers(self):
-        return tuple(IUser(x, self._Skype) for x in esplit(self._Property('USERS', Cache=False), ', '))
+        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('USERS', Cache=False), ', ')])
 
     Users = property(_GetUsers,
     doc='''Users in this group.

@@ -246,7 +246,7 @@ class ISkype(EventHandlingBase):
                 elif ObjectType == 'CHAT':
                     o = IChat(ObjectId, self)
                     if PropName == 'MEMBERS':
-                        self._CallEventHandler('ChatMembersChanged', o, tuple(IUser(x, self) for x in esplit(Value)))
+                        self._CallEventHandler('ChatMembersChanged', o, tuple([IUser(x, self) for x in esplit(Value)]))
                     if PropName in ('OPENED', 'CLOSED'):
                         self._CallEventHandler('ChatWindowState', o, PropName == 'OPENED')
                 elif ObjectType == 'CHATMEMBER':
@@ -260,16 +260,16 @@ class ISkype(EventHandlingBase):
                 elif ObjectType == 'APPLICATION':
                     o = IApplication(ObjectId, self)
                     if PropName == 'CONNECTING':
-                        self._CallEventHandler('ApplicationConnecting', o, tuple(IUser(x, self) for x in esplit(Value)))
+                        self._CallEventHandler('ApplicationConnecting', o, tuple([IUser(x, self) for x in esplit(Value)]))
                     elif PropName == 'STREAMS':
-                        self._CallEventHandler('ApplicationStreams', o, tuple(IApplicationStream(x, o) for x in esplit(Value)))
+                        self._CallEventHandler('ApplicationStreams', o, tuple([IApplicationStream(x, o) for x in esplit(Value)]))
                     elif PropName == 'DATAGRAM':
                         handle, text = chop(Value)
                         self._CallEventHandler('ApplicationDatagram', o, IApplicationStream(handle, o), text)
                     elif PropName == 'SENDING':
-                        self._CallEventHandler('ApplicationSending', o, tuple(IApplicationStream(x.split('=')[0], o) for x in esplit(Value)))
+                        self._CallEventHandler('ApplicationSending', o, tuple([IApplicationStream(x.split('=')[0], o) for x in esplit(Value)]))
                     elif PropName == 'RECEIVED':
-                        self._CallEventHandler('ApplicationReceiving', o, tuple(IApplicationStream(x.split('=')[0], o) for x in esplit(Value)))
+                        self._CallEventHandler('ApplicationReceiving', o, tuple([IApplicationStream(x.split('=')[0], o) for x in esplit(Value)]))
                 elif ObjectType == 'GROUP':
                     o = IGroup(ObjectId, self)
                     if PropName == 'VISIBLE':
@@ -277,7 +277,7 @@ class ISkype(EventHandlingBase):
                     elif PropName == 'EXPANDED':
                         self._CallEventHandler('GroupExpanded', o, Value == 'TRUE')
                     elif PropName == 'USERS':
-                        self._CallEventHandler('GroupUsers', o, tuple(IUser(x, self) for x in esplit(Value, ', ')))
+                        self._CallEventHandler('GroupUsers', o, tuple([IUser(x, self) for x in esplit(Value, ', ')]))
                 elif ObjectType == 'SMS':
                     o = ISmsMessage(ObjectId, self)
                     if PropName == 'STATUS':
@@ -337,7 +337,7 @@ class ISkype(EventHandlingBase):
                         users = ()
                         context_id = u''
                         if context in (pluginContextContact, pluginContextCall, pluginContextChat):
-                            users = tuple(IUser(x, self) for x in esplit(Value[:i-1], ', '))
+                            users = tuple([IUser(x, self) for x in esplit(Value[:i-1], ', ')])
                         if context in (pluginContextCall, pluginContextChat):
                             j = Value.rfind('CONTEXT_ID ')
                             if j >= 0:
@@ -446,7 +446,7 @@ class ISkype(EventHandlingBase):
         if Command in self._AsyncSearchUsersCommands:
             self._AsyncSearchUsersCommands.remove(Command)
             self._CallEventHandler('AsyncSearchUsersFinished', Command.Id,
-                tuple(IUser(x, self) for x in esplit(chop(Command.Reply)[-1], ', ')))
+                tuple([IUser(x, self) for x in esplit(chop(Command.Reply)[-1], ', ')]))
             if len(self._AsyncSearchUsersCommands) == 0:
                 self.UnregisterEventHandler('Reply', self._AsyncSearchUsersReplyHandler)
                 del self._AsyncSearchUsersCommands
@@ -505,7 +505,11 @@ class ISkype(EventHandlingBase):
         @return: Call objects.
         @rtype: tuple of L{ICall}
         '''
-        return tuple(ICall(x, self) for x in self._Search('CALLS', Target))
+        return tuple([ICall(x, self) for x in self._Search('CALLS', Target)])
+
+    def __ChangeUserStatus_UserStatus_Handler(self, status):
+        if status.upper() == self.__ChangeUserStatus_Val:
+            self.__ChangeUserStatus_Event.set()
 
     def ChangeUserStatus(self, Val):
         '''Changes the online status for the current user.
@@ -518,14 +522,13 @@ class ISkype(EventHandlingBase):
         '''
         if self.CurrentUserStatus.upper() == Val.upper():
             return
-        event = threading.Event()
-        def userstatus_handler(status):
-            if status.upper() == Val.upper():
-                event.set()
-        self.RegisterEventHandler('UserStatus', userstatus_handler)
+        self.__ChangeUserStatus_Event = threading.Event()
+        self.__ChangeUserStatus_Val = Val.upper()
+        self.RegisterEventHandler('UserStatus', self.__ChangeUserStatus_UserStatus_Handler)
         self.CurrentUserStatus = Val
-        event.wait()
-        self.UnregisterEventHandler('UserStatus', userstatus_handler)
+        self.__ChangeUserStatus_Event.wait()
+        self.UnregisterEventHandler('UserStatus', self.__ChangeUserStatus_UserStatus_Handler)
+        del self.__ChangeUserStatus_Event, self.__ChangeUserStatus_Val
 
     def Chat(self, Name=''):
         '''Queries a chat object.
@@ -706,7 +709,7 @@ class ISkype(EventHandlingBase):
         @return: Chat message objects.
         @rtype: tuple of L{IChatMessage}
         '''
-        return tuple(IChatMessage(x, self) for x in self._Search('CHATMESSAGES', Target))
+        return tuple([IChatMessage(x, self) for x in self._Search('CHATMESSAGES', Target)])
 
     def PlaceCall(self, *Targets):
         '''Places a call to a single user or creates a conference call.
@@ -786,7 +789,7 @@ class ISkype(EventHandlingBase):
         @return: Found users.
         @rtype: tuple of L{IUser}
         '''
-        return tuple(IUser(x, self) for x in self._Search('USERS', Target))
+        return tuple([IUser(x, self) for x in self._Search('USERS', Target)])
 
     def SendCommand(self, Command):
         '''Sends an API command.
@@ -881,7 +884,7 @@ class ISkype(EventHandlingBase):
         return o
 
     def _GetActiveCalls(self):
-        return tuple(ICall(x, self) for x in self._Search('ACTIVECALLS'))
+        return tuple([ICall(x, self) for x in self._Search('ACTIVECALLS')])
 
     ActiveCalls = property(_GetActiveCalls,
     doc='''Queries a list of active calls.
@@ -890,7 +893,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetActiveChats(self):
-        return tuple(IChat(x, self) for x in self._Search('ACTIVECHATS'))
+        return tuple([IChat(x, self) for x in self._Search('ACTIVECHATS')])
 
     ActiveChats = property(_GetActiveChats,
     doc='''Queries a list of active chats.
@@ -899,7 +902,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetActiveFileTransfers(self):
-        return tuple(IFileTransfer(x, self) for x in self._Search('ACTIVEFILETRANSFERS'))
+        return tuple([IFileTransfer(x, self) for x in self._Search('ACTIVEFILETRANSFERS')])
 
     ActiveFileTransfers = property(_GetActiveFileTransfers,
     doc='''Queries currently active file transfers.
@@ -941,7 +944,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetBookmarkedChats(self):
-        return tuple(IChat(x, self) for x in self._Search('BOOKMARKEDCHATS'))
+        return tuple([IChat(x, self) for x in self._Search('BOOKMARKEDCHATS')])
 
     BookmarkedChats = property(_GetBookmarkedChats,
     doc='''Queries a list of bookmarked chats.
@@ -963,7 +966,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetChats(self):
-        return tuple(IChat(x, self) for x in self._Search('CHATS'))
+        return tuple([IChat(x, self) for x in self._Search('CHATS')])
 
     Chats = property(_GetChats,
     doc='''Queries a list of chats.
@@ -1067,7 +1070,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetCustomGroups(self):
-        return tuple(IGroup(x, self) for x in self._Search('GROUPS', 'CUSTOM'))
+        return tuple([IGroup(x, self) for x in self._Search('GROUPS', 'CUSTOM')])
 
     CustomGroups = property(_GetCustomGroups,
     doc='''Queries the list of custom contact groups. Custom groups are contact groups defined by the user.
@@ -1076,7 +1079,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetFileTransfers(self):
-        return tuple(IFileTransfer(x, self) for x in self._Search('FILETRANSFERS'))
+        return tuple([IFileTransfer(x, self) for x in self._Search('FILETRANSFERS')])
 
     FileTransfers = property(_GetFileTransfers,
     doc='''Queries all file transfers.
@@ -1087,7 +1090,7 @@ class ISkype(EventHandlingBase):
     def _GetFocusedContacts(self):
         # we have to use _DoCommand() directly because for unknown reason the API returns
         # "CONTACTS FOCUSED" instead of "CONTACTS_FOCUSED" (note the space instead of "_")
-        return tuple(IUser(x, self) for x in esplit(chop(self._DoCommand('GET CONTACTS_FOCUSED', 'CONTACTS FOCUSED'), 2)[-1]))
+        return tuple([IUser(x, self) for x in esplit(chop(self._DoCommand('GET CONTACTS_FOCUSED', 'CONTACTS FOCUSED'), 2)[-1])])
 
     FocusedContacts = property(_GetFocusedContacts,
     doc='''Queries a list of contacts selected in the contacts list.
@@ -1105,7 +1108,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetFriends(self):
-        return tuple(IUser(x, self) for x in self._Search('FRIENDS'))
+        return tuple([IUser(x, self) for x in self._Search('FRIENDS')])
 
     Friends = property(_GetFriends,
     doc='''Queries the users in a contact list.
@@ -1114,7 +1117,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetGroups(self):
-        return tuple(IGroup(x, self) for x in self._Search('GROUPS', 'ALL'))
+        return tuple([IGroup(x, self) for x in self._Search('GROUPS', 'ALL')])
 
     Groups = property(_GetGroups,
     doc='''Queries the list of all contact groups.
@@ -1123,7 +1126,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetHardwiredGroups(self):
-        return tuple(IGroup(x, self) for x in self._Search('GROUPS', 'HARDWIRED'))
+        return tuple([IGroup(x, self) for x in self._Search('GROUPS', 'HARDWIRED')])
 
     HardwiredGroups = property(_GetHardwiredGroups,
     doc='''Queries the list of hardwired contact groups. Hardwired groups are "smart" contact groups,
@@ -1133,7 +1136,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetMissedCalls(self):
-        return tuple(ICall(x, self) for x in self._Search('MISSEDCALLS'))
+        return tuple([ICall(x, self) for x in self._Search('MISSEDCALLS')])
 
     MissedCalls = property(_GetMissedCalls,
     doc='''Queries a list of missed calls.
@@ -1142,7 +1145,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetMissedChats(self):
-        return tuple(IChat(x, self) for x in self._Search('MISSEDCHATS'))
+        return tuple([IChat(x, self) for x in self._Search('MISSEDCHATS')])
 
     MissedChats = property(_GetMissedChats,
     doc='''Queries a list of missed chats.
@@ -1151,7 +1154,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetMissedMessages(self):
-        return tuple(IChatMessage(x, self) for x in self._Search('MISSEDCHATMESSAGES'))
+        return tuple([IChatMessage(x, self) for x in self._Search('MISSEDCHATMESSAGES')])
 
     MissedMessages = property(_GetMissedMessages,
     doc='''Queries a list of missed chat messages.
@@ -1160,7 +1163,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetMissedSmss(self):
-        return tuple(ISmsMessage(x, self) for x in self._Search('MISSEDSMSS'))
+        return tuple([ISmsMessage(x, self) for x in self._Search('MISSEDSMSS')])
 
     MissedSmss = property(_GetMissedSmss,
     doc='''Requests a list of all missed SMS messages.
@@ -1169,7 +1172,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetMissedVoicemails(self):
-        return tuple(IVoicemail(x, self) for x in self._Search('MISSEDVOICEMAILS'))
+        return tuple([IVoicemail(x, self) for x in self._Search('MISSEDVOICEMAILS')])
 
     MissedVoicemails = property(_GetMissedVoicemails,
     doc='''Requests a list of missed voicemails.
@@ -1215,7 +1218,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetRecentChats(self):
-        return tuple(IChat(x, self) for x in self._Search('RECENTCHATS'))
+        return tuple([IChat(x, self) for x in self._Search('RECENTCHATS')])
 
     RecentChats = property(_GetRecentChats,
     doc='''Queries a list of recent chats.
@@ -1245,7 +1248,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetSmss(self):
-        return tuple(ISmsMessage(x, self) for x in self._Search('SMSS'))
+        return tuple([ISmsMessage(x, self) for x in self._Search('SMSS')])
 
     Smss = property(_GetSmss,
     doc='''Requests a list of all SMS messages.
@@ -1268,7 +1271,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetUsersWaitingAuthorization(self):
-        return tuple(IUser(x, self) for x in self._Search('USERSWAITINGMYAUTHORIZATION'))
+        return tuple([IUser(x, self) for x in self._Search('USERSWAITINGMYAUTHORIZATION')])
 
     UsersWaitingAuthorization = property(_GetUsersWaitingAuthorization,
     doc='''Queries the list of users waiting for authorization.
@@ -1286,7 +1289,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetVoicemails(self):
-        return tuple(IVoicemail(x, self) for x in self._Search('VOICEMAILS'))
+        return tuple([IVoicemail(x, self) for x in self._Search('VOICEMAILS')])
 
     Voicemails = property(_GetVoicemails,
     doc='''Queries a list of voicemails.

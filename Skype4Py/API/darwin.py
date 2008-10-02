@@ -345,6 +345,9 @@ class _ISkypeAPI(_ISkypeAPIBase):
             self.SetAttachmentStatus(apiAttachUnknown)
             self.Attach()
 
+    def __Attach_ftimeout(self):
+        self.wait = False
+
     def Attach(self, Timeout=30000, Wait=True):
         if self.AttachmentStatus in (apiAttachPendingAuthorization, apiAttachSuccess):
             return
@@ -357,9 +360,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
             self.SetAttachmentStatus(apiAttachPendingAuthorization)
             self.post('SKSkypeAPIAttachRequest')
             self.wait = True
-            def ftimeout():
-                self.wait = False
-            t = threading.Timer(Timeout / 1000.0, ftimeout)
+            t = threading.Timer(Timeout / 1000.0, self.__Attach_ftimeout)
             if Wait:
                 t.start()
             while self.wait and self.AttachmentStatus == apiAttachPendingAuthorization:

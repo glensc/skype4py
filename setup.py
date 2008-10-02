@@ -2,7 +2,7 @@
 '''
 Skype4Py
 
-Copyright (c) 2007, Arkadiusz Wahlig
+Copyright (c) 2007-2008, Arkadiusz Wahlig
 
 All rights reserved.
 
@@ -13,6 +13,7 @@ accompanying LICENSE file for more information.
 import sys, os
 from distutils.core import setup
 from distutils.cmd import Command
+from distutils.extension import Extension
 from distutils.command.install_lib import install_lib as old_install_lib
 
 
@@ -124,6 +125,50 @@ class build_doc(Command):
             print >>sys.stderr, 'epydoc not installed, skipping build_doc.'
 
 
+def make_extension(name):
+    path = name.replace('.', os.path.sep) + '.py'
+    return Extension(
+        name,
+        [path],
+        include_dirs=['.'],
+        extra_compile_args=['-O3'],
+        extra_link_args=['-g'],
+        libraries=[],
+    )
+
+
+commands = {'build_doc': build_doc,
+            'install_lib': install_lib}
+            
+try:
+    # If Cython is present, add the 'build_ext' commands.
+    from Cython.Distutils import build_ext
+
+except ImportError:
+    extensions = []
+    
+else:
+    commands['build_ext'] = build_ext
+    
+    def scandir(dirpath):
+        names = []
+        for name in os.listdir(dirpath):
+            path = os.path.join(dirpath, name)
+            if os.path.isfile(path) and os.path.splitext(name)[-1].lower() == '.py':
+                names.append(path.replace(os.path.sep, '.')[:-3])
+            elif os.path.isdir(path):
+                names.extend(scandir(path))
+        return names
+
+    extensions = []
+    for ext in scandir('Skype4Py'):
+        if ext.endswith('.__init__'):
+            continue
+        if ext == 'Skype4Py.API.faked_dbus':
+            continue
+        extensions.append(ext)
+
+
 # start the distutils setup
 setup(name='Skype4Py',
       version=__version__,
@@ -139,5 +184,5 @@ setup(name='Skype4Py',
       platforms=('Windows 2000/XP', 'Linux'),
       packages=('Skype4Py', 'Skype4Py.API', 'Skype4Py.Languages'),
       provides=('Skype4Py',),
-      cmdclass={'build_doc': build_doc,
-                'install_lib': install_lib})
+      cmdclass=commands,
+      ext_modules=[make_extension(name) for name in extensions])
