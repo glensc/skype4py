@@ -158,13 +158,13 @@ class CFString(CFType):
             self.owner = True
 
     def __str__(self):
-        i = len(self)
-        buf = create_string_buffer(i)
-        self.cf.lib.CFStringGetBytes(self, 0, i, 0x08000100, c_char('?'), False, buf, i, None)
-        return buf.value
+        return self.__unicode__().encode('utf8')
 
     def __unicode__(self):
-        return str(self).decode('utf8')
+        i = len(self)
+        buf = create_unicode_buffer(i+1)
+        self.cf.lib.CFStringGetBytes(self, 0, i, 0x0100, 0, False, buf, (i+1)*2, None)
+        return buf.value
 
     def __len__(self):
         return self.cf.lib.CFStringGetLength(self)
@@ -314,8 +314,9 @@ class CFDistributedNotificationCenter(CFType):
 class _ISkypeAPI(_ISkypeAPIBase):
     '''Skype for Mac API wrapper.
 
-    Based with permission on code included in Skype Plugin for Pidgin.
+    Code based on Pidgin Skype Plugin source.
     http://code.google.com/p/skype4pidgin/
+    Permission was granted by the author.
     '''
 
     def __init__(self, handler, opts):

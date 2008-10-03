@@ -223,9 +223,10 @@ class _ISkypeAPI(_ISkypeAPIBase):
             pending = self.x11.XPending(self.disp)
             if not pending:
                 self.loop_event.wait(self.loop_timeout)
-                if not self.loop_event.isSet():
-                    if self.loop_timeout < 1.0:
-                        self.loop_timeout *= 2
+                if self.loop_event.isSet():
+                    self.loop_timeout = 0.0001
+                elif self.loop_timeout < 1.0:
+                    self.loop_timeout *= 2
                 self.loop_event.clear()
                 continue
             self.loop_timeout = 0.0001
