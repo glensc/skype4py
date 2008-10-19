@@ -100,14 +100,22 @@ class _ISkypeAPI(_ISkypeAPIBase):
         if self.skype_out:
             self.SendCommand(ICommand(-1, 'NAME %s' % FriendlyName))
 
+    def StartWatcher(self):
+        self.dbus_name_owner_watch = self.bus.add_signal_receiver(self.dbus_name_owner_changed,
+            'NameOwnerChanged',
+            'org.freedesktop.DBus',
+            'org.freedesktop.DBus',
+            '/org/freedesktop/DBus',
+            arg0='com.Skype.API')
+
     def __Attach_ftimeout(self):
         self.wait = False
 
     def Attach(self, Timeout=30000, Wait=True):
-        if self.skype_out:
-            return
         try:
-            self.start()
+            if not self.isAlive():
+                self.StartWatcher()
+                self.start()
         except AssertionError:
             pass
         try:
@@ -116,10 +124,16 @@ class _ISkypeAPI(_ISkypeAPIBase):
             if Wait:
                 t.start()
             while self.wait:
+                if not Wait:
+                    self.wait = False
                 try:
-                    self.skype_out = self.bus.get_object('com.Skype.API', '/com/Skype')
-                    self.skype_in = _SkypeNotifyCallback(self.bus, self.notify)
+                    if not self.skype_out:
+                        self.skype_out = self.bus.get_object('com.Skype.API', '/com/Skype')
+                    if not self.skype_in:
+                        self.skype_in = _SkypeNotifyCallback(self.bus, self.notify)
                 except dbus.DBusException:
+                    if not Wait:
+                        break
                     time.sleep(1.0)
                 else:
                     break
@@ -127,16 +141,11 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 raise ISkypeAPIError('Skype attach timeout')
         finally:
             t.cancel()
-        self.dbus_name_owner_watch = self.bus.add_signal_receiver(self.dbus_name_owner_changed,
-            'NameOwnerChanged',
-            'org.freedesktop.DBus',
-            'org.freedesktop.DBus',
-            '/org/freedesktop/DBus',
-            arg0='com.Skype.API')
         c = ICommand(-1, 'NAME %s' % self.FriendlyName, '', True, Timeout)
-        self.SendCommand(c)
+        if self.skype_out:
+            self.SendCommand(c)
         if c.Reply != 'OK':
-            self.skype_in = self.skype_out = None
+            self.skype_out = None
             self.SetAttachmentStatus(apiAttachRefused)
             return
         self.SendCommand(ICommand(-1, 'PROTOCOL %s' % self.Protocol))
@@ -212,6 +221,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
 
     def dbus_name_owner_changed(self, owned, old_owner, new_owner):
         self.DebugPrint('<-', 'dbus_name_owner_changed')
+        if new_owner == '':
+            self.skype_out = None
         self.SetAttachmentStatus(cndexp(new_owner == '',
             apiAttachNotAvailable,
             apiAttachAvailable))
