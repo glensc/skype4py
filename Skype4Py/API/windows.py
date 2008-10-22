@@ -165,7 +165,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
             raise ISkypeAPIError('Skype attach timeout')
 
     def IsRunning(self):
-        return bool(windll.user32.FindWindowA('SkypeWindowClass2', None))
+        return bool(windll.user32.FindWindowA('TZapMainForm.UnicodeClass', None) or \ # Skype 4.0
+            windll.user32.FindWindowA('tSkMainForm.UnicodeClass', None)) # Skype 3.8
 
     def get_skype_path(self):
         key = c_long()
