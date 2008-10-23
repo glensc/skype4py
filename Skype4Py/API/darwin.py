@@ -341,6 +341,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
     def Close(self):
         if hasattr(self, 'loop'):
             self.loop.quit()
+            self.client_id = -1
             self.DebugPrint('closed')
 
     def SetFriendlyName(self, FriendlyName):
@@ -363,6 +364,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         t = threading.Timer(Timeout / 1000.0, self.__Attach_ftimeout)
         try:
             self.init_observer()
+            self.client_id = -1
             self.SetAttachmentStatus(apiAttachPendingAuthorization)
             self.post('SKSkypeAPIAttachRequest')
             self.wait = True
@@ -485,6 +487,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.DebugPrint('<-', 'SKSkypeAttachResponse')
         # It seems that this notification is not called if the access is refused. Therefore we can't
         # distinguish between attach timeout and access refuse.
-        self.client_id = int(CFNumber(userInfo[self.coref.CFSTR('SKYPE_API_ATTACH_RESPONSE')]))
-        if self.client_id:
+        response = int(CFNumber(userInfo[self.coref.CFSTR('SKYPE_API_ATTACH_RESPONSE')]))
+        if response and self.client_id == -1:
+            self.client_id = response
             self.SetAttachmentStatus(apiAttachSuccess)
