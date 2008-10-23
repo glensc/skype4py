@@ -158,13 +158,17 @@ class CFString(CFType):
             self.owner = True
 
     def __str__(self):
-        return self.__unicode__().encode('utf8')
+        i = self.cf.lib.CFStringGetLength(self)
+        size = c_long()
+        if self.cf.lib.CFStringGetBytes(self, 0, i, 0x08000100, 0, False, None, 0, byref(size)) > 0:
+            buf = create_string_buffer(size.value)
+            self.cf.lib.CFStringGetBytes(self, 0, i, 0x08000100, 0, False, buf, size, None)
+            return buf.value
+        else:
+            raise UnicodeError('CFStringGetBytes() failed')
 
     def __unicode__(self):
-        i = len(self)
-        buf = create_unicode_buffer(i+1)
-        self.cf.lib.CFStringGetBytes(self, 0, i, 0x0100, 0, False, buf, (i+1)*2, None)
-        return buf.value
+        return self.__str__().decode('utf8')
 
     def __len__(self):
         return self.cf.lib.CFStringGetLength(self)
@@ -356,12 +360,12 @@ class _ISkypeAPI(_ISkypeAPIBase):
             self.start()
         except AssertionError:
             pass
+        t = threading.Timer(Timeout / 1000.0, self.__Attach_ftimeout)
         try:
             self.init_observer()
             self.SetAttachmentStatus(apiAttachPendingAuthorization)
             self.post('SKSkypeAPIAttachRequest')
             self.wait = True
-            t = threading.Timer(Timeout / 1000.0, self.__Attach_ftimeout)
             if Wait:
                 t.start()
             while self.wait and self.AttachmentStatus == apiAttachPendingAuthorization:
