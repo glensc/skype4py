@@ -487,7 +487,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.DebugPrint('<-', 'SKSkypeAttachResponse')
         # It seems that this notification is not called if the access is refused. Therefore we can't
         # distinguish between attach timeout and access refuse.
-        response = int(CFNumber(userInfo[self.coref.CFSTR('SKYPE_API_ATTACH_RESPONSE')]))
-        if response and self.client_id == -1:
-            self.client_id = response
-            self.SetAttachmentStatus(apiAttachSuccess)
+        if unicode(CFString(userInfo[self.coref.CFSTR('SKYPE_API_CLIENT_NAME')])) == self.FriendlyName:
+            response = int(CFNumber(userInfo[self.coref.CFSTR('SKYPE_API_ATTACH_RESPONSE')]))
+            if response and self.client_id == -1:
+                self.client_id = response
+                self.SetAttachmentStatus(apiAttachSuccess)

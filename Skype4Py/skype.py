@@ -1099,7 +1099,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _SetFriendlyName(self, FriendlyName):
-        self._API.SetFriendlyName(FriendlyName)
+        self._API.SetFriendlyName(unicode(FriendlyName))
 
     FriendlyName = property(fset=_SetFriendlyName,
     doc='''Sets a "friendly" name for an application.
