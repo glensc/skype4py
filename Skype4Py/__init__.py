@@ -47,11 +47,11 @@ Skype4Py is a multiplatform Skype API wrapper for Python.
          for user in skype.Friends:
              print '    ', user.FullName
 
-@author: U{Arkadiusz Wahlig<yak@nokix.pasjagsm.pl>}
-@requires: Python 2.4 or newer
+@author: Arkadiusz Wahlig (arkadiusz.wahlig at googlemail)
+@requires: Python 2.4 or newer (not yet 3.0)
 @see: U{The Skype4Py webpage<https://developer.skype.com/wiki/Skype4Py>}
 @license: BSD License (see the accompanying LICENSE file for more information)
-@copyright: S{copy} 2007 Arkadiusz Wahlig
+@copyright: S{copy} 2007-2008 Arkadiusz Wahlig
 '''
 
 from skype import ISkype as Skype
