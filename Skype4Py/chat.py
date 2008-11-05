@@ -1,8 +1,8 @@
 '''Chats.
 '''
 
-from utils import Cached, esplit, quote, chop
-from user import IUser
+from utils import *
+from user import *
 from errors import ISkypeError
 
 

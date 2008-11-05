@@ -1,7 +1,7 @@
 '''Current user profile.
 '''
 
-from utils import cndexp, esplit, chop
+from utils import *
 import weakref
 
 

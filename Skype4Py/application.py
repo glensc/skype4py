@@ -1,8 +1,8 @@
 '''APP2APP protocol.
 '''
 
-from utils import esplit, Cached
-from user import IUser
+from utils import *
+from user import *
 import threading
 
 

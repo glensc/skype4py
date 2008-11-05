@@ -1,7 +1,7 @@
 '''Voicemails.
 '''
 
-from utils import quote, args2dict, Cached
+from utils import *
 from enums import *
 
 

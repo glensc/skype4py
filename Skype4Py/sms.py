@@ -1,7 +1,7 @@
 '''Short messaging to cell phones.
 '''
 
-from utils import chop, esplit, cndexp, Cached
+from utils import *
 
 
 class ISmsChunk(Cached):

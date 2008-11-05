@@ -1,7 +1,7 @@
 '''File transfers.
 '''
 
-from utils import Cached
+from utils import *
 import os
 
 

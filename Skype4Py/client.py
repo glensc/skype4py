@@ -3,7 +3,7 @@
 
 from enums import *
 from errors import ISkypeError
-from utils import cndexp, quote, Cached
+from utils import *
 import weakref
 
 
