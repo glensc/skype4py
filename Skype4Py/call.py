@@ -216,10 +216,10 @@ class ICall(Cached):
     ''')
 
     def _SetDTMF(self, value):
-        self._Property('DTMF', value)
+        self._Alter('DTMF', value)
 
     DTMF = property(fset=_SetDTMF,
-    doc='''Set this property to send DTMF codes.
+    doc='''Set this property to send DTMF codes. Permitted symbols are: {0..9,#,*}. 
 
     @type: unicode
 
