@@ -126,8 +126,55 @@ class _XEvent(Union):
 XEventP = POINTER(_XEvent)
 
 
-# Xlib error handler type
-XErrorHandlerP = CFUNCTYPE(c_int, DisplayP, POINTER(_XErrorEvent))
+# load X11 library (Xlib)
+libpath = find_library('X11')
+if not libpath:
+    raise ImportError('Could not find X11 library')
+_x11 = cdll.LoadLibrary(libpath)
+del libpath
+
+
+# setup Xlib function prototypes
+_x11.XCloseDisplay.argtypes = (DisplayP,)
+_x11.XCloseDisplay.restype = None
+_x11.XCreateSimpleWindow.argtypes = (DisplayP, Window, c_int, c_int, c_uint,
+        c_uint, c_uint, c_ulong, c_ulong)
+_x11.XCreateSimpleWindow.restype = Window
+_x11.XDefaultRootWindow.argtypes = (DisplayP,)
+_x11.XDefaultRootWindow.restype = Window
+_x11.XDeleteProperty.argtypes = (DisplayP, Window, Atom)
+_x11.XDeleteProperty.restype = None
+_x11.XDestroyWindow.argtypes = (DisplayP, Window)
+_x11.XDestroyWindow.restype = None
+_x11.XPending.argtypes = (DisplayP,)
+_x11.XPending.restype = c_int
+_x11.XGetAtomName.argtypes = (DisplayP, Atom)
+_x11.XGetAtomName.restype = c_char_p
+_x11.XGetErrorText.argtypes = (DisplayP, c_int, c_char_p, c_int)
+_x11.XGetErrorText.restype = None
+_x11.XGetWindowProperty.argtypes = (DisplayP, Window, Atom, c_long, c_long, Bool,
+        Atom, AtomP, c_int_p, c_ulong_p, c_ulong_p, POINTER(POINTER(Window)))
+_x11.XGetWindowProperty.restype = c_int
+_x11.XInitThreads.argtypes = ()
+_x11.XInitThreads.restype = Status
+_x11.XInternAtom.argtypes = (DisplayP, c_char_p, Bool)
+_x11.XInternAtom.restype = Atom
+_x11.XNextEvent.argtypes = (DisplayP, XEventP)
+_x11.XNextEvent.restype = None
+_x11.XOpenDisplay.argtypes = (c_char_p,)
+_x11.XOpenDisplay.restype = DisplayP
+_x11.XSelectInput.argtypes = (DisplayP, Window, c_long)
+_x11.XSelectInput.restype = None
+_x11.XSendEvent.argtypes = (DisplayP, Window, Bool, c_long, XEventP)
+_x11.XSendEvent.restype = Status
+_x11.XLockDisplay.argtypes = (DisplayP,)
+_x11.XLockDisplay.restype = None
+_x11.XUnlockDisplay.argtypes = (DisplayP,)
+_x11.XUnlockDisplay.restype = None
+
+
+# Enable X11 multithreading
+_x11.XInitThreads()
 
 
 class _ISkypeAPI(_ISkypeAPIBase):
@@ -139,69 +186,18 @@ class _ISkypeAPI(_ISkypeAPIBase):
         if opts:
             raise TypeError('Unexpected parameter(s): %s' % ', '.join(opts.keys()))
 
-        # setup Xlib
-        libpath = find_library('X11')
-        if not libpath:
-            raise ImportError('Could not find X11 library')
-        self.x11 = cdll.LoadLibrary(libpath)
-
-        # setup Xlib function prototypes
-        self.x11.XCloseDisplay.argtypes = (DisplayP,)
-        self.x11.XCloseDisplay.restype = None
-        self.x11.XCreateSimpleWindow.argtypes = (DisplayP, Window, c_int, c_int, c_uint,
-                c_uint, c_uint, c_ulong, c_ulong)
-        self.x11.XCreateSimpleWindow.restype = Window
-        self.x11.XDefaultRootWindow.argtypes = (DisplayP,)
-        self.x11.XDefaultRootWindow.restype = Window
-        self.x11.XDeleteProperty.argtypes = (DisplayP, Window, Atom)
-        self.x11.XDeleteProperty.restype = None
-        self.x11.XDestroyWindow.argtypes = (DisplayP, Window)
-        self.x11.XDestroyWindow.restype = None
-        self.x11.XPending.argtypes = (DisplayP,)
-        self.x11.XPending.restype = c_int
-        self.x11.XGetAtomName.argtypes = (DisplayP, Atom)
-        self.x11.XGetAtomName.restype = c_char_p
-        self.x11.XGetErrorText.argtypes = (DisplayP, c_int, c_char_p, c_int)
-        self.x11.XGetErrorText.restype = None
-        self.x11.XGetWindowProperty.argtypes = (DisplayP, Window, Atom, c_long, c_long, Bool,
-                Atom, AtomP, c_int_p, c_ulong_p, c_ulong_p, POINTER(POINTER(Window)))
-        self.x11.XGetWindowProperty.restype = c_int
-        self.x11.XInitThreads.argtypes = ()
-        self.x11.XInitThreads.restype = Status
-        self.x11.XInternAtom.argtypes = (DisplayP, c_char_p, Bool)
-        self.x11.XInternAtom.restype = Atom
-        self.x11.XNextEvent.argtypes = (DisplayP, XEventP)
-        self.x11.XNextEvent.restype = None
-        self.x11.XOpenDisplay.argtypes = (c_char_p,)
-        self.x11.XOpenDisplay.restype = DisplayP
-        self.x11.XSelectInput.argtypes = (DisplayP, Window, c_long)
-        self.x11.XSelectInput.restype = None
-        self.x11.XSendEvent.argtypes = (DisplayP, Window, Bool, c_long, XEventP)
-        self.x11.XSendEvent.restype = Status
-        self.x11.XSetErrorHandler.argtypes = (XErrorHandlerP,)
-        self.x11.XSetErrorHandler.restype = None
-        self.x11.XLockDisplay.argtypes = (DisplayP,)
-        self.x11.XLockDisplay.restype = None
-        self.x11.XUnlockDisplay.argtypes = (DisplayP,)
-        self.x11.XUnlockDisplay.restype = None
-
-        # init Xlib
-        self.x11.XInitThreads()
-        self.error = None
-        # callback has to be saved to keep reference to bound method
-        self._error_handler_callback = XErrorHandlerP(self._error_handler)
-        self.x11.XSetErrorHandler(self._error_handler_callback)
-        self.disp = self.x11.XOpenDisplay(None)
+        # init Xlib display
+        self.disp = _x11.XOpenDisplay(None)
         if not self.disp:
             raise ISkypeAPIError('Could not open XDisplay')
-        self.win_root = self.x11.XDefaultRootWindow(self.disp)
-        self.win_self = self.x11.XCreateSimpleWindow(self.disp, self.win_root,
+        self.win_root = _x11.XDefaultRootWindow(self.disp)
+        self.win_self = _x11.XCreateSimpleWindow(self.disp, self.win_root,
                                     100, 100, 100, 100, 1, 0, 0)
-        self.x11.XSelectInput(self.disp, self.win_root, _PropertyChangeMask)
+        _x11.XSelectInput(self.disp, self.win_root, _PropertyChangeMask)
         self.win_skype = self.get_skype()
         ctrl = 'SKYPECONTROLAPI_MESSAGE'
-        self.atom_msg = self.x11.XInternAtom(self.disp, ctrl, False)
-        self.atom_msg_begin = self.x11.XInternAtom(self.disp, ctrl + '_BEGIN', False)
+        self.atom_msg = _x11.XInternAtom(self.disp, ctrl, False)
+        self.atom_msg_begin = _x11.XInternAtom(self.disp, ctrl + '_BEGIN', False)
 
         self.loop_event = threading.Event()
         self.loop_timeout = 0.0001
@@ -211,8 +207,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
         if hasattr(self, 'x11'):
             if hasattr(self, 'disp'):
                 if hasattr(self, 'win_self'):
-                    self.x11.XDestroyWindow(self.disp, self.win_self)
-                self.x11.XCloseDisplay(self.disp)
+                    _x11.XDestroyWindow(self.disp, self.win_self)
+                _x11.XCloseDisplay(self.disp)
 
     def run(self):
         self.DebugPrint('thread started')
@@ -220,7 +216,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         event = _XEvent()
         data = ''
         while not self.loop_break:
-            pending = self.x11.XPending(self.disp)
+            pending = _x11.XPending(self.disp)
             if not pending:
                 self.loop_event.wait(self.loop_timeout)
                 if self.loop_event.isSet():
@@ -231,9 +227,9 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 continue
             self.loop_timeout = 0.0001
             for i in xrange(pending):
-                self.x11.XLockDisplay(self.disp)
-                self.x11.XNextEvent(self.disp, byref(event))
-                self.x11.XUnlockDisplay(self.disp)
+                _x11.XLockDisplay(self.disp)
+                _x11.XNextEvent(self.disp, byref(event))
+                _x11.XUnlockDisplay(self.disp)
                 if event.type == _ClientMessage:
                     if event.xclient.format == 8:
                         if event.xclient.message_type == self.atom_msg_begin:
@@ -249,7 +245,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
                             self.notify(data.decode('utf-8'))
                             data = ''
                 elif event.type == _PropertyNotify:
-                    if self.x11.XGetAtomName(self.disp, event.xproperty.atom) == '_SKYPE_INSTANCE':
+                    if _x11.XGetAtomName(self.disp, event.xproperty.atom) == '_SKYPE_INSTANCE':
                         if event.xproperty.state == _PropertyNewValue:
                             self.win_skype = self.get_skype()
                             # changing attachment status can cause an event handler to be fired, in
@@ -262,41 +258,21 @@ class _ISkypeAPI(_ISkypeAPIBase):
                             self.win_skype = None
                             self.SetAttachmentStatus(apiAttachNotAvailable)
         self.DebugPrint('thread finished')
-    
-    def _error_handler(self, disp, error):
-        # called from within Xlib when error occures
-        self.error = error.contents.error_code
-        self.DebugPrint('Xlib error', self.error)
-        # stop all pending commands
-        for command in self.Commands.values():
-            if hasattr(command, '_event'):
-                command._event.set()
-        return 0
-
-    def error_check(self):
-        '''Checks last Xlib error and raises an exception if needed.'''
-        if self.error != None:
-            if self.error == 3: # BadWindow
-                self.win_skype = None
-                self.SetAttachmentStatus(apiAttachNotAvailable)
-            buf = create_string_buffer(256)
-            self.x11.XGetErrorText(self.disp, self.error, buf, 256)
-            error = ISkypeAPIError('X11 error: %s' % buf.value)
-            self.error = None
-            raise error
-
+   
     def get_skype(self):
         '''Returns Skype window ID or None if Skype not running.'''
-        skype_inst = self.x11.XInternAtom(self.disp, '_SKYPE_INSTANCE', True)
+        skype_inst = _x11.XInternAtom(self.disp, '_SKYPE_INSTANCE', True)
+        if not skype_inst:
+            return
         type_ret = Atom()
         format_ret = c_int()
         nitems_ret = c_ulong()
         bytes_after_ret = c_ulong()
         winp = pointer(Window())
-        fail = self.x11.XGetWindowProperty(self.disp, self.win_root, skype_inst,
+        fail = _x11.XGetWindowProperty(self.disp, self.win_root, skype_inst,
                             0, 1, False, 33, byref(type_ret), byref(format_ret),
                             byref(nitems_ret), byref(bytes_after_ret), byref(winp))
-        if not fail and self.error == None and format_ret.value == 32 and nitems_ret.value == 1:
+        if not fail and format_ret.value == 32 and nitems_ret.value == 1:
             return winp.contents.value
 
     def Close(self):
@@ -368,8 +344,9 @@ class _ISkypeAPI(_ISkypeAPIBase):
         if pid:
             os.kill(int(pid), SIGINT)
             # Skype sometimes doesn't delete the '_SKYPE_INSTANCE' property
-            skype_inst = self.x11.XInternAtom(self.disp, '_SKYPE_INSTANCE', True)
-            self.x11.XDeleteProperty(self.disp, self.win_root, skype_inst)
+            skype_inst = _x11.XInternAtom(self.disp, '_SKYPE_INSTANCE', True)
+            if skype_inst:
+                _x11.XDeleteProperty(self.disp, self.win_root, skype_inst)
             self.win_skype = None
             self.SetAttachmentStatus(apiAttachNotAvailable)
 
@@ -393,14 +370,11 @@ class _ISkypeAPI(_ISkypeAPIBase):
         com = unicode(com).encode('utf-8') + '\x00'
         for i in xrange(0, len(com), 20):
             event.xclient.data = com[i:i+20]
-            if self.x11.XSendEvent(self.disp, self.win_skype, False, 0, byref(event)) == 0:
-                self.error_check()
+            _x11.XSendEvent(self.disp, self.win_skype, False, 0, byref(event))
             event.xclient.message_type = self.atom_msg
         self.loop_event.set()
-        self.error_check()
         if Command.Blocking:
             bevent.wait(Command.Timeout / 1000.0)
-            self.error_check()
             if not bevent.isSet():
                 raise ISkypeAPIError('Skype command timeout')
         else:

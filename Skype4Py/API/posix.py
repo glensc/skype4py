@@ -23,6 +23,16 @@ The options include:
 from Skype4Py.errors import ISkypeAPIError
 
 
+# the posix_x11 module has to be imported as soon as possible; without this extra
+# import it would be loaded when Skype object is instantiated; any possible
+# exceptions are ignored because the module is not really needed at this point;
+# the errors will be reported during Skype object instantiation
+try:
+    import posix_x11
+except:
+    pass
+
+
 def _ISkypeAPI(handler, opts):
     trans = opts.pop('Transport', 'x11')
     if trans == 'dbus':
