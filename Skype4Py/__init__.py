@@ -12,13 +12,13 @@ Skype4Py is a multiplatform Skype API wrapper for Python.
      package level. This includes:
 
        - Classes
-         - C{Skype4Py.Skype = L{Skype4Py.skype.ISkype}}
-         - C{Skype4Py.CallChannelManager = L{Skype4Py.callchannel.ICallChannelManager}}
+         - C{Skype4Py.Skype = L{Skype4Py.skype.Skype}}
+         - C{Skype4Py.CallChannelManager = L{Skype4Py.callchannel.CallChannelManager}}
        - Constants
          - C{Skype4Py.* = L{Skype4Py.enums}.*}
        - Errors
-         - C{Skype4Py.SkypeError = L{Skype4Py.errors.ISkypeError}}
-         - C{Skype4Py.SkypeAPIError = L{Skype4Py.errors.ISkypeAPIError}}
+         - C{Skype4Py.SkypeError = L{Skype4Py.errors.SkypeError}}
+         - C{Skype4Py.SkypeAPIError = L{Skype4Py.errors.SkypeAPIError}}
 
      The first two are the only classes that you will be instantiating directly. Calling their methods/properties
      will give you the access to instances of all other classes, you won't have to instantiate them yourself.
@@ -26,7 +26,7 @@ Skype4Py is a multiplatform Skype API wrapper for Python.
      see the L{EventHandlingBase} class which is a baseclass of the above two classes).
 
      Every Skype4Py script instatinates the C{Skype4Py.Skype} class at least once. That's what you want to do
-     first in your script. Then follow the L{Skype4Py.skype.ISkype} reference to see where you can get from
+     first in your script. Then follow the L{Skype4Py.skype.Skype} reference to see where you can get from
      there.
 
   2. Quick example.
@@ -47,16 +47,16 @@ Skype4Py is a multiplatform Skype API wrapper for Python.
          for user in skype.Friends:
              print '    ', user.FullName
 
-@author: Arkadiusz Wahlig (username: arkadiusz.wahlig, host: gmail.com)
+@author: Arkadiusz Wahlig <arkadiusz.wahlig@gmail.com>
 @requires: Python 2.4 up until but not including 3.0
 @see: U{The Skype4Py website<https://developer.skype.com/wiki/Skype4Py>}
 @license: BSD License (see the accompanying LICENSE file for more information)
 @copyright: S{copy} 2007-2009 Arkadiusz Wahlig
 '''
 
-from skype import ISkype as Skype
-from callchannel import ICallChannelManager as CallChannelManager
-from errors import ISkypeError as SkypeError, ISkypeAPIError as SkypeAPIError
+from skype import Skype
+from callchannel import CallChannelManager
+from errors import SkypeError, SkypeAPIError
 from enums import *
 
 

@@ -1,7 +1,7 @@
 '''Error classes.
 '''
 
-class ISkypeAPIError(Exception):
+class SkypeAPIError(Exception):
     '''Exception raised whenever there is a problem with connection between Skype4Py and Skype client.
     It can be subscripted in which case following information can be obtained::
 
@@ -19,7 +19,7 @@ class ISkypeAPIError(Exception):
         Exception.__init__(self, str(errstr))
 
 
-class ISkypeError(Exception):
+class SkypeError(Exception):
     '''Raised whenever Skype client reports an error back to Skype4Py. It can be subscripted in which
     case following information can be obtained::
 

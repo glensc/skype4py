@@ -2,7 +2,7 @@
 '''
 Skype4Py
 
-Copyright (c) 2007-2008, Arkadiusz Wahlig
+Copyright (c) 2007-2009, Arkadiusz Wahlig
 
 All rights reserved.
 
@@ -13,7 +13,6 @@ accompanying LICENSE file for more information.
 import sys, os
 from distutils.core import setup
 from distutils.cmd import Command
-from distutils.extension import Extension
 from distutils.command.install_lib import install_lib as old_install_lib
 
 
@@ -21,6 +20,10 @@ from distutils.command.install_lib import install_lib as old_install_lib
 path = os.path.split(sys.argv[0])[0]
 if path:
     os.chdir(path)
+
+
+# So that the Skype4Py library may know that the setup is running.
+sys.setup = True
 
 
 # Import Skype4Py version from the uninstalled package.
@@ -39,7 +42,7 @@ class install_lib(old_install_lib):
         # before installing.
         self.adapt_build_to_platform()
 
-        # Let the original method do the hard work or copying the files.
+        # Let the original method do the hard work of copying the files.
         outfiles = old_install_lib.install(self)
 
         # Also byte_compile for distribution usage.
@@ -49,8 +52,8 @@ class install_lib(old_install_lib):
         return outfiles
 
     def adapt_build_to_platform(self):
-        # We have to remove unneded files from the build directory. First,
-        # decide what platform we're on; this code is simmilar to the one
+        # We have to remove unneeded files from the build directory. First,
+        # decide what platform we're on; this code is similar to the one
         # in Skype4Py/API/__init__.py which decides what submodule to
         # import at runtime.
         if sys.platform[:3] == 'win':
@@ -60,7 +63,7 @@ class install_lib(old_install_lib):
         else:
             platform = 'posix'
 
-        # Scan the <build_dir>/Skype4Py/API directory and remove all file
+        # Scan the <build_dir>/Skype4Py/API directory and remove all files
         # which names do not start with either '__' (for __init__) or the
         # detected platform.
         path = os.path.join(self.build_dir, os.path.join('Skype4Py', 'API'))
@@ -92,17 +95,18 @@ class build_doc(Command):
             epydoc_config = os.path.join('doc', 'epydoc.conf')
 
             old_argv = sys.argv[1:]
-            sys.argv[1:] = ['--config=%s' % epydoc_config,
-                            '--no-private'] # epydoc bug, not read from config
-            if self.pdf:
-                sys.argv.append('--pdf')
-                sys.argv.append('--output=doc/pdf/')
-            else:
-                sys.argv.append('--html')
-                sys.argv.append('--output=doc/html/')
-
-            cli.cli()
-            sys.argv[1:] = old_argv
+            try:
+                sys.argv[1:] = ['--config=%s' % epydoc_config]
+                if self.pdf:
+                    sys.argv.append('--pdf')
+                    sys.argv.append('--output=doc/pdf/')
+                else:
+                    sys.argv.append('--html')
+                    sys.argv.append('--output=doc/html/')
+    
+                cli.cli()
+            finally:
+                sys.argv[1:] = old_argv
 
             print 'zipping the documentation'
             import zipfile
@@ -125,48 +129,8 @@ class build_doc(Command):
             print >>sys.stderr, 'epydoc not installed, skipping build_doc.'
 
 
-def make_extension(name):
-    path = name.replace('.', os.path.sep) + '.py'
-    return Extension(
-        name,
-        [path],
-        include_dirs=['.'],
-        extra_compile_args=['-O3'],
-        extra_link_args=['-g'],
-        libraries=[],
-    )
-
-
 commands = {'build_doc': build_doc,
             'install_lib': install_lib}
-            
-try:
-    # If Cython is present, add the 'build_ext' commands.
-    from Cython.Distutils import build_ext
-
-except ImportError:
-    extensions = []
-    
-else:
-    commands['build_ext'] = build_ext
-    
-    def scandir(dirpath):
-        names = []
-        for name in os.listdir(dirpath):
-            path = os.path.join(dirpath, name)
-            if os.path.isfile(path) and os.path.splitext(name)[-1].lower() == '.py':
-                names.append(path.replace(os.path.sep, '.')[:-3])
-            elif os.path.isdir(path):
-                names.extend(scandir(path))
-        return names
-
-    extensions = []
-    for ext in scandir('Skype4Py'):
-        if ext.endswith('.__init__'):
-            continue
-        if ext == 'Skype4Py.API.faked_dbus':
-            continue
-        extensions.append(ext)
 
 
 # start the distutils setup
@@ -176,7 +140,7 @@ setup(name='Skype4Py',
       long_description='Skype4Py is a high-level, platform independant Skype API\n' \
                        'wrapper for Python with API simmilar to Skype4COM.',
       author='Arkadiusz Wahlig',
-      author_email='yak@nokix.pasjagsm.pl',
+      author_email='arkadiusz.wahlig@gmail.com',
       maintainer='Arkadiusz Wahlig',
       url='https://developer.skype.com/wiki/Skype4Py',
       download_url='http://downloads.sourceforge.net/skype4py/Skype4Py-%s.tar.gz' % __version__,
@@ -184,5 +148,4 @@ setup(name='Skype4Py',
       platforms=('Windows 2000/XP', 'Linux'),
       packages=('Skype4Py', 'Skype4Py.API', 'Skype4Py.Languages'),
       provides=('Skype4Py',),
-      cmdclass=commands,
-      ext_modules=[make_extension(name) for name in extensions])
+      cmdclass=commands)

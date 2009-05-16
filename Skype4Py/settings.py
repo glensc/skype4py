@@ -6,15 +6,15 @@ import sys
 from utils import *
 
 
-class ISettings(object):
-    '''Represents Skype settings. Access using L{ISkype.Settings<skype.ISkype.Settings>}.
+class Settings(object):
+    '''Represents Skype settings. Access using L{Skype.Settings<skype.Skype.Settings>}.
     '''
 
     def __init__(self, Skype):
         '''__init__.
 
         @param Skype: Skype
-        @type Skype: L{ISkype}
+        @type Skype: L{Skype}
         '''
         self._SkypeRef = weakref.ref(Skype)
 
@@ -28,7 +28,7 @@ class ISettings(object):
         @deprecated: Use L{LoadAvatarFromFile} instead.
         '''
         from warnings import warn
-        warn('ISettings.Avatar: Use ISettings.LoadAvatarFromFile instead.', DeprecationWarning, stacklevel=2)
+        warn('Settings.Avatar: Use Settings.LoadAvatarFromFile instead.', DeprecationWarning, stacklevel=2)
         if Set is None:
             raise TypeError('Argument \'Set\' is mandatory!')
         self.LoadAvatarFromFile(Set, Id)

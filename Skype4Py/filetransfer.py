@@ -5,7 +5,7 @@ from utils import *
 import os
 
 
-class IFileTransfer(Cached):
+class FileTransfer(Cached):
     '''Represents a file transfer.
     '''
 

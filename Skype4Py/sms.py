@@ -4,7 +4,7 @@
 from utils import *
 
 
-class ISmsChunk(Cached):
+class SmsChunk(Cached):
     '''Represents a single chunk of a multi-part SMS message.
     '''
 
@@ -43,7 +43,7 @@ class ISmsChunk(Cached):
     Message = property(_GetMessage,
     doc='''SMS message associated with this chunk.
 
-    @type: L{ISmsMessage}
+    @type: L{SmsMessage}
     ''')
 
     def _GetText(self):
@@ -56,7 +56,7 @@ class ISmsChunk(Cached):
     ''')
 
 
-class ISmsMessage(Cached):
+class SmsMessage(Cached):
     '''Represents an SMS message.
     '''
 
@@ -96,12 +96,12 @@ class ISmsMessage(Cached):
     ''')
 
     def _GetChunks(self):
-        return tuple([ISmsChunk((x, self)) for x in range(int(chop(self._Property('CHUNKING', Cache=False))[0]))])
+        return tuple([SmsChunk((x, self)) for x in range(int(chop(self._Property('CHUNKING', Cache=False))[0]))])
 
     Chunks = property(_GetChunks,
     doc='''Chunks of this SMS message. More than one if this is a multi-part message.
 
-    @type: tuple of L{ISmsChunk}
+    @type: tuple of L{SmsChunk}
     ''')
 
     def _GetDatetime(self):
@@ -133,7 +133,7 @@ class ISmsMessage(Cached):
     ''')
 
     def _GetIsFailedUnseen(self):
-        return self._Property('IS_FAILED_UNSEEN') == 'TRUE'
+        return (self._Property('IS_FAILED_UNSEEN') == 'TRUE')
 
     IsFailedUnseen = property(_GetIsFailedUnseen,
     doc='''Tells if a failed SMS message was unseen.
@@ -236,12 +236,12 @@ class ISmsMessage(Cached):
     ''')
 
     def _GetTargets(self):
-        return tuple([ISmsTarget((x, self)) for x in esplit(self._Property('TARGET_NUMBERS'), ', ')])
+        return tuple([SmsTarget((x, self)) for x in esplit(self._Property('TARGET_NUMBERS'), ', ')])
 
     Targets = property(_GetTargets,
     doc='''Target objects.
 
-    @type: tuple of L{ISmsTarget}
+    @type: tuple of L{SmsTarget}
     ''')
 
     def _GetTimestamp(self):
@@ -264,7 +264,7 @@ class ISmsMessage(Cached):
     ''')
 
 
-class ISmsTarget(Cached):
+class SmsTarget(Cached):
     '''Represents a single target of a multi-target SMS message.
     '''
 
@@ -282,7 +282,7 @@ class ISmsTarget(Cached):
     Message = property(_GetMessage,
     doc='''An SMS message object this target refers to.
 
-    @type: L{ISmsMessage}
+    @type: L{SmsMessage}
     ''')
 
     def _GetNumber(self):

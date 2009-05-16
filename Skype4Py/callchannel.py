@@ -3,11 +3,11 @@
 
 from utils import *
 from enums import *
-from errors import ISkypeError
+from errors import SkypeError
 import time
 
 
-class ICallChannel(object):
+class CallChannel(object):
     '''Represents a call channel.
     '''
 
@@ -15,11 +15,11 @@ class ICallChannel(object):
         '''__init__.
 
         @param Manager: Manager
-        @type Manager: L{ICallChannelManager}
+        @type Manager: L{CallChannelManager}
         @param Call: Call
-        @type Call: L{ICall}
+        @type Call: L{Call}
         @param Stream: Stream
-        @type Stream: L{IApplicationStream}
+        @type Stream: L{ApplicationStream}
         @param Type: Type
         @type Type: L{Call channel type<enums.cctUnknown>}
         '''
@@ -42,7 +42,7 @@ class ICallChannel(object):
         elif self._Type == cctDatagram:
             self._Stream.SendDatagram(Text)
         else:
-            raise ISkypeError(0, 'Cannot send using %s channel type' & repr(self._Type))
+            raise SkypeError(0, 'Cannot send using %s channel type' & repr(self._Type))
 
     def _GetCall(self):
         return self._Call
@@ -50,7 +50,7 @@ class ICallChannel(object):
     Call = property(_GetCall,
     doc='''Call.
 
-    @type: L{ICall}
+    @type: L{Call}
     ''')
 
     def _GetManager(self):
@@ -59,7 +59,7 @@ class ICallChannel(object):
     Manager = property(_GetManager,
     doc='''Manager.
 
-    @type: L{ICallChannelManager}
+    @type: L{CallChannelManager}
     ''')
 
     def _GetStream(self):
@@ -68,7 +68,7 @@ class ICallChannel(object):
     Stream = property(_GetStream,
     doc='''Stream.
 
-    @type: L{IApplicationStream}
+    @type: L{ApplicationStream}
     ''')
 
     def _GetType(self):
@@ -81,7 +81,7 @@ class ICallChannel(object):
     ''')
 
 
-class ICallChannelManager(EventHandlingBase):
+class CallChannelManager(EventHandlingBase):
     '''Instatinate this class to create a call channel manager. A call channel manager will
     automatically create a data channel for voice calls based on the APP2APP protocol.
 
@@ -96,24 +96,24 @@ class ICallChannelManager(EventHandlingBase):
              ccm = Skype4Py.CallChannelManager()
              ccm.Connect(skype)
 
-         For possible constructor arguments, read the L{ICallChannelManager.__init__} description.
+         For possible constructor arguments, read the L{CallChannelManager.__init__} description.
 
       2. Events.
 
          This class provides events.
 
-         The events names and their arguments lists can be found in L{ICallChannelManagerEvents} class.
+         The events names and their arguments lists can be found in L{CallChannelManagerEvents} class.
 
          The usage of events is described in L{EventHandlingBase} class which is a superclass of
          this class. Follow the link for more information.
 
-    @ivar OnChannels: Event handler for L{ICallChannelManagerEvents.Channels} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnChannels: Event handler for L{CallChannelManagerEvents.Channels} event. See L{EventHandlingBase} for more information on events.
     @type OnChannels: callable
 
-    @ivar OnMessage: Event handler for L{ICallChannelManagerEvents.Message} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnMessage: Event handler for L{CallChannelManagerEvents.Message} event. See L{EventHandlingBase} for more information on events.
     @type OnMessage: callable
 
-    @ivar OnCreated: Event handler for L{ICallChannelManagerEvents.Created} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnCreated: Event handler for L{CallChannelManagerEvents.Created} event. See L{EventHandlingBase} for more information on events.
     @type OnCreated: callable
     '''
 
@@ -149,7 +149,7 @@ class ICallChannelManager(EventHandlingBase):
         if pApp == self._Application:
             for ch in self_Channels:
                 if ch.Stream == pStream:
-                    msg = ICallChannelMessage(Text)
+                    msg = CallChannelMessage(Text)
                     self._CallEventHandler('Message', self, ch, msg)
                     break
 
@@ -157,7 +157,7 @@ class ICallChannelManager(EventHandlingBase):
         if pApp == self._Application:
             for ch in self._Channels:
                 if ch.Stream in pStreams:
-                    msg = ICallChannelMessage(ch.Stream.Read())
+                    msg = CallChannelMessage(ch.Stream.Read())
                     self._CallEventHandler('Message', self, ch, msg)
 
     def _OnApplicationStreams(self, pApp, pStreams):
@@ -174,7 +174,7 @@ class ICallChannelManager(EventHandlingBase):
             self._Application.Connect(pCall.PartnerHandle, True)
             for stream in self._Application.Streams:
                 if stream.PartnerHandle == pCall.PartnerHandle:
-                    self._Channels.append(ICallChannel(self, pCall, stream, self._ChannelType))
+                    self._Channels.append(CallChannel(self, pCall, stream, self._ChannelType))
                     self._CallEventHandler('Channels', self, tuple(self._Channels))
                     break
         elif Status in (clsCancelled, clsFailed, clsFinished, clsRefused, clsMissed):
@@ -184,7 +184,7 @@ class ICallChannelManager(EventHandlingBase):
                     self._CallEventHandler('Channels', self, tuple(self._Channels))
                     try:
                         ch.Stream.Disconnect()
-                    except ISkypeError:
+                    except SkypeError:
                         pass
                     break
 
@@ -193,7 +193,7 @@ class ICallChannelManager(EventHandlingBase):
         do after creating this object.
 
         @param Skype: Skype object
-        @type Skype: L{ISkype}
+        @type Skype: L{Skype}
         @see: L{Disconnect}
         '''
         self._Skype = Skype
@@ -201,7 +201,7 @@ class ICallChannelManager(EventHandlingBase):
 
     def CreateApplication(self, ApplicationName=None):
         '''Creates an APP2APP application context. The application is automatically created using
-        L{IApplication.Create<application.IApplication.Create>}.
+        L{Application.Create<application.Application.Create>}.
 
         @param ApplicationName: Application name
         @type ApplicationName: unicode
@@ -228,7 +228,7 @@ class ICallChannelManager(EventHandlingBase):
     Channels = property(_GetChannels,
     doc='''All call data channels.
 
-    @type: tuple of L{ICallChannel}
+    @type: tuple of L{CallChannel}
     ''')
 
     def _GetChannelType(self):
@@ -265,8 +265,8 @@ class ICallChannelManager(EventHandlingBase):
     ''')
 
 
-class ICallChannelManagerEvents(object):
-    '''Events defined in L{ICallChannelManager}.
+class CallChannelManagerEvents(object):
+    '''Events defined in L{CallChannelManager}.
 
     See L{EventHandlingBase} for more information on events.
     '''
@@ -275,34 +275,34 @@ class ICallChannelManagerEvents(object):
         '''This event is triggered when list of call channels changes.
 
         @param Manager: Manager
-        @type Manager: L{ICallChannelManager}
+        @type Manager: L{CallChannelManager}
         @param Channels: Channels
-        @type Channels: tuple of L{ICallChannel}
+        @type Channels: tuple of L{CallChannel}
         '''
 
     def Created(self, Manager):
         '''This event is triggered when the application context has successfuly been created.
 
         @param Manager: Manager
-        @type Manager: L{ICallChannelManager}
+        @type Manager: L{CallChannelManager}
         '''
 
     def Message(self, Manager, Channel, Message):
         '''This event is triggered when a call channel message has been received.
 
         @param Manager: Manager
-        @type Manager: L{ICallChannelManager}
+        @type Manager: L{CallChannelManager}
         @param Channel: Channel
-        @type Channel: L{ICallChannel}
+        @type Channel: L{CallChannel}
         @param Message: Message
-        @type Message: L{ICallChannelMessage}
+        @type Message: L{CallChannelMessage}
         '''
 
 
-ICallChannelManager._AddEvents(ICallChannelManagerEvents)
+CallChannelManager._AddEvents(CallChannelManagerEvents)
 
 
-class ICallChannelMessage(object):
+class CallChannelMessage(object):
     '''Represents a call channel message.
     '''
 

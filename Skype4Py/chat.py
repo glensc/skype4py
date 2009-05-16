@@ -3,10 +3,10 @@
 
 from utils import *
 from user import *
-from errors import ISkypeError
+from errors import SkypeError
 
 
-class IChat(Cached):
+class Chat(Cached):
     '''Represents a Skype chat.
     '''
 
@@ -32,7 +32,7 @@ class IChat(Cached):
         '''Adds new members to the chat.
 
         @param Members: One or more users to add.
-        @type Members: L{IUser}
+        @type Members: L{User}
         '''
         self._Alter('ADDMEMBERS', ', '.join([x.Handle for x in Members]))
 
@@ -96,9 +96,9 @@ class IChat(Cached):
         @param MessageText: Message text
         @type MessageText: unicode
         @return: Message object
-        @rtype: L{IChatMessage}
+        @rtype: L{ChatMessage}
         '''
-        return IChatMessage(chop(self._Skype._DoCommand('CHATMESSAGE %s %s' % (self._Name,
+        return ChatMessage(chop(self._Skype._DoCommand('CHATMESSAGE %s %s' % (self._Name,
             tounicode(MessageText))), 2)[1], self._Skype)
 
     def SetPassword(self, Password, Hint=''):
@@ -119,12 +119,12 @@ class IChat(Cached):
         self._Alter('UNBOOKMARK')
 
     def _GetActiveMembers(self):
-        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('ACTIVEMEMBERS', Cache=False))])
+        return tuple([User(x, self._Skype) for x in esplit(self._Property('ACTIVEMEMBERS', Cache=False))])
 
     ActiveMembers = property(_GetActiveMembers,
     doc='''Active members of a chat.
 
-    @type: tuple of L{IUser}
+    @type: tuple of L{User}
     ''')
 
     def _GetActivityDatetime(self):
@@ -148,12 +148,12 @@ class IChat(Cached):
     ''')
 
     def _GetAdder(self):
-        return IUser(self._Property('ADDER'), self._Skype)
+        return User(self._Property('ADDER'), self._Skype)
 
     Adder = property(_GetAdder,
     doc='''Returns the user that added current user to the chat.
 
-    @type: L{IUser}
+    @type: L{User}
     ''')
 
     def _SetAlertString(self, value):
@@ -167,12 +167,12 @@ class IChat(Cached):
     ''')
 
     def _GetApplicants(self):
-        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('APPLICANTS'))])
+        return tuple([User(x, self._Skype) for x in esplit(self._Property('APPLICANTS'))])
 
     Applicants = property(_GetApplicants,
     doc='''Chat applicants.
 
-    @type: tuple of L{IUser}
+    @type: tuple of L{User}
     ''')
 
     def _GetBlob(self):
@@ -246,30 +246,30 @@ class IChat(Cached):
     ''')
 
     def _GetMemberObjects(self):
-        return tuple([IChatMember(x, self._Skype) for x in esplit(self._Property('MEMBEROBJECTS'), ', ')])
+        return tuple([ChatMember(x, self._Skype) for x in esplit(self._Property('MEMBEROBJECTS'), ', ')])
 
     MemberObjects = property(_GetMemberObjects,
     doc='''Chat members as member objects.
 
-    @type: tuple of L{IChatMember}
+    @type: tuple of L{ChatMember}
     ''')
 
     def _GetMembers(self):
-        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('MEMBERS'))])
+        return tuple([User(x, self._Skype) for x in esplit(self._Property('MEMBERS'))])
 
     Members = property(_GetMembers,
     doc='''Chat members.
 
-    @type: tuple of L{IUser}
+    @type: tuple of L{User}
     ''')
 
     def _GetMessages(self):
-        return tuple([IChatMessage(x ,self._Skype) for x in esplit(self._Property('CHATMESSAGES', Cache=False), ', ')])
+        return tuple([ChatMessage(x ,self._Skype) for x in esplit(self._Property('CHATMESSAGES', Cache=False), ', ')])
 
     Messages = property(_GetMessages,
     doc='''All chat messages.
 
-    @type: tuple of L{IChatMessage}
+    @type: tuple of L{ChatMessage}
     ''')
 
     def _GetMyRole(self):
@@ -321,21 +321,21 @@ class IChat(Cached):
     ''')
 
     def _GetPosters(self):
-        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('POSTERS'))])
+        return tuple([User(x, self._Skype) for x in esplit(self._Property('POSTERS'))])
 
     Posters = property(_GetPosters,
     doc='''Users who have posted messages to this chat.
 
-    @type: tuple of L{IUser}
+    @type: tuple of L{User}
     ''')
 
     def _GetRecentMessages(self):
-        return tuple([IChatMessage(x, self._Skype) for x in esplit(self._Property('RECENTCHATMESSAGES', Cache=False), ', ')])
+        return tuple([ChatMessage(x, self._Skype) for x in esplit(self._Property('RECENTCHATMESSAGES', Cache=False), ', ')])
 
     RecentMessages = property(_GetRecentMessages,
     doc='''Most recent chat messages.
 
-    @type: tuple of L{IChatMessage}
+    @type: tuple of L{ChatMessage}
     ''')
 
     def _GetStatus(self):
@@ -364,14 +364,14 @@ class IChat(Cached):
             topicxml = self._Property('TOPICXML')
             if topicxml:
                 return topicxml
-        except ISkypeError:
+        except SkypeError:
             pass
         return self._Property('TOPIC')
 
     def _SetTopic(self, value):
         try:
             self._Alter('SETTOPICXML', tounicode(value))
-        except ISkypeError:
+        except SkypeError:
             self._Alter('SETTOPIC', tounicode(value))
 
     Topic = property(_GetTopic, _SetTopic,
@@ -402,7 +402,7 @@ class IChat(Cached):
     ''')
 
 
-class IChatMessage(Cached):
+class ChatMessage(Cached):
     '''Represents a single chat message.
     '''
 
@@ -434,12 +434,12 @@ class IChatMessage(Cached):
     ''')
 
     def _GetChat(self):
-        return IChat(self.ChatName, self._Skype)
+        return Chat(self.ChatName, self._Skype)
 
     Chat = property(_GetChat,
     doc='''Chat this message was posted on.
 
-    @type: L{IChat}
+    @type: L{Chat}
     ''')
 
     def _GetChatName(self):
@@ -536,11 +536,11 @@ class IChatMessage(Cached):
 
     def _SetSeen(self, value):
         from warnings import warn
-        warn('IChatMessage.Seen = x: Use IChatMessage.MarkAsSeen() instead.', DeprecationWarning, stacklevel=2)
+        warn('ChatMessage.Seen = x: Use ChatMessage.MarkAsSeen() instead.', DeprecationWarning, stacklevel=2)
         if value:
             self.MarkAsSeen()
         else:
-            raise ISkypeError(0, 'Seen can only be set to True')
+            raise SkypeError(0, 'Seen can only be set to True')
 
     Seen = property(fset=_SetSeen,
     doc='''Marks a missed chat message as seen.
@@ -550,12 +550,12 @@ class IChatMessage(Cached):
     ''')
 
     def _GetSender(self):
-        return IUser(self.FromHandle, self._Skype)
+        return User(self.FromHandle, self._Skype)
 
     Sender = property(_GetSender,
     doc='''Sender of the chat message.
 
-    @type: L{IUser}
+    @type: L{User}
     ''')
 
     def _GetStatus(self):
@@ -587,16 +587,16 @@ class IChatMessage(Cached):
     ''')
 
     def _GetUsers(self):
-        return tuple([IUser(self._Skype, x) for x in esplit(self._Property('USERS'))])
+        return tuple([User(self._Skype, x) for x in esplit(self._Property('USERS'))])
 
     Users = property(_GetUsers,
     doc='''Users added to the chat.
 
-    @type: tuple of L{IUser}
+    @type: tuple of L{User}
     ''')
 
 
-class IChatMember(Cached):
+class ChatMember(Cached):
     '''Represents a member of a public chat.
     '''
 
@@ -624,12 +624,12 @@ class IChatMember(Cached):
         return (self._Alter('CANSETROLETO', Role) == 'TRUE')
 
     def _GetChat(self):
-        return IChat(self._Property('CHATNAME'), self._Skype)
+        return Chat(self._Property('CHATNAME'), self._Skype)
 
     Chat = property(_GetChat,
     doc='''Chat this member belongs to.
 
-    @type: L{IChat}
+    @type: L{Chat}
     ''')
 
     def _GetHandle(self):

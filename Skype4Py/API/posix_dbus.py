@@ -2,7 +2,7 @@
 Low level Skype for Linux interface implemented
 using python-dbus package.
 
-This module handles the options that you can pass to L{ISkype.__init__<skype.ISkype.__init__>}
+This module handles the options that you can pass to L{Skype.__init__<skype.Skype.__init__>}
 for Linux machines when the transport is set to DBus. See below.
 
 @newfield option: Option, Options
@@ -20,28 +20,34 @@ parameter.
 @requires: Skype for Linux 2.0 (beta) or newer.
 '''
 
+import sys
 import threading
 import time
 import weakref
-from Skype4Py.API import ICommand, _ISkypeAPIBase
+from Skype4Py.API import Command, SkypeAPIBase
 from Skype4Py.enums import *
-from Skype4Py.errors import ISkypeAPIError
+from Skype4Py.errors import SkypeAPIError
 from Skype4Py.utils import cndexp
 
 
-try:
+__all__ = ['SkypeAPI']
+
+
+if hasattr(sys, 'setup'):
+    # we get here if we're building docs; to let the module import without
+    # exceptions, we emulate the dbus module using a class:
+    class dbus(object):
+        class service(object):
+            class Object(object):
+                pass
+            @staticmethod
+            def method(*args, **kwargs):
+                return lambda *args, **kwargs: None
+else:
     import dbus, dbus.service
-except ImportError:
-    import sys
-    if sys.argv == ['(imported)']:
-        # we get here if we're building docs on windows, to let the module
-        # import without exceptions, we import our faked dbus module
-        from faked_dbus import dbus
-    else:
-        raise
 
 
-class _SkypeNotifyCallback(dbus.service.Object):
+class SkypeNotifyCallback(dbus.service.Object):
     '''DBus object which exports a Notify method. This will be called by Skype for all
     notifications with the notification string as a parameter. The Notify method of this
     class calls in turn the callable passed to the constructor.
@@ -56,9 +62,9 @@ class _SkypeNotifyCallback(dbus.service.Object):
         self.notify(unicode(com))
 
 
-class _ISkypeAPI(_ISkypeAPIBase):
+class SkypeAPI(SkypeAPIBase):
     def __init__(self, handler, opts):
-        _ISkypeAPIBase.__init__(self, opts)
+        SkypeAPIBase.__init__(self, opts)
         self.RegisterHandler(handler)
         self.skype_in = self.skype_out = self.dbus_name_owner_watch = None
         self.bus = opts.pop('Bus', None)
@@ -98,7 +104,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
     def SetFriendlyName(self, FriendlyName):
         self.FriendlyName = FriendlyName
         if self.skype_out:
-            self.SendCommand(ICommand(-1, 'NAME %s' % FriendlyName))
+            self.SendCommand(Command(-1, 'NAME %s' % FriendlyName))
 
     def StartWatcher(self):
         self.dbus_name_owner_watch = self.bus.add_signal_receiver(self.dbus_name_owner_changed,
@@ -130,7 +136,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
                     if not self.skype_out:
                         self.skype_out = self.bus.get_object('com.Skype.API', '/com/Skype')
                     if not self.skype_in:
-                        self.skype_in = _SkypeNotifyCallback(self.bus, self.notify)
+                        self.skype_in = SkypeNotifyCallback(self.bus, self.notify)
                 except dbus.DBusException:
                     if not Wait:
                         break
@@ -138,17 +144,17 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 else:
                     break
             else:
-                raise ISkypeAPIError('Skype attach timeout')
+                raise SkypeAPIError('Skype attach timeout')
         finally:
             t.cancel()
-        c = ICommand(-1, 'NAME %s' % self.FriendlyName, '', True, Timeout)
+        command = Command(-1, 'NAME %s' % self.FriendlyName, '', True, Timeout)
         if self.skype_out:
-            self.SendCommand(c)
-        if c.Reply != 'OK':
+            self.SendCommand(command)
+        if command.Reply != 'OK':
             self.skype_out = None
             self.SetAttachmentStatus(apiAttachRefused)
             return
-        self.SendCommand(ICommand(-1, 'PROTOCOL %s' % self.Protocol))
+        self.SendCommand(Command(-1, 'PROTOCOL %s' % self.Protocol))
         self.SetAttachmentStatus(apiAttachSuccess)
 
     def IsRunning(self):
@@ -176,48 +182,48 @@ class _ISkypeAPI(_ISkypeAPIBase):
             os.kill(int(pid), SIGINT)
             self.skype_in = self.skype_out = None
 
-    def SendCommand(self, Command):
+    def SendCommand(self, command):
         if not self.skype_out:
-            self.Attach(Command.Timeout)
-        self.CommandsStackPush(Command)
-        self.CallHandler('send', Command)
-        com = u'#%d %s' % (Command.Id, Command.Command)
-        self.DebugPrint('->', repr(com))
-        if Command.Blocking:
-            Command._event = event = threading.Event()
+            self.Attach(command.Timeout)
+        self.CommandsStackPush(command)
+        self.CallHandler('send', command)
+        cmd = u'#%d %s' % (command.Id, command.Command)
+        self.DebugPrint('->', repr(cmd))
+        if command.Blocking:
+            command._event = event = threading.Event()
         else:
-            Command._timer = timer = threading.Timer(Command.Timeout / 1000.0, self.CommandsStackPop, (Command.Id,))
+            command._timer = timer = threading.Timer(command.Timeout / 1000.0, self.CommandsStackPop, (command.Id,))
         try:
-            result = self.skype_out.Invoke(com)
+            result = self.skype_out.Invoke(cmd)
         except dbus.DBusException, err:
-            raise ISkypeAPIError(str(err))
-        if result.startswith(u'#%d ' % Command.Id):
+            raise SkypeAPIError(str(err))
+        if result.startswith(u'#%d ' % command.Id):
             self.notify(result)
-        if Command.Blocking:
-            event.wait(Command.Timeout / 1000.0)
+        if command.Blocking:
+            event.wait(command.Timeout / 1000.0)
             if not event.isSet():
-                raise ISkypeAPIError('Skype command timeout')
+                raise SkypeAPIError('Skype command timeout')
         else:
             timer.start()
 
-    def notify(self, com):
-        self.DebugPrint('<-', repr(com))
-        if com.startswith(u'#'):
-            p = com.find(u' ')
-            Command = self.CommandsStackPop(int(com[1:p]))
-            if Command:
-                Command.Reply = com[p + 1:]
-                if Command.Blocking:
-                    Command._event.set()
-                    del Command._event
+    def notify(self, cmd):
+        self.DebugPrint('<-', repr(cmd))
+        if cmd.startswith(u'#'):
+            p = cmd.find(u' ')
+            command = self.CommandsStackPop(int(cmd[1:p]))
+            if command is not None:
+                command.Reply = cmd[p + 1:]
+                if command.Blocking:
+                    command._event.set()
+                    del command._event
                 else:
-                    Command._timer.cancel()
-                    del Command._timer
-                self.CallHandler('rece', Command)
+                    command._timer.cancel()
+                    del command._timer
+                self.CallHandler('rece', command)
             else:
-                self.CallHandler('rece_api', com[p + 1:])
+                self.CallHandler('rece_api', cmd[p + 1:])
         else:
-            self.CallHandler('rece_api', com)
+            self.CallHandler('rece_api', cmd)
 
     def dbus_name_owner_changed(self, owned, old_owner, new_owner):
         self.DebugPrint('<-', 'dbus_name_owner_changed')

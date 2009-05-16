@@ -5,7 +5,7 @@ from utils import *
 from enums import *
 
 
-class ICall(Cached):
+class Call(Cached):
     '''Represents a voice/video call.
     '''
 
@@ -114,11 +114,11 @@ class ICall(Cached):
         @param Id: Call Id of the other call to join to the conference.
         @type Id: int
         @return: Conference object.
-        @rtype: L{IConference}
+        @rtype: L{Conference}
         '''
         reply = self._Skype._DoCommand('SET CALL %s JOIN_CONFERENCE %s' % (self._Id, Id),
             'CALL %s CONF_ID' % self._Id)
-        return IConference(reply.split()[-1], self._Skype)
+        return Conference(reply.split()[-1], self._Skype)
 
     def MarkAsSeen(self):
         '''Marks the call as seen.
@@ -273,12 +273,12 @@ class ICall(Cached):
 
     def _GetParticipants(self):
         count = int(self._Property('CONF_PARTICIPANTS_COUNT'))
-        return tuple([IParticipant((self._Id, x), self._Skype) for x in xrange(count)])
+        return tuple([Participant((self._Id, x), self._Skype) for x in xrange(count)])
 
     Participants = property(_GetParticipants,
     doc='''Participants of a conference call not hosted by the user.
 
-    @type: tuple of L{IParticipant}
+    @type: tuple of L{Participant}
     ''')
 
     def _GetPartnerDisplayName(self):
@@ -515,7 +515,7 @@ class ICall(Cached):
     ''')
 
 
-class IParticipant(Cached):
+class Participant(Cached):
     '''Represents a conference call participant.
     '''
 
@@ -587,7 +587,7 @@ class IParticipant(Cached):
     ''')
 
 
-class IConference(Cached):
+class Conference(Cached):
     '''Represents a conference call.
     '''
 
@@ -622,7 +622,7 @@ class IConference(Cached):
     ActiveCalls = property(_GetActiveCalls,
     doc='''Active calls with the same conference ID.
 
-    @type: tuple of L{ICall}
+    @type: tuple of L{Call}
     ''')
 
     def _GetCalls(self):
@@ -631,7 +631,7 @@ class IConference(Cached):
     Calls = property(_GetCalls,
     doc='''Calls with the same conference ID.
 
-    @type: tuple of L{ICall}
+    @type: tuple of L{Call}
     ''')
 
     def _GetId(self):

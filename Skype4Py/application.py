@@ -6,8 +6,8 @@ from user import *
 import threading
 
 
-class IApplication(Cached):
-    '''Represents an application in APP2APP protocol. Use L{ISkype.Application<skype.ISkype.Application>} to instatinate.
+class Application(Cached):
+    '''Represents an application in APP2APP protocol. Use L{Skype.Application<skype.Skype.Application>} to instatinate.
     '''
 
     def __repr__(self):
@@ -39,7 +39,7 @@ class IApplication(Cached):
         @type WaitConnected: bool
         @return: If C{WaitConnected} is True, returns the stream which can be used to send the data.
         Otherwise returns None.
-        @rtype: L{IApplicationStream} or None
+        @rtype: L{ApplicationStream} or None
         '''
         if WaitConnected:
             self.__Connect_event = threading.Event()
@@ -73,7 +73,7 @@ class IApplication(Cached):
         @param Text: Text to send.
         @type Text: unicode
         @param Streams: Streams to send the datagram to or None if all currently connected streams should be used.
-        @type Streams: sequence of L{IApplicationStream}
+        @type Streams: sequence of L{ApplicationStream}
         '''
         if Streams is None:
             Streams = self.Streams
@@ -81,21 +81,21 @@ class IApplication(Cached):
             s.SendDatagram(Text)
 
     def _GetConnectableUsers(self):
-        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('CONNECTABLE'))])
+        return tuple([User(x, self._Skype) for x in esplit(self._Property('CONNECTABLE'))])
 
     ConnectableUsers = property(_GetConnectableUsers,
     doc='''All connectable users.
 
-    @type: tuple of L{IUser}
+    @type: tuple of L{User}
     ''')
 
     def _GetConnectingUsers(self):
-        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('CONNECTING'))])
+        return tuple([User(x, self._Skype) for x in esplit(self._Property('CONNECTING'))])
 
     ConnectingUsers = property(_GetConnectingUsers,
     doc='''All users connecting at the moment.
 
-    @type: tuple of L{IUser}
+    @type: tuple of L{User}
     ''')
 
     def _GetName(self):
@@ -108,34 +108,34 @@ class IApplication(Cached):
     ''')
 
     def _GetReceivedStreams(self):
-        return tuple([IApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('RECEIVED'))])
+        return tuple([ApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('RECEIVED'))])
 
     ReceivedStreams = property(_GetReceivedStreams,
     doc='''All streams that received data and can be read.
 
-    @type: tuple of L{IApplicationStream}
+    @type: tuple of L{ApplicationStream}
     ''')
 
     def _GetSendingStreams(self):
-        return tuple([IApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('SENDING'))])
+        return tuple([ApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('SENDING'))])
 
     SendingStreams = property(_GetSendingStreams,
     doc='''All streams that send data and at the moment.
 
-    @type: tuple of L{IApplicationStream}
+    @type: tuple of L{ApplicationStream}
     ''')
 
     def _GetStreams(self):
-        return tuple([IApplicationStream(x, self) for x in esplit(self._Property('STREAMS'))])
+        return tuple([ApplicationStream(x, self) for x in esplit(self._Property('STREAMS'))])
 
     Streams = property(_GetStreams,
     doc='''All currently connected application streams.
 
-    @type: tuple of L{IApplicationStream}
+    @type: tuple of L{ApplicationStream}
     ''')
 
 
-class IApplicationStream(Cached):
+class ApplicationStream(Cached):
     '''Represents an application stream in APP2APP protocol.
     '''
 
@@ -190,14 +190,14 @@ class IApplicationStream(Cached):
     Application = property(_GetApplication,
     doc='''Application this stream belongs to.
 
-    @type: L{IApplication}
+    @type: L{Application}
     ''')
 
     def _GetApplicationName(self):
         return self._Application.Name
 
     ApplicationName = property(_GetApplicationName,
-    doc='''Name of the application this stream belongs to. Same as C{IApplicationStream.Application.Name}.
+    doc='''Name of the application this stream belongs to. Same as C{ApplicationStream.Application.Name}.
 
     @type: unicode
     ''')

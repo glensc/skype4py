@@ -16,15 +16,15 @@ if False:
     import Languages
     
 
-class IConversion(object):
-    '''Allows conversion between constants and text. Access using L{ISkype.Convert<skype.ISkype.Convert>}.
+class Conversion(object):
+    '''Allows conversion between constants and text. Access using L{Skype.Convert<skype.Skype.Convert>}.
     '''
 
     def __init__(self, Skype):
         '''__init__.
 
         @param Skype: Skype object.
-        @type Skype: L{ISkype}
+        @type Skype: L{Skype}
         '''
         self._Language = u''
         self._Module = None

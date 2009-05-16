@@ -4,7 +4,7 @@ using Carbon distributed notifications. Uses direct
 Carbon/CoreFoundation calls through ctypes module.
 
 This module handles the options that you can pass to
-L{ISkype.__init__<skype.ISkype.__init__>} for Mac OS X
+L{Skype.__init__<skype.Skype.__init__>} for Mac OS X
 machines.
 
 No further options are currently supported.
@@ -12,12 +12,15 @@ No further options are currently supported.
 Thanks to Eion Robb for reversing Skype for Mac API protocol.
 '''
 
-from Skype4Py.API import ICommand, _ISkypeAPIBase
+from Skype4Py.API import Command, SkypeAPIBase
 from ctypes import *
 from ctypes.util import find_library
-from Skype4Py.errors import ISkypeAPIError
+from Skype4Py.errors import SkypeAPIError
 from Skype4Py.enums import *
 import threading, time
+
+
+__all__ = ['SkypeAPI']
 
 
 class Carbon(object):
@@ -315,7 +318,7 @@ class CFDistributedNotificationCenter(CFType):
         self.cf.lib.CFNotificationCenterPostNotification(self, name, obj, userInfo, immediate)
 
 
-class _ISkypeAPI(_ISkypeAPIBase):
+class SkypeAPI(SkypeAPIBase):
     '''Skype for Mac API wrapper.
 
     Code based on Pidgin Skype Plugin source.
@@ -324,7 +327,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
     '''
 
     def __init__(self, handler, opts):
-        _ISkypeAPIBase.__init__(self, opts)
+        SkypeAPIBase.__init__(self, opts)
         self.RegisterHandler(handler)
         self.carbon = Carbon()
         self.coref = CoreFoundation()
@@ -376,8 +379,8 @@ class _ISkypeAPI(_ISkypeAPIBase):
             t.cancel()
         if not self.wait:
             self.SetAttachmentStatus(apiAttachUnknown)
-            raise ISkypeAPIError('Skype attach timeout')
-        self.SendCommand(ICommand(-1, 'PROTOCOL %s' % self.Protocol))
+            raise SkypeAPIError('Skype attach timeout')
+        self.SendCommand(Command(-1, 'PROTOCOL %s' % self.Protocol))
 
     def IsRunning(self):
         try:
@@ -396,26 +399,26 @@ class _ISkypeAPI(_ISkypeAPIBase):
             nul = file('/dev/null')
             Popen(['/Applications/Skype.app/Contents/MacOS/Skype'], stdin=nul, stdout=nul, stderr=nul)
 
-    def SendCommand(self, Command):
+    def SendCommand(self, command):
         if not self.AttachmentStatus == apiAttachSuccess:
-            self.Attach(Command.Timeout)
-        self.CommandsStackPush(Command)
-        self.CallHandler('send', Command)
-        com = u'#%d %s' % (Command.Id, Command.Command)
-        if Command.Blocking:
-            Command._event = event = threading.Event()
+            self.Attach(command.Timeout)
+        self.CommandsStackPush(command)
+        self.CallHandler('send', command)
+        cmd = u'#%d %s' % (command.Id, command.Command)
+        if command.Blocking:
+            command._event = event = threading.Event()
         else:
-            Command._timer = timer = threading.Timer(Command.Timeout / 1000.0, self.CommandsStackPop, (Command.Id,))
+            command._timer = timer = threading.Timer(command.Timeout / 1000.0, self.CommandsStackPop, (command.Id,))
 
-        self.DebugPrint('->', repr(com))
-        userInfo = self.coref.CFDictionary({self.coref.CFSTR('SKYPE_API_COMMAND'): self.coref.CFString(com),
+        self.DebugPrint('->', repr(cmd))
+        userInfo = self.coref.CFDictionary({self.coref.CFSTR('SKYPE_API_COMMAND'): self.coref.CFString(cmd),
                                             self.coref.CFSTR('SKYPE_API_CLIENT_ID'): self.coref.CFNumber(self.client_id)})
         self.post('SKSkypeAPICommand', userInfo)
 
-        if Command.Blocking:
-            event.wait(Command.Timeout / 1000.0)
+        if command.Blocking:
+            event.wait(command.Timeout / 1000.0)
             if not event.isSet():
-                raise ISkypeAPIError('Skype command timeout')
+                raise SkypeAPIError('Skype command timeout')
         else:
             timer.start()
 

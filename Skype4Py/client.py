@@ -2,20 +2,20 @@
 '''
 
 from enums import *
-from errors import ISkypeError
+from errors import SkypeError
 from utils import *
 import weakref
 
 
-class IClient(object):
-    '''Represents a Skype client. Access using L{ISkype.Client<skype.ISkype.Client>}.
+class Client(object):
+    '''Represents a Skype client. Access using L{Skype.Client<skype.Skype.Client>}.
     '''
 
     def __init__(self, Skype):
         '''__init__.
 
         @param Skype: Skype
-        @type Skype: L{ISkype}
+        @type Skype: L{Skype}
         '''
         self._SkypeRef = weakref.ref(Skype)
 
@@ -45,11 +45,11 @@ class IClient(object):
         @param Hint: Hint text. Shown when mouse hoovers over the event.
         @type Hint: unicode
         @return: Event object.
-        @rtype: L{IPluginEvent}
+        @rtype: L{PluginEvent}
         '''
         self._Skype._DoCommand('CREATE EVENT %s CAPTION %s HINT %s' % (tounicode(EventId),
             quote(tounicode(Caption)), quote(tounicode(Hint))))
-        return IPluginEvent(EventId, self._Skype)
+        return PluginEvent(EventId, self._Skype)
 
     def CreateMenuItem(self, MenuItemId, PluginContext, CaptionText, HintText=u'', IconPath='', Enabled=True,
                        ContactType=pluginContactTypeAll, MultipleContacts=False):
@@ -74,7 +74,7 @@ class IClient(object):
         @param MultipleContacts: Set to True if multiple contacts should be allowed (defaults to False).
         @type MultipleContacts: bool
         @return: Menu item object.
-        @rtype: L{IPluginMenuItem}
+        @rtype: L{PluginMenuItem}
         '''
         com = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s ENABLED %s' % (tounicode(MenuItemId), PluginContext,
             quote(tounicode(CaptionText)), cndexp(Enabled, 'true', 'false'))
@@ -87,7 +87,7 @@ class IClient(object):
         if PluginContext == pluginContextContact:
             com += ' CONTACT_TYPE_FILTER %s' % ContactType
         self._Skype._DoCommand(com)
-        return IPluginMenuItem(MenuItemId, self._Skype, CaptionText, HintText, Enabled)
+        return PluginMenuItem(MenuItemId, self._Skype, CaptionText, HintText, Enabled)
 
     def Focus(self):
         '''Brings the client window into focus.
@@ -254,7 +254,7 @@ class IClient(object):
         skype = self._SkypeRef()
         if skype:
             return skype
-        raise ISkypeError('Skype4Py internal error')
+        raise SkypeError('Skype4Py internal error')
 
     _Skype = property(_Get_Skype)
 
@@ -292,7 +292,7 @@ class IClient(object):
     ''')
 
 
-class IPluginEvent(Cached):
+class PluginEvent(Cached):
     '''Represents an event displayed in Skype client's events pane.
     '''
 
@@ -318,7 +318,7 @@ class IPluginEvent(Cached):
     ''')
 
 
-class IPluginMenuItem(Cached):
+class PluginMenuItem(Cached):
     '''Represents a menu item displayed in Skype client's "Do More" menus.
     '''
 

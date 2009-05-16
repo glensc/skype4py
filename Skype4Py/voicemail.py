@@ -5,7 +5,7 @@ from utils import *
 from enums import *
 
 
-class IVoicemail(Cached):
+class Voicemail(Cached):
     '''Represents a voicemail.
     '''
 

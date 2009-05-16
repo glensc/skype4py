@@ -5,15 +5,15 @@ from utils import *
 import weakref
 
 
-class IProfile(object):
-    '''Represents the profile of currently logged in user. Access using L{ISkype.CurrentUserProfile<skype.ISkype.CurrentUserProfile>}.
+class Profile(object):
+    '''Represents the profile of currently logged in user. Access using L{Skype.CurrentUserProfile<skype.Skype.CurrentUserProfile>}.
     '''
 
     def __init__(self, Skype):
         '''__init__.
 
         @param Skype: Skype object.
-        @type Skype: L{ISkype}
+        @type Skype: L{Skype}
         '''
         self._SkypeRef = weakref.ref(Skype)
 
@@ -186,7 +186,7 @@ class IProfile(object):
     ''')
 
     def _GetHomepage(self):
-        return str(self._Property('HOMEPAGE'))
+        return self._Property('HOMEPAGE')
 
     def _SetHomepage(self, value):
         self._Property('HOMEPAGE', value)
@@ -194,16 +194,16 @@ class IProfile(object):
     Homepage = property(_GetHomepage, _SetHomepage,
     doc='''"Homepage" field of the profile.
 
-    @type: str
+    @type: unicode
     ''')
 
     def _GetIPCountry(self):
-        return self._Property('IPCOUNTRY')
+        return str(self._Property('IPCOUNTRY'))
 
     IPCountry = property(_GetIPCountry,
     doc='''ISO country code queried by IP address.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetLanguages(self):

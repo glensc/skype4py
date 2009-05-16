@@ -7,6 +7,10 @@ import threading
 from new import instancemethod
 
 
+__all__ = ['tounicode', 'path2unicode', 'unicode2path', 'chop', 'args2dict', 'quote',
+           'esplit', 'cndexp', 'WeakCallableRef', 'EventHandlingBase', 'Cached']
+
+
 def tounicode(s):
     '''Converts a string to a unicode string. Accepts two types or arguments. An UTF-8 encoded
     byte string or a unicode string (in the latter case, no conversion is performed).
@@ -164,7 +168,7 @@ def cndexp(condition, truevalue, falsevalue):
     return falsevalue
 
 
-class _WeakMethod(object):
+class WeakMethod(object):
     '''Helper class for WeakCallableRef function (see below).
     Don't use directly.
     '''
@@ -223,12 +227,12 @@ def WeakCallableRef(c, callback=None):
     '''
 
     try:
-        return _WeakMethod(c, callback)
+        return WeakMethod(c, callback)
     except AttributeError:
         return weakref.ref(c, callback)
 
 
-class _EventHandlingThread(threading.Thread):
+class EventHandlingThread(threading.Thread):
     def __init__(self, name=None):
         '''__init__.
 
@@ -276,8 +280,8 @@ class EventHandlingBase(object):
 
     Read the respective classes documentations to learn what events are provided by them. The
     events are always defined in a class whose name consist of the name of the class it provides
-    events for followed by C{Events}). For example class L{ISkype} provides events defined in
-    L{ISkypeEvents}. The events class is always defined in the same module as the main class.
+    events for followed by C{Events}). For example class L{Skype} provides events defined in
+    L{SkypeEvents}. The events class is always defined in the same module as the main class.
 
     The events class tells you what events you can assign your event handlers to, when do they
     occur and what arguments lists should your event handlers accept.
@@ -411,9 +415,9 @@ class EventHandlingBase(object):
             t = self._EventThreads[Event]
             t.lock.acquire()
             if not self._EventThreads[Event].isAlive():
-                t = self._EventThreads[Event] = _EventHandlingThread(Event)
+                t = self._EventThreads[Event] = EventHandlingThread(Event)
         else:
-            t = self._EventThreads[Event] = _EventHandlingThread(Event)
+            t = self._EventThreads[Event] = EventHandlingThread(Event)
         # enqueue handlers in thread
         for h in handlers:
             t.enqueue(h, args, kwargs)

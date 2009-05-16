@@ -5,28 +5,28 @@ This module imports one of the:
   - L{Skype4Py.API.darwin}
   - L{Skype4Py.API.posix}
   - L{Skype4Py.API.windows}
-submodules based on the platform.
+submodules based on the current platform.
 '''
 
 import sys
 import threading
 from Skype4Py.utils import *
 from Skype4Py.enums import *
-from Skype4Py.errors import ISkypeAPIError
+from Skype4Py.errors import SkypeAPIError
 
 
-class ICommand(object):
-    '''Represents an API command. Use L{ISkype.Command<skype.ISkype.Command>} to instatinate.
+class Command(object):
+    '''Represents an API command. Use L{Skype.Command<skype.Skype.Command>} to instatinate.
 
-    To send a command to Skype, use L{ISkype.SendCommand<skype.ISkype.SendCommand>}.
+    To send a command to Skype, use L{Skype.SendCommand<skype.Skype.SendCommand>}.
     '''
 
     def __init__(self, Id, Command, Expected=u'', Blocking=False, Timeout=30000):
-        '''Use L{ISkype.Command<skype.ISkype.Command>} to instatinate the object instead.
+        '''Use L{Skype.Command<skype.Skype.Command>} to instatinate the object instead.
         '''
 
         self.Blocking = Blocking
-        '''If set to True, L{ISkype.SendCommand<skype.ISkype.SendCommand>} will block until the reply is received.
+        '''If set to True, L{Skype.SendCommand<skype.Skype.SendCommand>} will block until the reply is received.
         @type: bool'''
 
         self.Command = tounicode(Command)
@@ -54,7 +54,7 @@ class ICommand(object):
             (object.__repr__(self)[1:-1], self.Id, repr(self.Command), self.Blocking, repr(self.Reply))
 
 
-class _ISkypeAPIBase(threading.Thread):
+class SkypeAPIBase(threading.Thread):
     def __init__(self, opts):
         threading.Thread.__init__(self)
         self.setDaemon(True)
@@ -67,7 +67,7 @@ class _ISkypeAPIBase(threading.Thread):
         self.AttachmentStatus = apiAttachUnknown
 
     def _NotImplemented(self):
-        raise ISkypeAPIError('Functionality not implemented')
+        raise SkypeAPIError('Functionality not implemented')
 
     def RegisterHandler(self, Handler):
         for h in self.Handlers:
@@ -88,27 +88,27 @@ class _ISkypeAPIBase(threading.Thread):
             if f:
                 f(mode, arg)
 
-    def CommandsStackPush(self, Command):
+    def CommandsStackPush(self, command):
         self.CommandsLock.acquire()
-        if Command.Id < 0:
-            Command.Id = 0
-            while Command.Id in self.Commands:
-                Command.Id += 1
-        if Command.Id in self.Commands:
+        if command.Id < 0:
+            command.Id = 0
+            while command.Id in self.Commands:
+                command.Id += 1
+        if command.Id in self.Commands:
             self.CommandsLock.release()
-            raise ISkypeAPIError('Command Id conflict')
-        self.Commands[Command.Id] = Command
+            raise SkypeAPIError('Command Id conflict')
+        self.Commands[command.Id] = command
         self.CommandsLock.release()
 
     def CommandsStackPop(self, Id):
         self.CommandsLock.acquire()
         try:
-            Command = self.Commands[Id]
+            command = self.Commands[Id]
             del self.Commands[Id]
         except KeyError:
-            Command = None
+            command = None
         self.CommandsLock.release()
-        return Command
+        return command
 
     def Close(self):
         pass
@@ -151,10 +151,10 @@ class _ISkypeAPIBase(threading.Thread):
         self._NotImplemented()
 
 
-# Select apropriate low-level Skype API module
+# Select appropriate low-level Skype API module
 if sys.platform[:3] == 'win':
-    from windows import _ISkypeAPI
+    from windows import SkypeAPI
 elif sys.platform == 'darwin':
-    from darwin import _ISkypeAPI
+    from darwin import SkypeAPI
 else:
-    from posix import _ISkypeAPI
+    from posix import SkypeAPI

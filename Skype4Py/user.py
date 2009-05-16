@@ -5,7 +5,7 @@ from utils import *
 from enums import *
 
 
-class IUser(Cached):
+class User(Cached):
     '''Represents a Skype user.
     '''
 
@@ -397,7 +397,7 @@ class IUser(Cached):
     ''')
 
 
-class IGroup(Cached):
+class Group(Cached):
     '''Represents a group of Skype users.
     '''
 
@@ -502,7 +502,7 @@ class IGroup(Cached):
     OnlineUsers = property(_GetOnlineUsers,
     doc='''Users of the group that are online
 
-    @type: tuple of L{IUser}
+    @type: tuple of L{User}
     ''')
 
     def _GetType(self):
@@ -515,10 +515,10 @@ class IGroup(Cached):
     ''')
 
     def _GetUsers(self):
-        return tuple([IUser(x, self._Skype) for x in esplit(self._Property('USERS', Cache=False), ', ')])
+        return tuple([User(x, self._Skype) for x in esplit(self._Property('USERS', Cache=False), ', ')])
 
     Users = property(_GetUsers,
     doc='''Users in this group.
 
-    @type: tuple of L{IUser}
+    @type: tuple of L{User}
     ''')

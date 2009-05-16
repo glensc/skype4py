@@ -1,7 +1,7 @@
 '''Main Skype interface.
 '''
 
-from API import ICommand, _ISkypeAPI
+from API import Command, SkypeAPI
 from errors import *
 from enums import *
 from utils import *
@@ -19,7 +19,7 @@ from filetransfer import *
 import threading
 
 
-class ISkype(EventHandlingBase):
+class Skype(EventHandlingBase):
     '''The main class which you have to instatinate to get access to Skype client.
 
       1. Usage.
@@ -30,149 +30,149 @@ class ISkype(EventHandlingBase):
 
              skype = Skype4Py.Skype()
 
-         For possible constructor arguments, read the L{ISkype.__init__} description.
+         For possible constructor arguments, read the L{Skype.__init__} description.
 
       2. Events.
 
          This class provides events.
 
-         The events names and their arguments lists can be found in L{ISkypeEvents} class.
+         The events names and their arguments lists can be found in L{SkypeEvents} class.
 
          The usage of events is described in L{EventHandlingBase} class which is a superclass of
          this class. Follow the link for more information.
 
     @newfield option: Option, Options
 
-    @ivar OnNotify: Event handler for L{ISkypeEvents.Notify} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnNotify: Event handler for L{SkypeEvents.Notify} event. See L{EventHandlingBase} for more information on events.
     @type OnNotify: callable
 
-    @ivar OnCommand: Event handler for L{ISkypeEvents.Command} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnCommand: Event handler for L{SkypeEvents.Command} event. See L{EventHandlingBase} for more information on events.
     @type OnCommand: callable
 
-    @ivar OnReply: Event handler for L{ISkypeEvents.Reply} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnReply: Event handler for L{SkypeEvents.Reply} event. See L{EventHandlingBase} for more information on events.
     @type OnReply: callable
 
-    @ivar OnError: Event handler for L{ISkypeEvents.Error} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnError: Event handler for L{SkypeEvents.Error} event. See L{EventHandlingBase} for more information on events.
     @type OnError: callable
 
-    @ivar OnAttachmentStatus: Event handler for L{ISkypeEvents.AttachmentStatus} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnAttachmentStatus: Event handler for L{SkypeEvents.AttachmentStatus} event. See L{EventHandlingBase} for more information on events.
     @type OnAttachmentStatus: callable
 
-    @ivar OnConnectionStatus: Event handler for L{ISkypeEvents.ConnectionStatus} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnConnectionStatus: Event handler for L{SkypeEvents.ConnectionStatus} event. See L{EventHandlingBase} for more information on events.
     @type OnConnectionStatus: callable
 
-    @ivar OnUserStatus: Event handler for L{ISkypeEvents.UserStatus} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnUserStatus: Event handler for L{SkypeEvents.UserStatus} event. See L{EventHandlingBase} for more information on events.
     @type OnUserStatus: callable
 
-    @ivar OnOnlineStatus: Event handler for L{ISkypeEvents.OnlineStatus} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnOnlineStatus: Event handler for L{SkypeEvents.OnlineStatus} event. See L{EventHandlingBase} for more information on events.
     @type OnOnlineStatus: callable
 
-    @ivar OnCallStatus: Event handler for L{ISkypeEvents.CallStatus} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnCallStatus: Event handler for L{SkypeEvents.CallStatus} event. See L{EventHandlingBase} for more information on events.
     @type OnCallStatus: callable
 
-    @ivar OnCallHistory: Event handler for L{ISkypeEvents.CallHistory} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnCallHistory: Event handler for L{SkypeEvents.CallHistory} event. See L{EventHandlingBase} for more information on events.
     @type OnCallHistory: callable
 
-    @ivar OnMute: Event handler for L{ISkypeEvents.Mute} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnMute: Event handler for L{SkypeEvents.Mute} event. See L{EventHandlingBase} for more information on events.
     @type OnMute: callable
 
-    @ivar OnMessageStatus: Event handler for L{ISkypeEvents.MessageStatus} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnMessageStatus: Event handler for L{SkypeEvents.MessageStatus} event. See L{EventHandlingBase} for more information on events.
     @type OnMessageStatus: callable
 
-    @ivar OnMessageHistory: Event handler for L{ISkypeEvents.MessageHistory} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnMessageHistory: Event handler for L{SkypeEvents.MessageHistory} event. See L{EventHandlingBase} for more information on events.
     @type OnMessageHistory: callable
 
-    @ivar OnAutoAway: Event handler for L{ISkypeEvents.AutoAway} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnAutoAway: Event handler for L{SkypeEvents.AutoAway} event. See L{EventHandlingBase} for more information on events.
     @type OnAutoAway: callable
 
-    @ivar OnCallDtmfReceived: Event handler for L{ISkypeEvents.CallDtmfReceived} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnCallDtmfReceived: Event handler for L{SkypeEvents.CallDtmfReceived} event. See L{EventHandlingBase} for more information on events.
     @type OnCallDtmfReceived: callable
 
-    @ivar OnVoicemailStatus: Event handler for L{ISkypeEvents.VoicemailStatus} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnVoicemailStatus: Event handler for L{SkypeEvents.VoicemailStatus} event. See L{EventHandlingBase} for more information on events.
     @type OnVoicemailStatus: callable
 
-    @ivar OnApplicationConnecting: Event handler for L{ISkypeEvents.ApplicationConnecting} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnApplicationConnecting: Event handler for L{SkypeEvents.ApplicationConnecting} event. See L{EventHandlingBase} for more information on events.
     @type OnApplicationConnecting: callable
 
-    @ivar OnApplicationStreams: Event handler for L{ISkypeEvents.ApplicationStreams} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnApplicationStreams: Event handler for L{SkypeEvents.ApplicationStreams} event. See L{EventHandlingBase} for more information on events.
     @type OnApplicationStreams: callable
 
-    @ivar OnApplicationDatagram: Event handler for L{ISkypeEvents.ApplicationDatagram} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnApplicationDatagram: Event handler for L{SkypeEvents.ApplicationDatagram} event. See L{EventHandlingBase} for more information on events.
     @type OnApplicationDatagram: callable
 
-    @ivar OnApplicationSending: Event handler for L{ISkypeEvents.ApplicationSending} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnApplicationSending: Event handler for L{SkypeEvents.ApplicationSending} event. See L{EventHandlingBase} for more information on events.
     @type OnApplicationSending: callable
 
-    @ivar OnApplicationReceiving: Event handler for L{ISkypeEvents.ApplicationReceiving} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnApplicationReceiving: Event handler for L{SkypeEvents.ApplicationReceiving} event. See L{EventHandlingBase} for more information on events.
     @type OnApplicationReceiving: callable
 
-    @ivar OnContactsFocused: Event handler for L{ISkypeEvents.ContactsFocused} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnContactsFocused: Event handler for L{SkypeEvents.ContactsFocused} event. See L{EventHandlingBase} for more information on events.
     @type OnContactsFocused: callable
 
-    @ivar OnGroupVisible: Event handler for L{ISkypeEvents.GroupVisible} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnGroupVisible: Event handler for L{SkypeEvents.GroupVisible} event. See L{EventHandlingBase} for more information on events.
     @type OnGroupVisible: callable
 
-    @ivar OnGroupExpanded: Event handler for L{ISkypeEvents.GroupExpanded} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnGroupExpanded: Event handler for L{SkypeEvents.GroupExpanded} event. See L{EventHandlingBase} for more information on events.
     @type OnGroupExpanded: callable
 
-    @ivar OnGroupUsers: Event handler for L{ISkypeEvents.GroupUsers} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnGroupUsers: Event handler for L{SkypeEvents.GroupUsers} event. See L{EventHandlingBase} for more information on events.
     @type OnGroupUsers: callable
 
-    @ivar OnGroupDeleted: Event handler for L{ISkypeEvents.GroupDeleted} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnGroupDeleted: Event handler for L{SkypeEvents.GroupDeleted} event. See L{EventHandlingBase} for more information on events.
     @type OnGroupDeleted: callable
 
-    @ivar OnUserMood: Event handler for L{ISkypeEvents.UserMood} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnUserMood: Event handler for L{SkypeEvents.UserMood} event. See L{EventHandlingBase} for more information on events.
     @type OnUserMood: callable
 
-    @ivar OnSmsMessageStatusChanged: Event handler for L{ISkypeEvents.SmsMessageStatusChanged} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnSmsMessageStatusChanged: Event handler for L{SkypeEvents.SmsMessageStatusChanged} event. See L{EventHandlingBase} for more information on events.
     @type OnSmsMessageStatusChanged: callable
 
-    @ivar OnSmsTargetStatusChanged: Event handler for L{ISkypeEvents.SmsTargetStatusChanged} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnSmsTargetStatusChanged: Event handler for L{SkypeEvents.SmsTargetStatusChanged} event. See L{EventHandlingBase} for more information on events.
     @type OnSmsTargetStatusChanged: callable
 
-    @ivar OnCallInputStatusChanged: Event handler for L{ISkypeEvents.CallInputStatusChanged} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnCallInputStatusChanged: Event handler for L{SkypeEvents.CallInputStatusChanged} event. See L{EventHandlingBase} for more information on events.
     @type OnCallInputStatusChanged: callable
 
-    @ivar OnAsyncSearchUsersFinished: Event handler for L{ISkypeEvents.AsyncSearchUsersFinished} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnAsyncSearchUsersFinished: Event handler for L{SkypeEvents.AsyncSearchUsersFinished} event. See L{EventHandlingBase} for more information on events.
     @type OnAsyncSearchUsersFinished: callable
 
-    @ivar OnCallSeenStatusChanged: Event handler for L{ISkypeEvents.CallSeenStatusChanged} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnCallSeenStatusChanged: Event handler for L{SkypeEvents.CallSeenStatusChanged} event. See L{EventHandlingBase} for more information on events.
     @type OnCallSeenStatusChanged: callable
 
-    @ivar OnPluginEventClicked: Event handler for L{ISkypeEvents.PluginEventClicked} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnPluginEventClicked: Event handler for L{SkypeEvents.PluginEventClicked} event. See L{EventHandlingBase} for more information on events.
     @type OnPluginEventClicked: callable
 
-    @ivar OnPluginMenuItemClicked: Event handler for L{ISkypeEvents.PluginMenuItemClicked} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnPluginMenuItemClicked: Event handler for L{SkypeEvents.PluginMenuItemClicked} event. See L{EventHandlingBase} for more information on events.
     @type OnPluginMenuItemClicked: callable
 
-    @ivar OnWallpaperChanged: Event handler for L{ISkypeEvents.WallpaperChanged} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnWallpaperChanged: Event handler for L{SkypeEvents.WallpaperChanged} event. See L{EventHandlingBase} for more information on events.
     @type OnWallpaperChanged: callable
 
-    @ivar OnFileTransferStatusChanged: Event handler for L{ISkypeEvents.FileTransferStatusChanged} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnFileTransferStatusChanged: Event handler for L{SkypeEvents.FileTransferStatusChanged} event. See L{EventHandlingBase} for more information on events.
     @type OnFileTransferStatusChanged: callable
 
-    @ivar OnCallTransferStatusChanged: Event handler for L{ISkypeEvents.CallTransferStatusChanged} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnCallTransferStatusChanged: Event handler for L{SkypeEvents.CallTransferStatusChanged} event. See L{EventHandlingBase} for more information on events.
     @type OnCallTransferStatusChanged: callable
 
-    @ivar OnChatMembersChanged: Event handler for L{ISkypeEvents.ChatMembersChanged} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnChatMembersChanged: Event handler for L{SkypeEvents.ChatMembersChanged} event. See L{EventHandlingBase} for more information on events.
     @type OnChatMembersChanged: callable
 
-    @ivar OnChatMemberRoleChanged: Event handler for L{ISkypeEvents.ChatMemberRoleChanged} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnChatMemberRoleChanged: Event handler for L{SkypeEvents.ChatMemberRoleChanged} event. See L{EventHandlingBase} for more information on events.
     @type OnChatMemberRoleChanged: callable
 
-    @ivar OnCallVideoReceiveStatusChanged: Event handler for L{ISkypeEvents.CallVideoReceiveStatusChanged} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnCallVideoReceiveStatusChanged: Event handler for L{SkypeEvents.CallVideoReceiveStatusChanged} event. See L{EventHandlingBase} for more information on events.
     @type OnCallVideoReceiveStatusChanged: callable
 
-    @ivar OnCallVideoSendStatusChanged: Event handler for L{ISkypeEvents.CallVideoSendStatusChanged} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnCallVideoSendStatusChanged: Event handler for L{SkypeEvents.CallVideoSendStatusChanged} event. See L{EventHandlingBase} for more information on events.
     @type OnCallVideoSendStatusChanged: callable
 
-    @ivar OnCallVideoStatusChanged: Event handler for L{ISkypeEvents.CallVideoStatusChanged} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnCallVideoStatusChanged: Event handler for L{SkypeEvents.CallVideoStatusChanged} event. See L{EventHandlingBase} for more information on events.
     @type OnCallVideoStatusChanged: callable
 
-    @ivar OnChatWindowState: Event handler for L{ISkypeEvents.ChatWindowState} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnChatWindowState: Event handler for L{SkypeEvents.ChatWindowState} event. See L{EventHandlingBase} for more information on events.
     @type OnChatWindowState: callable
 
-    @ivar OnClientWindowState: Event handler for L{ISkypeEvents.ClientWindowState} event. See L{EventHandlingBase} for more information on events.
+    @ivar OnClientWindowState: Event handler for L{SkypeEvents.ClientWindowState} event. See L{EventHandlingBase} for more information on events.
     @type OnClientWindowState: callable
     '''
 
@@ -189,17 +189,17 @@ class ISkype(EventHandlingBase):
         if Events:
             self._SetEventHandlerObj(Events)
 
-        self._API = _ISkypeAPI(self._Handler, Options)
+        self._API = SkypeAPI(self._Handler, Options)
 
         self._Cache = True
         self.ResetCache()
 
         self._Timeout = 30000
 
-        self._Convert = IConversion(self)
-        self._Client = IClient(self)
-        self._Settings = ISettings(self)
-        self._Profile = IProfile(self)
+        self._Convert = Conversion(self)
+        self._Client = Client(self)
+        self._Settings = Settings(self)
+        self._Profile = Profile(self)
 
     def __del__(self):
         '''Frees all resources.
@@ -218,7 +218,7 @@ class ISkype(EventHandlingBase):
                 ObjectType, ObjectId, PropName, Value = [a] + chop(b, 2)
                 self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
                 if ObjectType == 'USER':
-                    o = IUser(ObjectId, self)
+                    o = User(ObjectId, self)
                     if PropName == 'ONLINESTATUS':
                         self._CallEventHandler('OnlineStatus', o, str(Value))
                     elif PropName == 'MOOD_TEXT' or PropName == 'RICH_MOOD_TEXT':
@@ -226,7 +226,7 @@ class ISkype(EventHandlingBase):
                     elif PropName == 'RECEIVEDAUTHREQUEST':
                         self._CallEventHandler('UserAuthorizationRequestReceived', o)
                 elif ObjectType == 'CALL':
-                    o = ICall(ObjectId, self)
+                    o = Call(ObjectId, self)
                     if PropName == 'STATUS':
                         self._CallEventHandler('CallStatus', o, str(Value))
                     elif PropName == 'SEEN':
@@ -244,21 +244,21 @@ class ISkype(EventHandlingBase):
                     elif PropName == 'VIDEO_RECEIVE_STATUS':
                         self._CallEventHandler('CallVideoReceiveStatusChanged', o, str(Value))
                 elif ObjectType == 'CHAT':
-                    o = IChat(ObjectId, self)
+                    o = Chat(ObjectId, self)
                     if PropName == 'MEMBERS':
                         self._CallEventHandler('ChatMembersChanged', o, tuple([IUser(x, self) for x in esplit(Value)]))
                     if PropName in ('OPENED', 'CLOSED'):
                         self._CallEventHandler('ChatWindowState', o, (PropName == 'OPENED'))
                 elif ObjectType == 'CHATMEMBER':
-                    o = IChatMember(ObjectId, self)
+                    o = ChatMember(ObjectId, self)
                     if PropName == 'ROLE':
                         self._CallEventHandler('ChatMemberRoleChanged', o, str(Value))
                 elif ObjectType == 'CHATMESSAGE':
-                    o = IChatMessage(ObjectId, self)
+                    o = ChatMessage(ObjectId, self)
                     if PropName == 'STATUS':
                         self._CallEventHandler('MessageStatus', o, str(Value))
                 elif ObjectType == 'APPLICATION':
-                    o = IApplication(ObjectId, self)
+                    o = Application(ObjectId, self)
                     if PropName == 'CONNECTING':
                         self._CallEventHandler('ApplicationConnecting', o, tuple([IUser(x, self) for x in esplit(Value)]))
                     elif PropName == 'STREAMS':
@@ -271,7 +271,7 @@ class ISkype(EventHandlingBase):
                     elif PropName == 'RECEIVED':
                         self._CallEventHandler('ApplicationReceiving', o, tuple([IApplicationStream(x.split('=')[0], o) for x in esplit(Value)]))
                 elif ObjectType == 'GROUP':
-                    o = IGroup(ObjectId, self)
+                    o = Group(ObjectId, self)
                     if PropName == 'VISIBLE':
                         self._CallEventHandler('GroupVisible', o, (Value == 'TRUE'))
                     elif PropName == 'EXPANDED':
@@ -279,7 +279,7 @@ class ISkype(EventHandlingBase):
                     elif PropName == 'USERS':
                         self._CallEventHandler('GroupUsers', o, tuple([IUser(x, self) for x in esplit(Value, ', ')]))
                 elif ObjectType == 'SMS':
-                    o = ISmsMessage(ObjectId, self)
+                    o = SmsMessage(ObjectId, self)
                     if PropName == 'STATUS':
                         self._CallEventHandler('SmsMessageStatusChanged', o, str(Value))
                     elif PropName == 'TARGET_STATUSES':
@@ -287,11 +287,11 @@ class ISkype(EventHandlingBase):
                             number, status = t.split('=')
                             self._CallEventHandler('SmsTargetStatusChanged', ISmsTarget((number, o)), str(status))
                 elif ObjectType == 'FILETRANSFER':
-                    o = IFileTransfer(ObjectId, self)
+                    o = FileTransfer(ObjectId, self)
                     if PropName == 'STATUS':
                         self._CallEventHandler('FileTransferStatusChanged', o, str(Value))
                 elif ObjectType == 'VOICEMAIL':
-                    o = IVoicemail(ObjectId, self)
+                    o = Voicemail(ObjectId, self)
                     if PropName == 'STATUS':
                         self._CallEventHandler('VoicemailStatus', o, str(Value))
             elif a in ('PROFILE', 'PRIVILEGE'):
@@ -327,7 +327,7 @@ class ISkype(EventHandlingBase):
             elif a == 'EVENT':
                 ObjectId, PropName, Value = chop(b, 2)
                 if PropName == 'CLICKED':
-                    self._CallEventHandler('PluginEventClicked', IPluginEvent(ObjectId, self))
+                    self._CallEventHandler('PluginEventClicked', PluginEvent(ObjectId, self))
             elif a == 'MENU_ITEM':
                 ObjectId, PropName, Value = chop(b, 2)
                 if PropName == 'CLICKED':
@@ -337,14 +337,14 @@ class ISkype(EventHandlingBase):
                         users = ()
                         context_id = u''
                         if context in (pluginContextContact, pluginContextCall, pluginContextChat):
-                            users = tuple([IUser(x, self) for x in esplit(Value[:i-1], ', ')])
+                            users = tuple([User(x, self) for x in esplit(Value[:i-1], ', ')])
                         if context in (pluginContextCall, pluginContextChat):
                             j = Value.rfind('CONTEXT_ID ')
                             if j >= 0:
                                 context_id = str(chop(Value[j+11:])[0])
                                 if context == pluginContextCall:
                                     context_id = int(context_id)
-                        self._CallEventHandler('PluginMenuItemClicked', IPluginMenuItem(ObjectId, self), users, str(context), context_id)
+                        self._CallEventHandler('PluginMenuItemClicked', PluginMenuItem(ObjectId, self), users, str(context), context_id)
             elif a == 'WALLPAPER':
                 self._CallEventHandler('WallpaperChanged', unicode2path(b))
         elif mode == 'rece':
@@ -354,18 +354,18 @@ class ISkype(EventHandlingBase):
         elif mode == 'attach':
             self._CallEventHandler('AttachmentStatus', str(arg))
             if arg == apiAttachRefused:
-                raise ISkypeAPIError('Skype connection refused')
+                raise SkypeAPIError('Skype connection refused')
 
-    def _DoCommand(self, com, reply=''):
-        command = ICommand(-1, com, reply, True, self.Timeout)
+    def _DoCommand(self, cmd, reply=''):
+        command = Command(-1, cmd, reply, True, self.Timeout)
         self.SendCommand(command)
         a, b = chop(command.Reply)
         if a == 'ERROR':
             errnum, errstr = chop(b)
             self._CallEventHandler('Error', command, int(errnum), errstr)
-            raise ISkypeError(int(errnum), errstr)
+            raise SkypeError(int(errnum), errstr)
         if not command.Reply.startswith(command.Expected):
-            raise ISkypeError(0, 'Unexpected reply from Skype, got [%s], expected [%s]' % \
+            raise SkypeError(0, 'Unexpected reply from Skype, got [%s], expected [%s]' % \
                 (command.Reply, command.Expected))
         return command.Reply
 
@@ -440,15 +440,15 @@ class ISkype(EventHandlingBase):
         @param Name: Application name.
         @type Name: unicode
         @return: The application object.
-        @rtype: L{IApplication}
+        @rtype: L{Application}
         '''
-        return IApplication(Name, self)
+        return Application(Name, self)
 
-    def _AsyncSearchUsersReplyHandler(self, Command):
-        if Command in self._AsyncSearchUsersCommands:
-            self._AsyncSearchUsersCommands.remove(Command)
-            self._CallEventHandler('AsyncSearchUsersFinished', Command.Id,
-                tuple([IUser(x, self) for x in esplit(chop(Command.Reply)[-1], ', ')]))
+    def _AsyncSearchUsersReplyHandler(self, command):
+        if command in self._AsyncSearchUsersCommands:
+            self._AsyncSearchUsersCommands.remove(command)
+            self._CallEventHandler('AsyncSearchUsersFinished', command.Id,
+                tuple([User(x, self) for x in esplit(chop(command.Reply)[-1], ', ')]))
             if len(self._AsyncSearchUsersCommands) == 0:
                 self.UnregisterEventHandler('Reply', self._AsyncSearchUsersReplyHandler)
                 del self._AsyncSearchUsersCommands
@@ -459,17 +459,17 @@ class ISkype(EventHandlingBase):
         @param Target: Search target (name or email address).
         @type Target: unicode
         @return: A search identifier. It will be passed along with the results to the
-        L{ISkypeEvents.AsyncSearchUsersFinished} event after the search is completed.
+        L{SkypeEvents.AsyncSearchUsersFinished} event after the search is completed.
         @rtype: int
         '''
         if not hasattr(self, '_AsyncSearchUsersCommands'):
             self._AsyncSearchUsersCommands = []
             self.RegisterEventHandler('Reply', self._AsyncSearchUsersReplyHandler)
-        Command = ICommand(-1, 'SEARCH USERS %s' % tounicode(Target), 'USERS', False, self.Timeout)
-        self._AsyncSearchUsersCommands.append(Command)
-        self.SendCommand(Command)
+        command = Command(-1, 'SEARCH USERS %s' % tounicode(Target), 'USERS', False, self.Timeout)
+        self._AsyncSearchUsersCommands.append(command)
+        self.SendCommand(command)
         # return pCookie - search identifier
-        return Command.Id
+        return command.Id
 
     def Attach(self, Protocol=5, Wait=True):
         '''Establishes a connection to Skype.
@@ -483,7 +483,7 @@ class ISkype(EventHandlingBase):
         try:
             self._API.Protocol = Protocol
             self._API.Attach(self.Timeout, Wait)
-        except ISkypeAPIError:
+        except SkypeAPIError:
             self.ResetCache()
             raise
 
@@ -493,10 +493,10 @@ class ISkype(EventHandlingBase):
         @param Id: Call identifier.
         @type Id: int
         @return: Call object.
-        @rtype: L{ICall}
+        @rtype: L{Call}
         '''
-        o = ICall(Id, self)
-        o.Status
+        o = Call(Id, self)
+        o.Status # Test if such a call exists.
         return o
 
     def Calls(self, Target=''):
@@ -505,9 +505,9 @@ class ISkype(EventHandlingBase):
         @param Target: Call target.
         @type Target: str
         @return: Call objects.
-        @rtype: tuple of L{ICall}
+        @rtype: tuple of L{Call}
         '''
-        return tuple([ICall(x, self) for x in self._Search('CALLS', Target)])
+        return tuple([Call(x, self) for x in self._Search('CALLS', Target)])
 
     def __ChangeUserStatus_UserStatus_Handler(self, status):
         if status.upper() == self.__ChangeUserStatus_Status:
@@ -538,9 +538,9 @@ class ISkype(EventHandlingBase):
         @param Name: Chat name.
         @type Name: str
         @return: A chat object.
-        @rtype: L{IChat}
+        @rtype: L{Chat}
         '''
-        o = IChat(Name, self)
+        o = Chat(Name, self)
         o.Status # Tests if such a chat really exists.
         return o
 
@@ -565,13 +565,13 @@ class ISkype(EventHandlingBase):
         '''
         self._DoCommand('CLEAR VOICEMAILHISTORY')
 
-    def Command(self, Command, Reply=u'', Block=False, Timeout=30000, Id=-1):
+    def Command(self, command, Reply=u'', Block=False, Timeout=30000, Id=-1):
         '''Creates an API command object.
 
-        @param Command: Command string.
-        @type Command: unicode
+        @param command: Command string.
+        @type command: unicode
         @param Reply: Expected reply. By default any reply is accepted (except errors
-        which raise an L{ISkypeError} exception).
+        which raise an L{SkypeError} exception).
         @type Reply: unicode
         @param Block: If set to True, L{SendCommand} method waits for a response from Skype API before returning.
         @type Block: bool
@@ -580,10 +580,10 @@ class ISkype(EventHandlingBase):
         @param Id: Command Id. The default (-1) means it will be assigned automatically as soon as the command is sent.
         @type Id: int
         @return: A command object.
-        @rtype: L{ICommand}
+        @rtype: L{Command}
         @see: L{SendCommand}
         '''
-        return ICommand(Id, Command, Reply, Block, Timeout)
+        return Command(Id, command, Reply, Block, Timeout)
 
     def Conference(self, Id=0):
         '''Queries a call conference object.
@@ -591,9 +591,9 @@ class ISkype(EventHandlingBase):
         @param Id: Conference Id.
         @type Id: int
         @return: A conference object.
-        @rtype: L{IConference}
+        @rtype: L{Conference}
         '''
-        o = IConference(Id, self)
+        o = Conference(Id, self)
         if Id <= 0 or not o.Calls:
             raise ISkypeError(0, 'Unknown conference')
         return o
@@ -604,9 +604,9 @@ class ISkype(EventHandlingBase):
         @param Blob: A blob indentifying the chat.
         @type Blob: str
         @return: A chat object
-        @rtype: L{IChat}
+        @rtype: L{Chat}
         '''
-        return IChat(chop(self._DoCommand('CHAT CREATEUSINGBLOB %s' % Blob), 2)[1], self)
+        return Chat(chop(self._DoCommand('CHAT CREATEUSINGBLOB %s' % Blob), 2)[1], self)
 
     def CreateChatWith(self, *Usernames):
         '''Creates a chat with one or more users.
@@ -614,10 +614,10 @@ class ISkype(EventHandlingBase):
         @param Usernames: One or more strings with the Skypenames of the users.
         @type Usernames: str
         @return: A chat object
-        @rtype: L{IChat}
-        @see: L{IChat.AddMembers}
+        @rtype: L{Chat}
+        @see: L{Chat.AddMembers}
         '''
-        return IChat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join(Usernames)), 2)[1], self)
+        return Chat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join(Usernames)), 2)[1], self)
 
     def CreateGroup(self, GroupName):
         '''Creates a custom contact group.
@@ -625,7 +625,7 @@ class ISkype(EventHandlingBase):
         @param GroupName: Group name.
         @type GroupName: unicode
         @return: A group object.
-        @rtype: L{IGroup}
+        @rtype: L{Group}
         @see: L{DeleteGroup}
         '''
         groups = self.CustomGroups
@@ -633,7 +633,7 @@ class ISkype(EventHandlingBase):
         for g in self.CustomGroups:
             if g not in groups and g.DisplayName == GroupName:
                 return g
-        raise ISkypeError(0, 'Group creating failed')
+        raise SkypeError(0, 'Group creating failed')
 
     def CreateSms(self, MessageType, *TargetNumbers):
         '''Creates an SMS message.
@@ -643,16 +643,16 @@ class ISkype(EventHandlingBase):
         @param TargetNumbers: One or more target SMS numbers.
         @type TargetNumbers: str
         @return: An sms message object.
-        @rtype: L{ISmsMessage}
+        @rtype: L{SmsMessage}
         '''
-        return ISmsMessage(chop(self._DoCommand('CREATE SMS %s %s' % (MessageType, ', '.join(TargetNumbers))), 2)[1], self)
+        return SmsMessage(chop(self._DoCommand('CREATE SMS %s %s' % (MessageType, ', '.join(TargetNumbers))), 2)[1], self)
 
     def DeleteGroup(self, GroupId):
         '''Deletes a custom contact group.
 
         Users in the contact group are moved to the All Contacts (hardwired) contact group.
 
-        @param GroupId: Group identifier. Get it from L{IGroup.Id}.
+        @param GroupId: Group identifier. Get it from L{Group.Id}.
         @type GroupId: int
         @see: L{CreateGroup}
         '''
@@ -673,9 +673,9 @@ class ISkype(EventHandlingBase):
         @param Blob: A blob indentifying the chat.
         @type Blob: str
         @return: A chat object
-        @rtype: L{IChat}
+        @rtype: L{Chat}
         '''
-        return IChat(chop(self._DoCommand('CHAT FINDUSINGBLOB %s' % Blob), 2)[1], self)
+        return Chat(chop(self._DoCommand('CHAT FINDUSINGBLOB %s' % Blob), 2)[1], self)
 
     def Greeting(self, Username=''):
         '''Queries the greeting used as voicemail.
@@ -683,7 +683,7 @@ class ISkype(EventHandlingBase):
         @param Username: Skypename of the user.
         @type Username: str
         @return: A voicemail object.
-        @rtype: L{IVoicemail}
+        @rtype: L{Voicemail}
         '''
         for v in self.Voicemails:
             if Username and v.PartnerHandle != Username:
@@ -697,9 +697,9 @@ class ISkype(EventHandlingBase):
         @param Id: Message Id.
         @type Id: int
         @return: A chat message object.
-        @rtype: L{IChatMessage}
+        @rtype: L{ChatMessage}
         '''
-        o = IChatMessage(Id, self)
+        o = ChatMessage(Id, self)
         o.Status # Test if such an id is known.
         return o
 
@@ -709,9 +709,9 @@ class ISkype(EventHandlingBase):
         @param Target: Message sender.
         @type Target: str
         @return: Chat message objects.
-        @rtype: tuple of L{IChatMessage}
+        @rtype: tuple of L{ChatMessage}
         '''
-        return tuple([IChatMessage(x, self) for x in self._Search('CHATMESSAGES', Target)])
+        return tuple([ChatMessage(x, self) for x in self._Search('CHATMESSAGES', Target)])
 
     def PlaceCall(self, *Targets):
         '''Places a call to a single user or creates a conference call.
@@ -720,19 +720,19 @@ class ISkype(EventHandlingBase):
         call is created. The call target can be a Skypename, phone number, or speed dial code.
         @type Targets: str
         @return: A call object.
-        @rtype: L{ICall}
+        @rtype: L{Call}
         '''
         calls = self.ActiveCalls
         reply = self._DoCommand('CALL %s' % ', '.join(Targets))
         # Skype for Windows returns the call status which gives us the call Id;
         if reply.startswith('CALL '):
-            return ICall(chop(reply, 2)[1], self)
+            return Call(chop(reply, 2)[1], self)
         # On linux we get 'OK' as reply so we search for the new call on
         # list of active calls.
         for c in self.ActiveCalls:
             if c not in calls:
                 return c
-        raise ISkypeError(0, 'Placing call failed')
+        raise SkypeError(0, 'Placing call failed')
 
     def Privilege(self, Name):
         '''Queries the Skype services (privileges) enabled for the Skype client.
@@ -789,19 +789,19 @@ class ISkype(EventHandlingBase):
         @param Target: Search target (name or email address).
         @type Target: unicode
         @return: Found users.
-        @rtype: tuple of L{IUser}
+        @rtype: tuple of L{User}
         '''
-        return tuple([IUser(x, self) for x in self._Search('USERS', tounicode(Target))])
+        return tuple([User(x, self) for x in self._Search('USERS', tounicode(Target))])
 
-    def SendCommand(self, Command):
+    def SendCommand(self, command):
         '''Sends an API command.
 
-        @param Command: Command to send. Use L{Command} method to create a command.
-        @type Command: L{ICommand}
+        @param command: Command to send. Use L{Command} method to create a command.
+        @type command: L{Command}
         '''
         try:
-            self._API.SendCommand(Command)
-        except ISkypeAPIError:
+            self._API.SendCommand(command)
+        except SkypeAPIError:
             self.ResetCache()
             raise
 
@@ -813,7 +813,7 @@ class ISkype(EventHandlingBase):
         @param Text: Body of the message.
         @type Text: unicode
         @return: A chat message object.
-        @rtype: L{IChatMessage}
+        @rtype: L{ChatMessage}
         '''
         return self.CreateChatWith(Username).SendMessage(Text)
 
@@ -822,10 +822,10 @@ class ISkype(EventHandlingBase):
 
         @param TargetNumbers: One or more target SMS numbers.
         @type TargetNumbers: str
-        @param Properties: Message properties. Properties available are same as L{ISmsMessage} object properties.
+        @param Properties: Message properties. Properties available are same as L{SmsMessage} object properties.
         @type Properties: kwargs
         @return: An sms message object. The message is already sent at this point.
-        @rtype: L{ISmsMessage}
+        @rtype: L{SmsMessage}
         '''
         sms = self.CreateSms(smsMessageTypeOutgoing, *TargetNumbers)
         for prop, value in Properties.items():
@@ -842,7 +842,7 @@ class ISkype(EventHandlingBase):
         @param Username: Skypename of the user.
         @type Username: str
         @return: A voicemail object.
-        @rtype: L{IVoicemail}
+        @rtype: L{Voicemail}
         '''
         if self._API.Protocol >= 6:
             self._DoCommand('CALLVOICEMAIL %s' % Username)
@@ -855,9 +855,9 @@ class ISkype(EventHandlingBase):
         @param Username: Skypename of the user.
         @type Username: str
         @return: A user object.
-        @rtype: L{IUser}
+        @rtype: L{User}
         '''
-        o = IUser(Username, self)
+        o = User(Username, self)
         o.OnlineStatus # Test if such a user exists.
         return o
 
@@ -879,37 +879,37 @@ class ISkype(EventHandlingBase):
         @param Id: Voicemail Id.
         @type Id: int
         @return: A voicemail object.
-        @rtype: L{IVoicemail}
+        @rtype: L{Voicemail}
         '''
-        o = IVoicemail(Id, self)
+        o = Voicemail(Id, self)
         o.Type # Test if such a voicemail exists.
         return o
 
     def _GetActiveCalls(self):
-        return tuple([ICall(x, self) for x in self._Search('ACTIVECALLS')])
+        return tuple([Call(x, self) for x in self._Search('ACTIVECALLS')])
 
     ActiveCalls = property(_GetActiveCalls,
     doc='''Queries a list of active calls.
 
-    @type: tuple of L{ICall}
+    @type: tuple of L{Call}
     ''')
 
     def _GetActiveChats(self):
-        return tuple([IChat(x, self) for x in self._Search('ACTIVECHATS')])
+        return tuple([Chat(x, self) for x in self._Search('ACTIVECHATS')])
 
     ActiveChats = property(_GetActiveChats,
     doc='''Queries a list of active chats.
 
-    @type: tuple of L{IChat}
+    @type: tuple of L{Chat}
     ''')
 
     def _GetActiveFileTransfers(self):
-        return tuple([IFileTransfer(x, self) for x in self._Search('ACTIVEFILETRANSFERS')])
+        return tuple([FileTransfer(x, self) for x in self._Search('ACTIVEFILETRANSFERS')])
 
     ActiveFileTransfers = property(_GetActiveFileTransfers,
     doc='''Queries currently active file transfers.
 
-    @type: tuple of L{IFileTransfer}
+    @type: tuple of L{FileTransfer}
     ''')
 
     def _GetApiDebugLevel(self):
@@ -946,12 +946,12 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetBookmarkedChats(self):
-        return tuple([IChat(x, self) for x in self._Search('BOOKMARKEDCHATS')])
+        return tuple([Chat(x, self) for x in self._Search('BOOKMARKEDCHATS')])
 
     BookmarkedChats = property(_GetBookmarkedChats,
     doc='''Queries a list of bookmarked chats.
 
-    @type: tuple of L{IChat}
+    @type: tuple of L{Chat}
     ''')
 
     def _GetCache(self):
@@ -968,12 +968,12 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetChats(self):
-        return tuple([IChat(x, self) for x in self._Search('CHATS')])
+        return tuple([Chat(x, self) for x in self._Search('CHATS')])
 
     Chats = property(_GetChats,
     doc='''Queries a list of chats.
 
-    @type: tuple of L{IChat}
+    @type: tuple of L{Chat}
     ''')
 
     def _GetClient(self):
@@ -982,7 +982,7 @@ class ISkype(EventHandlingBase):
     Client = property(_GetClient,
     doc='''Queries the user interface control object.
 
-    @type: L{IClient}
+    @type: L{Client}
     ''')
 
     def _GetCommandId(self):
@@ -1005,13 +1005,13 @@ class ISkype(EventHandlingBase):
         for c in self.Calls():
             cid = c.ConferenceId
             if cid > 0 and cid not in [x.Id for x in confs]:
-                confs.append(IConference(cid, self))
+                confs.append(Conference(cid, self))
         return tuple(confs)
 
     Conferences = property(_GetConferences,
     doc='''Queries a list of call conferences.
 
-    @type: tuple of L{IConference}
+    @type: tuple of L{Conference}
     ''')
 
     def _GetConnectionStatus(self):
@@ -1029,16 +1029,16 @@ class ISkype(EventHandlingBase):
     Convert = property(_GetConvert,
     doc='''Queries the conversion object.
 
-    @type: L{IConversion}
+    @type: L{Conversion}
     ''')
 
     def _GetCurrentUser(self):
-        return IUser(self.CurrentUserHandle, self)
+        return User(self.CurrentUserHandle, self)
 
     CurrentUser = property(_GetCurrentUser,
     doc='''Queries the current user object.
 
-    @type: L{IUser}
+    @type: L{User}
     ''')
 
     def _GetCurrentUserHandle(self):
@@ -1056,7 +1056,7 @@ class ISkype(EventHandlingBase):
     CurrentUserProfile = property(_GetCurrentUserProfile,
     doc='''Queries the user profile object.
 
-    @type: L{IProfile}
+    @type: L{Profile}
     ''')
 
     def _GetCurrentUserStatus(self):
@@ -1072,32 +1072,32 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetCustomGroups(self):
-        return tuple([IGroup(x, self) for x in self._Search('GROUPS', 'CUSTOM')])
+        return tuple([Group(x, self) for x in self._Search('GROUPS', 'CUSTOM')])
 
     CustomGroups = property(_GetCustomGroups,
     doc='''Queries the list of custom contact groups. Custom groups are contact groups defined by the user.
 
-    @type: tuple of L{IGroup}
+    @type: tuple of L{Group}
     ''')
 
     def _GetFileTransfers(self):
-        return tuple([IFileTransfer(x, self) for x in self._Search('FILETRANSFERS')])
+        return tuple([FileTransfer(x, self) for x in self._Search('FILETRANSFERS')])
 
     FileTransfers = property(_GetFileTransfers,
     doc='''Queries all file transfers.
 
-    @type: tuple of L{IFileTransfer}
+    @type: tuple of L{FileTransfer}
     ''')
 
     def _GetFocusedContacts(self):
         # we have to use _DoCommand() directly because for unknown reason the API returns
         # "CONTACTS FOCUSED" instead of "CONTACTS_FOCUSED" (note the space instead of "_")
-        return tuple([IUser(x, self) for x in esplit(chop(self._DoCommand('GET CONTACTS_FOCUSED', 'CONTACTS FOCUSED'), 2)[-1])])
+        return tuple([User(x, self) for x in esplit(chop(self._DoCommand('GET CONTACTS_FOCUSED', 'CONTACTS FOCUSED'), 2)[-1])])
 
     FocusedContacts = property(_GetFocusedContacts,
     doc='''Queries a list of contacts selected in the contacts list.
 
-    @type: tuple of L{IUser}
+    @type: tuple of L{User}
     ''')
 
     def _SetFriendlyName(self, FriendlyName):
@@ -1110,76 +1110,76 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetFriends(self):
-        return tuple([IUser(x, self) for x in self._Search('FRIENDS')])
+        return tuple([User(x, self) for x in self._Search('FRIENDS')])
 
     Friends = property(_GetFriends,
     doc='''Queries the users in a contact list.
 
-    @type: tuple of L{IUser}
+    @type: tuple of L{User}
     ''')
 
     def _GetGroups(self):
-        return tuple([IGroup(x, self) for x in self._Search('GROUPS', 'ALL')])
+        return tuple([Group(x, self) for x in self._Search('GROUPS', 'ALL')])
 
     Groups = property(_GetGroups,
     doc='''Queries the list of all contact groups.
 
-    @type: tuple of L{IGroup}
+    @type: tuple of L{Group}
     ''')
 
     def _GetHardwiredGroups(self):
-        return tuple([IGroup(x, self) for x in self._Search('GROUPS', 'HARDWIRED')])
+        return tuple([Group(x, self) for x in self._Search('GROUPS', 'HARDWIRED')])
 
     HardwiredGroups = property(_GetHardwiredGroups,
     doc='''Queries the list of hardwired contact groups. Hardwired groups are "smart" contact groups,
     defined by Skype, that cannot be removed.
 
-    @type: tuple of L{IGroup}
+    @type: tuple of L{Group}
     ''')
 
     def _GetMissedCalls(self):
-        return tuple([ICall(x, self) for x in self._Search('MISSEDCALLS')])
+        return tuple([Call(x, self) for x in self._Search('MISSEDCALLS')])
 
     MissedCalls = property(_GetMissedCalls,
     doc='''Queries a list of missed calls.
 
-    @type: tuple of L{ICall}
+    @type: tuple of L{Call}
     ''')
 
     def _GetMissedChats(self):
-        return tuple([IChat(x, self) for x in self._Search('MISSEDCHATS')])
+        return tuple([Chat(x, self) for x in self._Search('MISSEDCHATS')])
 
     MissedChats = property(_GetMissedChats,
     doc='''Queries a list of missed chats.
 
-    @type: tuple of L{IChat}
+    @type: tuple of L{Chat}
     ''')
 
     def _GetMissedMessages(self):
-        return tuple([IChatMessage(x, self) for x in self._Search('MISSEDCHATMESSAGES')])
+        return tuple([ChatMessage(x, self) for x in self._Search('MISSEDCHATMESSAGES')])
 
     MissedMessages = property(_GetMissedMessages,
     doc='''Queries a list of missed chat messages.
 
-    @type: L{IChatMessage}
+    @type: L{ChatMessage}
     ''')
 
     def _GetMissedSmss(self):
-        return tuple([ISmsMessage(x, self) for x in self._Search('MISSEDSMSS')])
+        return tuple([SmsMessage(x, self) for x in self._Search('MISSEDSMSS')])
 
     MissedSmss = property(_GetMissedSmss,
     doc='''Requests a list of all missed SMS messages.
 
-    @type: tuple of L{ISmsMessage}
+    @type: tuple of L{SmsMessage}
     ''')
 
     def _GetMissedVoicemails(self):
-        return tuple([IVoicemail(x, self) for x in self._Search('MISSEDVOICEMAILS')])
+        return tuple([Voicemail(x, self) for x in self._Search('MISSEDVOICEMAILS')])
 
     MissedVoicemails = property(_GetMissedVoicemails,
     doc='''Requests a list of missed voicemails.
 
-    @type: L{IVoicemail}
+    @type: L{Voicemail}
     ''')
 
     def _GetMute(self):
@@ -1220,12 +1220,12 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetRecentChats(self):
-        return tuple([IChat(x, self) for x in self._Search('RECENTCHATS')])
+        return tuple([Chat(x, self) for x in self._Search('RECENTCHATS')])
 
     RecentChats = property(_GetRecentChats,
     doc='''Queries a list of recent chats.
 
-    @type: tuple of L{IChat}
+    @type: tuple of L{Chat}
     ''')
 
     def _GetSettings(self):
@@ -1234,7 +1234,7 @@ class ISkype(EventHandlingBase):
     Settings = property(_GetSettings,
     doc='''Queries the settings for Skype general parameters.
 
-    @type: L{ISettings}
+    @type: L{Settings}
     ''')
 
     def _GetSilentMode(self):
@@ -1250,12 +1250,12 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetSmss(self):
-        return tuple([ISmsMessage(x, self) for x in self._Search('SMSS')])
+        return tuple([SmsMessage(x, self) for x in self._Search('SMSS')])
 
     Smss = property(_GetSmss,
     doc='''Requests a list of all SMS messages.
 
-    @type: tuple of L{ISmsMessage}
+    @type: tuple of L{SmsMessage}
     ''')
 
     def _GetTimeout(self):
@@ -1267,18 +1267,18 @@ class ISkype(EventHandlingBase):
     Timeout = property(_GetTimeout, _SetTimeout,
     doc='''Queries/sets the wait timeout value in milliseconds. This timeout value applies to every
     command sent to the Skype API. If a response is not received during the timeout period, an
-    L{ISkypeAPIError} exception is raised.
+    L{SkypeAPIError} exception is raised.
 
     @type: int
     ''')
 
     def _GetUsersWaitingAuthorization(self):
-        return tuple([IUser(x, self) for x in self._Search('USERSWAITINGMYAUTHORIZATION')])
+        return tuple([User(x, self) for x in self._Search('USERSWAITINGMYAUTHORIZATION')])
 
     UsersWaitingAuthorization = property(_GetUsersWaitingAuthorization,
     doc='''Queries the list of users waiting for authorization.
 
-    @type: tuple of L{IUser}
+    @type: tuple of L{User}
     ''')
 
     def _GetVersion(self):
@@ -1291,17 +1291,17 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetVoicemails(self):
-        return tuple([IVoicemail(x, self) for x in self._Search('VOICEMAILS')])
+        return tuple([Voicemail(x, self) for x in self._Search('VOICEMAILS')])
 
     Voicemails = property(_GetVoicemails,
     doc='''Queries a list of voicemails.
 
-    @type: L{IVoicemail}
+    @type: L{Voicemail}
     ''')
 
 
-class ISkypeEvents(object):
-    '''Events defined in L{ISkype}.
+class SkypeEvents(object):
+    '''Events defined in L{Skype}.
 
     See L{EventHandlingBase} for more information on events.
     '''
@@ -1310,18 +1310,18 @@ class ISkypeEvents(object):
         '''This event is triggered when list of users connecting to an application changes.
 
         @param App: Application object.
-        @type App: L{IApplication}
+        @type App: L{Application}
         @param Users: Connecting users.
-        @type Users: tuple of L{IUser}
+        @type Users: tuple of L{User}
         '''
 
     def ApplicationDatagram(self, App, Stream, Text):
         '''This event is caused by the arrival of an application datagram.
 
         @param App: Application object.
-        @type App: L{IApplication}
+        @type App: L{Application}
         @param Stream: Application stream that received the datagram.
-        @type Stream: L{IApplicationStream}
+        @type Stream: L{ApplicationStream}
         @param Text: The datagram text.
         @type Text: unicode
         '''
@@ -1330,37 +1330,37 @@ class ISkypeEvents(object):
         '''This event is triggered when list of application receiving streams changes.
 
         @param App: Application object.
-        @type App: L{IApplication}
+        @type App: L{Application}
         @param Streams: Application receiving streams.
-        @type Streams: tuple of L{IApplicationStream}
+        @type Streams: tuple of L{ApplicationStream}
         '''
 
     def ApplicationSending(self, App, Streams):
         '''This event is triggered when list of application sending streams changes.
 
         @param App: Application object.
-        @type App: L{IApplication}
+        @type App: L{Application}
         @param Streams: Application sending streams.
-        @type Streams: tuple of L{IApplicationStream}
+        @type Streams: tuple of L{ApplicationStream}
         '''
 
     def ApplicationStreams(self, App, Streams):
         '''This event is triggered when list of application streams changes.
 
         @param App: Application object.
-        @type App: L{IApplication}
+        @type App: L{Application}
         @param Streams: Application streams.
-        @type Streams: tuple of L{IApplicationStream}
+        @type Streams: tuple of L{ApplicationStream}
         '''
 
     def AsyncSearchUsersFinished(self, Cookie, Users):
         '''This event occurs when an asynchronous search is completed.
 
-        @param Cookie: Search identifier as returned by L{ISkype.AsyncSearchUsers}.
+        @param Cookie: Search identifier as returned by L{Skype.AsyncSearchUsers}.
         @type Cookie: int
         @param Users: Found users.
-        @type Users: tuple of L{IUser}
-        @see: L{ISkype.AsyncSearchUsers}
+        @type Users: tuple of L{User}
+        @see: L{Skype.AsyncSearchUsers}
         '''
 
     def AttachmentStatus(self, Status):
@@ -1381,7 +1381,7 @@ class ISkypeEvents(object):
         '''This event is caused by a call DTMF event.
 
         @param Call: Call object.
-        @type Call: L{ICall}
+        @type Call: L{Call}
         @param Code: Received DTMF code.
         @type Code: str
         '''
@@ -1394,7 +1394,7 @@ class ISkypeEvents(object):
         '''This event is caused by a change in the Call voice input status change.
 
         @param Call: Call object.
-        @type Call: L{ICall}
+        @type Call: L{Call}
         @param Active: New voice input status (active when True).
         @type Active: bool
         '''
@@ -1403,17 +1403,17 @@ class ISkypeEvents(object):
         '''This event occurs when the seen status of a call changes.
 
         @param Call: Call object.
-        @type Call: L{ICall}
+        @type Call: L{Call}
         @param Seen: True if call was seen.
         @type Seen: bool
-        @see: L{ICall.Seen}
+        @see: L{Call.Seen}
         '''
 
     def CallStatus(self, Call, Status):
         '''This event is caused by a change in call status.
 
         @param Call: Call object.
-        @type Call: L{ICall}
+        @type Call: L{Call}
         @param Status: New status of the call.
         @type Status: L{Call status<enums.clsUnknown>}
         '''
@@ -1422,7 +1422,7 @@ class ISkypeEvents(object):
         '''This event occurs when a call transfer status changes.
 
         @param Call: Call object.
-        @type Call: L{ICall}
+        @type Call: L{Call}
         @param Status: New status of the call transfer.
         @type Status: L{Call status<enums.clsUnknown>}
         '''
@@ -1431,7 +1431,7 @@ class ISkypeEvents(object):
         '''This event occurs when a call video receive status changes.
 
         @param Call: Call object.
-        @type Call: L{ICall}
+        @type Call: L{Call}
         @param Status: New video receive status of the call.
         @type Status: L{Call video send status<enums.vssUnknown>}
         '''
@@ -1440,7 +1440,7 @@ class ISkypeEvents(object):
         '''This event occurs when a call video send status changes.
 
         @param Call: Call object.
-        @type Call: L{ICall}
+        @type Call: L{Call}
         @param Status: New video send status of the call.
         @type Status: L{Call video send status<enums.vssUnknown>}
         '''
@@ -1449,7 +1449,7 @@ class ISkypeEvents(object):
         '''This event occurs when a call video status changes.
 
         @param Call: Call object.
-        @type Call: L{ICall}
+        @type Call: L{Call}
         @param Status: New video status of the call.
         @type Status: L{Call video status<enums.cvsUnknown>}
         '''
@@ -1458,7 +1458,7 @@ class ISkypeEvents(object):
         '''This event occurs when a chat member role changes.
 
         @param Member: Chat member object.
-        @type Member: L{IChatMember}
+        @type Member: L{ChatMember}
         @param Role: New member role.
         @type Role: L{Chat member role<enums.chatMemberRoleUnknown>}
         '''
@@ -1467,16 +1467,16 @@ class ISkypeEvents(object):
         '''This event occurs when a list of chat members change.
 
         @param Chat: Chat object.
-        @type Chat: L{IChat}
+        @type Chat: L{Chat}
         @param Members: Chat members.
-        @type Members: tuple of L{IUser}
+        @type Members: tuple of L{User}
         '''
 
     def ChatWindowState(self, Chat, State):
         '''This event occurs when chat window is opened or closed.
 
         @param Chat: Chat object.
-        @type Chat: L{IChat}
+        @type Chat: L{Chat}
         @param State: True if the window was opened or False if closed.
         @type State: bool
         '''
@@ -1488,11 +1488,11 @@ class ISkypeEvents(object):
         @type State: L{Window state<enums.wndUnknown>}
         '''
 
-    def Command(self, Command):
+    def Command(self, command):
         '''This event is triggered when a command is sent to the Skype API.
 
-        @param Command: Command object.
-        @type Command: L{ICommand}
+        @param command: Command object.
+        @type command: L{Command}
         '''
 
     def ConnectionStatus(self, Status):
@@ -1509,11 +1509,11 @@ class ISkypeEvents(object):
         @type Username: str
         '''
 
-    def Error(self, Command, Number, Description):
+    def Error(self, command, Number, Description):
         '''This event is triggered when an error occurs during execution of an API command.
 
-        @param Command: Command object that caused the error.
-        @type Command: L{ICommand}
+        @param command: Command object that caused the error.
+        @type command: L{Command}
         @param Number: Error number returned by the Skype API.
         @type Number: int
         @param Description: Description of the error.
@@ -1524,7 +1524,7 @@ class ISkypeEvents(object):
         '''This event occurs when a file transfer status changes.
 
         @param Transfer: File transfer object.
-        @type Transfer: L{IFileTransfer}
+        @type Transfer: L{FileTransfer}
         @param Status: New status of the file transfer.
         @type Status: L{File transfer status<enums.fileTransferStatusNew>}
         '''
@@ -1540,7 +1540,7 @@ class ISkypeEvents(object):
         '''This event is caused by a user expanding or collapsing a group in the contacts tab.
 
         @param Group: Group object.
-        @type Group: L{IGroup}
+        @type Group: L{Group}
         @param Expanded: Tells if the group is expanded (True) or collapsed (False).
         @type Expanded: bool
         '''
@@ -1549,16 +1549,16 @@ class ISkypeEvents(object):
         '''This event is caused by a change in a contact group members.
 
         @param Group: Group object.
-        @type Group: L{IGroup}
+        @type Group: L{Group}
         @param Users: Group members.
-        @type Users: tuple of L{IUser}
+        @type Users: tuple of L{User}
         '''
 
     def GroupVisible(self, Group, Visible):
         '''This event is caused by a user hiding/showing a group in the contacts tab.
 
         @param Group: Group object.
-        @type Group: L{IGroup}
+        @type Group: L{Group}
         @param Visible: Tells if the group is visible or not.
         @type Visible: bool
         '''
@@ -1574,7 +1574,7 @@ class ISkypeEvents(object):
         '''This event is caused by a change in chat message status.
 
         @param Message: Chat message object.
-        @type Message: L{IChatMessage}
+        @type Message: L{ChatMessage}
         @param Status: New status of the chat message.
         @type Status: L{Chat message status<enums.cmsUnknown>}
         '''
@@ -1598,7 +1598,7 @@ class ISkypeEvents(object):
         '''This event is caused by a change in the online status of a user.
 
         @param User: User object.
-        @type User: L{IUser}
+        @type User: L{User}
         @param Status: New online status of the user.
         @type Status: L{Online status<enums.olsUnknown>}
         '''
@@ -1607,28 +1607,28 @@ class ISkypeEvents(object):
         '''This event occurs when a user clicks on a plug-in event.
 
         @param Event: Plugin event object.
-        @type Event: L{IPluginEvent}
+        @type Event: L{PluginEvent}
         '''
 
     def PluginMenuItemClicked(self, MenuItem, Users, PluginContext, ContextId):
         '''This event occurs when a user clicks on a plug-in menu item.
 
         @param MenuItem: Menu item object.
-        @type MenuItem: L{IPluginMenuItem}
+        @type MenuItem: L{PluginMenuItem}
         @param Users: Users this item refers to.
-        @type Users: tuple of L{IUser}
+        @type Users: tuple of L{User}
         @param PluginContext: Plug-in context.
         @type PluginContext: unicode
         @param ContextId: Context Id. Chat name for chat context or Call ID for call context.
         @type ContextId: str or int
-        @see: L{IPluginMenuItem}
+        @see: L{PluginMenuItem}
         '''
 
-    def Reply(self, Command):
+    def Reply(self, command):
         '''This event is triggered when the API replies to a command object.
 
-        @param Command: Command object.
-        @type Command: L{ICommand}
+        @param command: Command object.
+        @type command: L{Command}
         '''
 
     def SilentModeStatusChanged(self, Silent):
@@ -1642,7 +1642,7 @@ class ISkypeEvents(object):
         '''This event is caused by a change in the SMS message status.
 
         @param Message: SMS message object.
-        @type Message: L{ISmsMessage}
+        @type Message: L{SmsMessage}
         @param Status: New status of the SMS message.
         @type Status: L{SMS message status<enums.smsMessageStatusUnknown>}
         '''
@@ -1651,7 +1651,7 @@ class ISkypeEvents(object):
         '''This event is caused by a change in the SMS target status.
 
         @param Target: SMS target object.
-        @type Target: L{ISmsTarget}
+        @type Target: L{SmsTarget}
         @param Status: New status of the SMS target.
         @type Status: L{SMS target status<enums.smsTargetStatusUnknown>}
         '''
@@ -1660,14 +1660,14 @@ class ISkypeEvents(object):
         '''This event occurs when user sends you an authorization request.
 
         @param User: User object.
-        @type User: L{IUser}
+        @type User: L{User}
         '''
 
     def UserMood(self, User, MoodText):
         '''This event is caused by a change in the mood text of the user.
 
         @param User: User object.
-        @type User: L{IUser}
+        @type User: L{User}
         @param MoodText: New mood text.
         @type MoodText: unicode
         '''
@@ -1683,7 +1683,7 @@ class ISkypeEvents(object):
         '''This event is caused by a change in voicemail status.
 
         @param Mail: Voicemail object.
-        @type Mail: L{IVoicemail}
+        @type Mail: L{Voicemail}
         @param Status: New status of the voicemail.
         @type Status: L{Voicemail status<enums.vmsUnknown>}
         '''
@@ -1696,4 +1696,4 @@ class ISkypeEvents(object):
         '''
 
 
-ISkype._AddEvents(ISkypeEvents)
+Skype._AddEvents(SkypeEvents)
