@@ -220,7 +220,7 @@ class ISkype(EventHandlingBase):
                 if ObjectType == 'USER':
                     o = IUser(ObjectId, self)
                     if PropName == 'ONLINESTATUS':
-                        self._CallEventHandler('OnlineStatus', o, Value)
+                        self._CallEventHandler('OnlineStatus', o, str(Value))
                     elif PropName == 'MOOD_TEXT' or PropName == 'RICH_MOOD_TEXT':
                         self._CallEventHandler('UserMood', o, Value)
                     elif PropName == 'RECEIVEDAUTHREQUEST':
@@ -228,35 +228,35 @@ class ISkype(EventHandlingBase):
                 elif ObjectType == 'CALL':
                     o = ICall(ObjectId, self)
                     if PropName == 'STATUS':
-                        self._CallEventHandler('CallStatus', o, Value)
+                        self._CallEventHandler('CallStatus', o, str(Value))
                     elif PropName == 'SEEN':
-                        self._CallEventHandler('CallSeenStatusChanged', o, Value == 'TRUE')
+                        self._CallEventHandler('CallSeenStatusChanged', o, (Value == 'TRUE'))
                     elif PropName == 'VAA_INPUT_STATUS':
-                        self._CallEventHandler('CallInputStatusChanged', o, Value == 'TRUE')
+                        self._CallEventHandler('CallInputStatusChanged', o, (Value == 'TRUE'))
                     elif PropName == 'TRANSFER_STATUS':
-                        self._CallEventHandler('CallTransferStatusChanged', o, Value)
+                        self._CallEventHandler('CallTransferStatusChanged', o, str(Value))
                     elif PropName == 'DTMF':
-                        self._CallEventHandler('CallDtmfReceived', o, Value)
+                        self._CallEventHandler('CallDtmfReceived', o, str(Value))
                     elif PropName == 'VIDEO_STATUS':
-                        self._CallEventHandler('CallVideoStatusChanged', o, Value)
+                        self._CallEventHandler('CallVideoStatusChanged', o, str(Value))
                     elif PropName == 'VIDEO_SEND_STATUS':
-                        self._CallEventHandler('CallVideoSendStatusChanged', o, Value)
+                        self._CallEventHandler('CallVideoSendStatusChanged', o, str(Value))
                     elif PropName == 'VIDEO_RECEIVE_STATUS':
-                        self._CallEventHandler('CallVideoReceiveStatusChanged', o, Value)
+                        self._CallEventHandler('CallVideoReceiveStatusChanged', o, str(Value))
                 elif ObjectType == 'CHAT':
                     o = IChat(ObjectId, self)
                     if PropName == 'MEMBERS':
                         self._CallEventHandler('ChatMembersChanged', o, tuple([IUser(x, self) for x in esplit(Value)]))
                     if PropName in ('OPENED', 'CLOSED'):
-                        self._CallEventHandler('ChatWindowState', o, PropName == 'OPENED')
+                        self._CallEventHandler('ChatWindowState', o, (PropName == 'OPENED'))
                 elif ObjectType == 'CHATMEMBER':
                     o = IChatMember(ObjectId, self)
                     if PropName == 'ROLE':
-                        self._CallEventHandler('ChatMemberRoleChanged', o, Value)
+                        self._CallEventHandler('ChatMemberRoleChanged', o, str(Value))
                 elif ObjectType == 'CHATMESSAGE':
                     o = IChatMessage(ObjectId, self)
                     if PropName == 'STATUS':
-                        self._CallEventHandler('MessageStatus', o, Value)
+                        self._CallEventHandler('MessageStatus', o, str(Value))
                 elif ObjectType == 'APPLICATION':
                     o = IApplication(ObjectId, self)
                     if PropName == 'CONNECTING':
@@ -273,27 +273,27 @@ class ISkype(EventHandlingBase):
                 elif ObjectType == 'GROUP':
                     o = IGroup(ObjectId, self)
                     if PropName == 'VISIBLE':
-                        self._CallEventHandler('GroupVisible', o, Value == 'TRUE')
+                        self._CallEventHandler('GroupVisible', o, (Value == 'TRUE'))
                     elif PropName == 'EXPANDED':
-                        self._CallEventHandler('GroupExpanded', o, Value == 'TRUE')
+                        self._CallEventHandler('GroupExpanded', o, (Value == 'TRUE'))
                     elif PropName == 'USERS':
                         self._CallEventHandler('GroupUsers', o, tuple([IUser(x, self) for x in esplit(Value, ', ')]))
                 elif ObjectType == 'SMS':
                     o = ISmsMessage(ObjectId, self)
                     if PropName == 'STATUS':
-                        self._CallEventHandler('SmsMessageStatusChanged', o, Value)
+                        self._CallEventHandler('SmsMessageStatusChanged', o, str(Value))
                     elif PropName == 'TARGET_STATUSES':
                         for t in esplit(Value, ', '):
                             number, status = t.split('=')
-                            self._CallEventHandler('SmsTargetStatusChanged', ISmsTarget((number, o)), status)
+                            self._CallEventHandler('SmsTargetStatusChanged', ISmsTarget((number, o)), str(status))
                 elif ObjectType == 'FILETRANSFER':
                     o = IFileTransfer(ObjectId, self)
                     if PropName == 'STATUS':
-                        self._CallEventHandler('FileTransferStatusChanged', o, Value)
+                        self._CallEventHandler('FileTransferStatusChanged', o, str(Value))
                 elif ObjectType == 'VOICEMAIL':
                     o = IVoicemail(ObjectId, self)
                     if PropName == 'STATUS':
-                        self._CallEventHandler('VoicemailStatus', o, Value)
+                        self._CallEventHandler('VoicemailStatus', o, str(Value))
             elif a in ('PROFILE', 'PRIVILEGE'):
                 ObjectType, ObjectId, PropName, Value = [a, ''] + chop(b)
                 self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
@@ -303,23 +303,23 @@ class ISkype(EventHandlingBase):
                 if ObjectType == 'MUTE':
                     self._CallEventHandler('Mute', Value == 'TRUE')
                 elif ObjectType == 'CONNSTATUS':
-                    self._CallEventHandler('ConnectionStatus', Value)
+                    self._CallEventHandler('ConnectionStatus', str(Value))
                 elif ObjectType == 'USERSTATUS':
-                    self._CallEventHandler('UserStatus', Value)
+                    self._CallEventHandler('UserStatus', str(Value))
                 elif ObjectType == 'AUTOAWAY':
-                    self._CallEventHandler('AutoAway', Value == 'ON')
+                    self._CallEventHandler('AutoAway', (Value == 'ON'))
                 elif ObjectType == 'WINDOWSTATE':
-                    self._CallEventHandler('ClientWindowState', Value)
+                    self._CallEventHandler('ClientWindowState', str(Value))
                 elif ObjectType == 'SILENT_MODE':
-                    self._CallEventHandler('SilentModeStatusChanged', Value == 'ON')
+                    self._CallEventHandler('SilentModeStatusChanged', (Value == 'ON'))
             elif a == 'CALLHISTORYCHANGED':
                 self._CallEventHandler('CallHistory')
             elif a == 'IMHISTORYCHANGED':
-                self._CallEventHandler('MessageHistory', u'')
+                self._CallEventHandler('MessageHistory', '') # XXX: Arg is Skypename, which one?
             elif a == 'CONTACTS':
                 PropName, Value = chop(b)
                 if PropName == 'FOCUSED':
-                    self._CallEventHandler('ContactsFocused', Value)
+                    self._CallEventHandler('ContactsFocused', str(Value))
             elif a == 'DELETED':
                 PropName, Value = chop(b)
                 if PropName == 'GROUP':
@@ -341,16 +341,18 @@ class ISkype(EventHandlingBase):
                         if context in (pluginContextCall, pluginContextChat):
                             j = Value.rfind('CONTEXT_ID ')
                             if j >= 0:
-                                context_id = chop(Value[j+11:])[0]
-                        self._CallEventHandler('PluginMenuItemClicked', IPluginMenuItem(ObjectId, self), users, context, context_id)
+                                context_id = str(chop(Value[j+11:])[0])
+                                if context == pluginContextCall:
+                                    context_id = int(context_id)
+                        self._CallEventHandler('PluginMenuItemClicked', IPluginMenuItem(ObjectId, self), users, str(context), context_id)
             elif a == 'WALLPAPER':
-                self._CallEventHandler('WallpaperChanged', b)
+                self._CallEventHandler('WallpaperChanged', unicode2path(b))
         elif mode == 'rece':
             self._CallEventHandler('Reply', arg)
         elif mode == 'send':
             self._CallEventHandler('Command', arg)
         elif mode == 'attach':
-            self._CallEventHandler('AttachmentStatus', arg)
+            self._CallEventHandler('AttachmentStatus', str(arg))
             if arg == apiAttachRefused:
                 raise ISkypeAPIError('Skype connection refused')
 
@@ -373,7 +375,7 @@ class ISkype(EventHandlingBase):
         while '' in arg:
             arg.remove('')
         jarg = ' '.join(arg)
-        if Set == None: # Get
+        if Set is None: # Get
             if Cache and self._Cache and h in self._CacheDict:
                 return self._CacheDict[h]
             Value = self._DoCommand('GET %s' % jarg, jarg)
@@ -390,17 +392,17 @@ class ISkype(EventHandlingBase):
                 self._CacheDict[h] = Value
             return Value
         else: # Set
-            Value = unicode(Set)
+            Value = tounicode(Set)
             self._DoCommand('SET %s %s' % (jarg, Value), jarg)
             if Cache and self._Cache:
                 self._CacheDict[h] = Value
 
     def _Alter(self, ObjectType, ObjectId, AlterName, Args=None, Reply=None):
         com = 'ALTER %s %s %s' % (str(ObjectType), str(ObjectId), str(AlterName))
-        if Reply == None:
+        if Reply is None:
             Reply = com
-        if Args != None:
-            com = '%s %s' % (com, Args)
+        if Args is not None:
+            com = '%s %s' % (com, tounicode(Args))
         reply = self._DoCommand(com, Reply)
         arg = com.split()
         while arg:
@@ -416,7 +418,7 @@ class ISkype(EventHandlingBase):
 
     def _Search(self, ObjectType, Args=None):
         com = 'SEARCH %s' % ObjectType
-        if Args != None:
+        if Args is not None:
             com = '%s %s' % (com, Args)
         return tuple(esplit(chop(self._DoCommand(com))[-1], ', '))
 
@@ -463,7 +465,7 @@ class ISkype(EventHandlingBase):
         if not hasattr(self, '_AsyncSearchUsersCommands'):
             self._AsyncSearchUsersCommands = []
             self.RegisterEventHandler('Reply', self._AsyncSearchUsersReplyHandler)
-        Command = ICommand(-1, 'SEARCH USERS %s' % Target, 'USERS', False, self.Timeout)
+        Command = ICommand(-1, 'SEARCH USERS %s' % tounicode(Target), 'USERS', False, self.Timeout)
         self._AsyncSearchUsersCommands.append(Command)
         self.SendCommand(Command)
         # return pCookie - search identifier
@@ -501,45 +503,45 @@ class ISkype(EventHandlingBase):
         '''Queries calls in call history.
 
         @param Target: Call target.
-        @type Target: unicode
+        @type Target: str
         @return: Call objects.
         @rtype: tuple of L{ICall}
         '''
         return tuple([ICall(x, self) for x in self._Search('CALLS', Target)])
 
     def __ChangeUserStatus_UserStatus_Handler(self, status):
-        if status.upper() == self.__ChangeUserStatus_Val:
+        if status.upper() == self.__ChangeUserStatus_Status:
             self.__ChangeUserStatus_Event.set()
 
-    def ChangeUserStatus(self, Val):
+    def ChangeUserStatus(self, Status):
         '''Changes the online status for the current user.
 
-        @param Val: New online status for the user.
-        @type Val: L{User status<enums.cusUnknown>}
+        @param Status: New online status for the user.
+        @type Status: L{User status<enums.cusUnknown>}
 
         @note: This function waits until the online status changes. Alternatively, use
         the L{CurrentUserStatus} property to perform an immediate change of status.
         '''
-        if self.CurrentUserStatus.upper() == Val.upper():
+        if self.CurrentUserStatus.upper() == Status.upper():
             return
         self.__ChangeUserStatus_Event = threading.Event()
-        self.__ChangeUserStatus_Val = Val.upper()
+        self.__ChangeUserStatus_Status = Status.upper()
         self.RegisterEventHandler('UserStatus', self.__ChangeUserStatus_UserStatus_Handler)
-        self.CurrentUserStatus = Val
+        self.CurrentUserStatus = Status
         self.__ChangeUserStatus_Event.wait()
         self.UnregisterEventHandler('UserStatus', self.__ChangeUserStatus_UserStatus_Handler)
-        del self.__ChangeUserStatus_Event, self.__ChangeUserStatus_Val
+        del self.__ChangeUserStatus_Event, self.__ChangeUserStatus_Status
 
     def Chat(self, Name=''):
         '''Queries a chat object.
 
         @param Name: Chat name.
-        @type Name: unicode
+        @type Name: str
         @return: A chat object.
         @rtype: L{IChat}
         '''
         o = IChat(Name, self)
-        o.Status
+        o.Status # Tests if such a chat really exists.
         return o
 
     def ClearCallHistory(self, Username='ALL', Type=chsAllCalls):
@@ -547,7 +549,7 @@ class ISkype(EventHandlingBase):
 
         @param Username: Skypename of the user. A special value of 'ALL' means that entries of all users should
         be removed.
-        @type Username: unicode
+        @type Username: str
         @param Type: Call type.
         @type Type: L{Call type<enums.cltUnknown>}
         '''
@@ -600,7 +602,7 @@ class ISkype(EventHandlingBase):
         '''Returns existing or joins a new chat using given blob.
 
         @param Blob: A blob indentifying the chat.
-        @type Blob: unicode
+        @type Blob: str
         @return: A chat object
         @rtype: L{IChat}
         '''
@@ -610,7 +612,7 @@ class ISkype(EventHandlingBase):
         '''Creates a chat with one or more users.
 
         @param Usernames: One or more strings with the Skypenames of the users.
-        @type Usernames: unicode
+        @type Usernames: str
         @return: A chat object
         @rtype: L{IChat}
         @see: L{IChat.AddMembers}
@@ -627,7 +629,7 @@ class ISkype(EventHandlingBase):
         @see: L{DeleteGroup}
         '''
         groups = self.CustomGroups
-        self._DoCommand('CREATE GROUP %s' % GroupName)
+        self._DoCommand('CREATE GROUP %s' % tounicode(GroupName))
         for g in self.CustomGroups:
             if g not in groups and g.DisplayName == GroupName:
                 return g
@@ -639,7 +641,7 @@ class ISkype(EventHandlingBase):
         @param MessageType: Message type.
         @type MessageType: L{SMS message type<enums.smsMessageTypeUnknown>}
         @param TargetNumbers: One or more target SMS numbers.
-        @type TargetNumbers: unicode
+        @type TargetNumbers: str
         @return: An sms message object.
         @rtype: L{ISmsMessage}
         '''
@@ -669,7 +671,7 @@ class ISkype(EventHandlingBase):
         '''Returns existing chat using given blob.
 
         @param Blob: A blob indentifying the chat.
-        @type Blob: unicode
+        @type Blob: str
         @return: A chat object
         @rtype: L{IChat}
         '''
@@ -679,7 +681,7 @@ class ISkype(EventHandlingBase):
         '''Queries the greeting used as voicemail.
 
         @param Username: Skypename of the user.
-        @type Username: unicode
+        @type Username: str
         @return: A voicemail object.
         @rtype: L{IVoicemail}
         '''
@@ -698,14 +700,14 @@ class ISkype(EventHandlingBase):
         @rtype: L{IChatMessage}
         '''
         o = IChatMessage(Id, self)
-        o.Status
+        o.Status # Test if such an id is known.
         return o
 
     def Messages(self, Target=''):
         '''Queries chat messages which were sent/received by the user.
 
         @param Target: Message sender.
-        @type Target: unicode
+        @type Target: str
         @return: Chat message objects.
         @rtype: tuple of L{IChatMessage}
         '''
@@ -716,7 +718,7 @@ class ISkype(EventHandlingBase):
 
         @param Targets: One or more call targets. If multiple targets are specified, a conference
         call is created. The call target can be a Skypename, phone number, or speed dial code.
-        @type Targets: unicode
+        @type Targets: str
         @return: A call object.
         @rtype: L{ICall}
         '''
@@ -736,11 +738,11 @@ class ISkype(EventHandlingBase):
         '''Queries the Skype services (privileges) enabled for the Skype client.
 
         @param Name: Privilege name, currently one of 'SKYPEOUT', 'SKYPEIN', 'VOICEMAIL'.
-        @type Name: unicode
+        @type Name: str
         @return: True if the priviledge is available, False otherwise.
         @rtype: bool
         '''
-        return self._Property('PRIVILEGE', '', Name.upper()) == 'TRUE'
+        return (self._Property('PRIVILEGE', '', Name.upper()) == 'TRUE')
 
     def Profile(self, Property, Set=None):
         '''Queries/sets user profile properties.
@@ -748,7 +750,7 @@ class ISkype(EventHandlingBase):
         @param Property: Property name, currently one of 'PSTN_BALANCE', 'PSTN_BALANCE_CURRENCY',
         'FULLNAME', 'BIRTHDAY', 'SEX', 'LANGUAGES', 'COUNTRY', 'PROVINCE', 'CITY', 'PHONE_HOME',
         'PHONE_OFFICE', 'PHONE_MOBILE', 'HOMEPAGE', 'ABOUT'.
-        @type Property: unicode
+        @type Property: str
         @param Set: Value the property should be set to or None if the value should be queried.
         @type Set: unicode or None
         @return: Property value if Set=None, None otherwise.
@@ -759,12 +761,12 @@ class ISkype(EventHandlingBase):
     def Property(self, ObjectType, ObjectId, PropName, Set=None):
         '''Queries/sets the properties of an object.
 
-        @param ObjectType: Object type, currently one of 'USER', 'CALL', 'CHAT', 'CHATMESSAGE', 'VOICEMAIL'.
-        @type ObjectType: unicode
-        @param ObjectId: Object Id, depends on the object type
-        @type ObjectId: unicode
-        @param PropName: Name of the property you want to access.
-        @type PropName: unicode
+        @param ObjectType: Object type ('USER', 'CALL', 'CHAT', 'CHATMESSAGE', ...).
+        @type ObjectType: str
+        @param ObjectId: Object Id, depends on the object type.
+        @type ObjectId: str
+        @param PropName: Name of the property to access.
+        @type PropName: str
         @param Set: Value the property should be set to or None if the value should be queried.
         @type Set: unicode or None
         @return: Property value if Set=None, None otherwise.
@@ -789,7 +791,7 @@ class ISkype(EventHandlingBase):
         @return: Found users.
         @rtype: tuple of L{IUser}
         '''
-        return tuple([IUser(x, self) for x in self._Search('USERS', Target)])
+        return tuple([IUser(x, self) for x in self._Search('USERS', tounicode(Target))])
 
     def SendCommand(self, Command):
         '''Sends an API command.
@@ -807,7 +809,7 @@ class ISkype(EventHandlingBase):
         '''Sends a chat message.
 
         @param Username: Skypename of the user.
-        @type Username: unicode
+        @type Username: str
         @param Text: Body of the message.
         @type Text: unicode
         @return: A chat message object.
@@ -819,7 +821,7 @@ class ISkype(EventHandlingBase):
         '''Creates and sends an SMS message.
 
         @param TargetNumbers: One or more target SMS numbers.
-        @type TargetNumbers: unicode
+        @type TargetNumbers: str
         @param Properties: Message properties. Properties available are same as L{ISmsMessage} object properties.
         @type Properties: kwargs
         @return: An sms message object. The message is already sent at this point.
@@ -838,7 +840,7 @@ class ISkype(EventHandlingBase):
         '''Sends a voicemail to a specified user.
 
         @param Username: Skypename of the user.
-        @type Username: unicode
+        @type Username: str
         @return: A voicemail object.
         @rtype: L{IVoicemail}
         '''
@@ -851,19 +853,19 @@ class ISkype(EventHandlingBase):
         '''Queries a user object.
 
         @param Username: Skypename of the user.
-        @type Username: unicode
+        @type Username: str
         @return: A user object.
         @rtype: L{IUser}
         '''
         o = IUser(Username, self)
-        o.OnlineStatus
+        o.OnlineStatus # Test if such a user exists.
         return o
 
     def Variable(self, Name, Set=None):
         '''Queries/sets Skype general parameters.
 
         @param Name: Variable name.
-        @type Name: unicode
+        @type Name: str
         @param Set: Value the variable should be set to or None if the value should be queried.
         @type Set: unicode or None
         @return: Variable value if Set=None, None otherwise.
@@ -880,7 +882,7 @@ class ISkype(EventHandlingBase):
         @rtype: L{IVoicemail}
         '''
         o = IVoicemail(Id, self)
-        o.Type
+        o.Type # Test if such a voicemail exists.
         return o
 
     def _GetActiveCalls(self):
@@ -926,12 +928,12 @@ class ISkype(EventHandlingBase):
 
     def _GetApiWrapperVersion(self):
         from Skype4Py import __version__
-        return unicode(__version__)
+        return __version__
 
     ApiWrapperVersion = property(_GetApiWrapperVersion,
     doc='''Returns Skype4Py version.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetAttachmentStatus(self):
@@ -1040,12 +1042,12 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetCurrentUserHandle(self):
-        return self.Variable('CURRENTUSERHANDLE')
+        return str(self.Variable('CURRENTUSERHANDLE'))
 
     CurrentUserHandle = property(_GetCurrentUserHandle,
     doc='''Queries the Skypename of the current user.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetCurrentUserProfile(self):
@@ -1058,7 +1060,7 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetCurrentUserStatus(self):
-        return self.Variable('USERSTATUS')
+        return str(self.Variable('USERSTATUS'))
 
     def _SetCurrentUserStatus(self, value):
         self.Variable('USERSTATUS', str(value))
@@ -1196,10 +1198,10 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetPredictiveDialerCountry(self):
-        return self.Variable('PREDICTIVE_DIALER_COUNTRY')
+        return str(self.Variable('PREDICTIVE_DIALER_COUNTRY'))
 
     PredictiveDialerCountry = property(_GetPredictiveDialerCountry,
-    doc='''Returns predictive dialer coutry code.
+    doc='''Returns predictive dialer coutry as an ISO code.
 
     @type: unicode
     ''')
@@ -1280,12 +1282,12 @@ class ISkype(EventHandlingBase):
     ''')
 
     def _GetVersion(self):
-        return self.Variable('SKYPEVERSION')
+        return str(self.Variable('SKYPEVERSION'))
 
     Version = property(_GetVersion,
     doc='''Queries the application version of the Skype client.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetVoicemails(self):
@@ -1381,7 +1383,7 @@ class ISkypeEvents(object):
         @param Call: Call object.
         @type Call: L{ICall}
         @param Code: Received DTMF code.
-        @type Code: unicode
+        @type Code: str
         '''
 
     def CallHistory(self):
@@ -1504,7 +1506,7 @@ class ISkypeEvents(object):
         '''This event is caused by a change in contacts focus.
 
         @param Username: Name of the user that was focused or empty string if focus was lost.
-        @type Username: unicode
+        @type Username: str
         '''
 
     def Error(self, Command, Number, Description):
@@ -1565,7 +1567,7 @@ class ISkypeEvents(object):
         '''This event is caused by a change in message history.
 
         @param Username: Name of the user whose message history changed.
-        @type Username: unicode
+        @type Username: str
         '''
 
     def MessageStatus(self, Message, Status):
@@ -1617,8 +1619,8 @@ class ISkypeEvents(object):
         @type Users: tuple of L{IUser}
         @param PluginContext: Plug-in context.
         @type PluginContext: unicode
-        @param ContextId: Context Id.
-        @type ContextId: unicode
+        @param ContextId: Context Id. Chat name for chat context or Call ID for call context.
+        @type ContextId: str or int
         @see: L{IPluginMenuItem}
         '''
 
@@ -1690,7 +1692,7 @@ class ISkypeEvents(object):
         '''This event occurs when client wallpaper changes.
 
         @param Path: Path to new wallpaper bitmap.
-        @type Path: unicode
+        @type Path: str
         '''
 
 

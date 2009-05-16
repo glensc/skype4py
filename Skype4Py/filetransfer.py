@@ -41,7 +41,7 @@ class IFileTransfer(Cached):
     ''')
 
     def _GetFailureReason(self):
-        return self._Property('FAILUREREASON')
+        return str(self._Property('FAILUREREASON'))
 
     FailureReason = property(_GetFailureReason,
     doc='''Transfer failure reason.
@@ -55,16 +55,16 @@ class IFileTransfer(Cached):
     FileName = property(_GetFileName,
     doc='''Name of the transferred file.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetFilePath(self):
-        return self._Property('FILEPATH')
+        return unicode2path(self._Property('FILEPATH'))
 
     FilePath = property(_GetFilePath,
     doc='''Full path to the transferred file.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetFileSize(self):
@@ -114,12 +114,12 @@ class IFileTransfer(Cached):
     ''')
 
     def _GetPartnerHandle(self):
-        return self._Property('PARTNER_HANDLE')
+        return str(self._Property('PARTNER_HANDLE'))
 
     PartnerHandle = property(_GetPartnerHandle,
     doc='''File transfer partner Skypename.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetStartDatetime(self):
@@ -142,7 +142,7 @@ class IFileTransfer(Cached):
     ''')
 
     def _GetStatus(self):
-        return self._Property('STATUS')
+        return str(self._Property('STATUS'))
 
     Status = property(_GetStatus,
     doc='''File transfer status.
@@ -151,7 +151,7 @@ class IFileTransfer(Cached):
     ''')
 
     def _GetType(self):
-        return self._Property('TYPE')
+        return str(self._Property('TYPE'))
 
     Type = property(_GetType,
     doc='''File transfer type.

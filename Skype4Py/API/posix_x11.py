@@ -307,7 +307,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
                 t.start()
             while self.wait:
                 self.win_skype = self.get_skype()
-                if self.win_skype != None:
+                if self.win_skype is not None:
                     break
                 else:
                     time.sleep(1.0)
@@ -325,7 +325,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         self.SetAttachmentStatus(apiAttachSuccess)
 
     def IsRunning(self):
-        return self.get_skype() != None
+        return self.get_skype() is not None
 
     def Start(self, Minimized=False, Nosplash=False):
         # options are not supported as of Skype 1.4 Beta for Linux
@@ -367,7 +367,7 @@ class _ISkypeAPI(_ISkypeAPIBase):
         event.xclient.window = self.win_self
         event.xclient.message_type = self.atom_msg_begin
         event.xclient.format = 8
-        com = unicode(com).encode('utf-8') + '\x00'
+        com = com.encode('utf-8') + '\x00'
         for i in xrange(0, len(com), 20):
             event.xclient.data = com[i:i+20]
             _x11.XSendEvent(self.disp, self.win_skype, False, 0, byref(event))

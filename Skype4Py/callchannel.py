@@ -26,7 +26,7 @@ class ICallChannel(object):
         self._Manager = Manager
         self._Call = Call
         self._Stream = Stream
-        self._Type = Type
+        self._Type = str(Type)
 
     def __repr__(self):
         return '<%s with Manager=%s, Call=%s, Stream=%s>' % (object.__repr__(self)[1:-1], repr(self.Manager), repr(self.Call), repr(self.Stream))
@@ -169,7 +169,7 @@ class ICallChannelManager(EventHandlingBase):
 
     def _OnCallStatus(self, pCall, Status):
         if Status == clsRinging:
-            if self._Application == None:
+            if self._Application is None:
                 self.CreateApplication()
             self._Application.Connect(pCall.PartnerHandle, True)
             for stream in self._Application.Streams:
@@ -206,8 +206,8 @@ class ICallChannelManager(EventHandlingBase):
         @param ApplicationName: Application name
         @type ApplicationName: unicode
         '''
-        if ApplicationName != None:
-            self.Name = ApplicationName
+        if ApplicationName is not None:
+            self.Name = tounicode(ApplicationName)
         self._Application = self._Skype.Application(self.Name)
         self._Skype.RegisterEventHandler('ApplicationStreams', self._OnApplicationStreams)
         self._Skype.RegisterEventHandler('ApplicationReceiving', self._OnApplicationReceiving)
@@ -235,7 +235,7 @@ class ICallChannelManager(EventHandlingBase):
         return self._ChannelType
 
     def _SetChannelType(self, ChannelType):
-        self._ChannelType = ChannelType
+        self._ChannelType = str(ChannelType)
 
     ChannelType = property(_GetChannelType, _SetChannelType,
     doc='''Queries/sets the default channel type.
@@ -256,7 +256,7 @@ class ICallChannelManager(EventHandlingBase):
         return self._Name
 
     def _SetName(self, Name):
-        self._Name = unicode(Name)
+        self._Name = tounicode(Name)
 
     Name = property(_GetName, _SetName,
     doc='''Queries/sets the application context name.
@@ -312,13 +312,13 @@ class ICallChannelMessage(object):
         @param Text: Text
         @type Text: unicode
         '''
-        self._Text = Text
+        self._Text = tounicode(Text)
 
     def _GetText(self):
         return self._Text
 
     def _SetText(self, Text):
-        self._Text = Text
+        self._Text = tounicode(Text)
 
     Text = property(_GetText, _SetText,
     doc='''Queries/sets message text.

@@ -20,18 +20,18 @@ class IClient(object):
         self._SkypeRef = weakref.ref(Skype)
 
     def ButtonPressed(self, Key):
-        '''Sends button button pressed to client.
+        '''This command sends a button pressed notification event.
 
-        @param Key: Key
-        @type Key: unicode
+        @param Key: Button key (0-9, A-Z, #, *, UP, DOWN, YES, NO, SKYPE, PAGEUP, PAGEDOWN).
+        @type Key: str
         '''
         self._Skype._DoCommand('BTN_PRESSED %s' % Key)
 
     def ButtonReleased(self, Key):
-        '''Sends button released event to client.
+        '''This command sends a button released notification event.
 
-        @param Key: Key
-        @type Key: unicode
+        @param Key: Button key (0-9, A-Z, #, *, UP, DOWN, YES, NO, SKYPE, PAGEUP, PAGEDOWN).
+        @type Key: str
         '''
         self._Skype._DoCommand('BTN_RELEASED %s' % Key)
 
@@ -47,7 +47,8 @@ class IClient(object):
         @return: Event object.
         @rtype: L{IPluginEvent}
         '''
-        self._Skype._DoCommand('CREATE EVENT %s CAPTION %s HINT %s' % (EventId, quote(Caption), quote(Hint)))
+        self._Skype._DoCommand('CREATE EVENT %s CAPTION %s HINT %s' % (tounicode(EventId),
+            quote(tounicode(Caption)), quote(tounicode(Hint))))
         return IPluginEvent(EventId, self._Skype)
 
     def CreateMenuItem(self, MenuItemId, PluginContext, CaptionText, HintText=u'', IconPath='', Enabled=True,
@@ -75,11 +76,12 @@ class IClient(object):
         @return: Menu item object.
         @rtype: L{IPluginMenuItem}
         '''
-        com = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s ENABLED %s' % (MenuItemId, PluginContext, quote(CaptionText), cndexp(Enabled, 'true', 'false'))
+        com = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s ENABLED %s' % (tounicode(MenuItemId), PluginContext,
+            quote(tounicode(CaptionText)), cndexp(Enabled, 'true', 'false'))
         if HintText:
-            com += ' HINT %s' % quote(HintText)
+            com += ' HINT %s' % quote(tounicode(HintText))
         if IconPath:
-            com += ' ICON %s' % quote(IconPath)
+            com += ' ICON %s' % quote(path2unicode(IconPath))
         if MultipleContacts:
             com += ' ENABLE_MULTIPLE_CONTACTS true'
         if PluginContext == pluginContextContact:
@@ -101,7 +103,7 @@ class IClient(object):
         '''Opens "Add a Contact" dialog.
 
         @param Username: Optional Skypename of the contact.
-        @type Username: unicode
+        @type Username: str
         '''
         self.OpenDialog('ADDAFRIEND', Username)
 
@@ -109,7 +111,7 @@ class IClient(object):
         '''Opens authorization dialog.
 
         @param Username: Skypename of the user to authenticate.
-        @type Username: unicode
+        @type Username: str
         '''
         self.OpenDialog('AUTHORIZATION', Username)
 
@@ -138,11 +140,11 @@ class IClient(object):
         dedicated method in Skype4Py.
 
         @param Name: Dialog name.
-        @type Name: unicode
+        @type Name: str
         @param Params: One or more optional parameters.
         @type Params: unicode
         '''
-        self._Skype._DoCommand('OPEN %s %s' % (Name, ' '.join(Params)))
+        self._Skype._DoCommand('OPEN %s %s' % (Name, tounicode(' '.join(Params))))
 
     def OpenDialpadTab(self):
         '''Opens dial pad tab.
@@ -153,11 +155,11 @@ class IClient(object):
         '''Opens file transfer dialog.
 
         @param Username: Skypename of the user.
-        @type Username: unicode
+        @type Username: str
         @param Folder: Path to initial directory.
-        @type Folder: unicode
+        @type Folder: str
         '''
-        self.OpenDialog('FILETRANSFER', Username, 'IN %s' % Folder)
+        self.OpenDialog('FILETRANSFER', Username, 'IN %s' % path2unicode(Folder))
 
     def OpenGettingStartedWizard(self):
         '''Opens getting started wizard.
@@ -174,21 +176,23 @@ class IClient(object):
         '''
         self.OpenDialog('LIVETAB')
 
-    def OpenMessageDialog(self, Username, Text=''):
+    def OpenMessageDialog(self, Username, Text=u''):
         '''Opens "Send an IM Message" dialog.
 
         @param Username: Message target.
-        @type Username: unicode
+        @type Username: str
         @param Text: Message text.
         @type Text: unicode
         '''
-        self.OpenDialog('IM', Username, Text)
+        self.OpenDialog('IM', Username, tounicode(Text))
 
     def OpenOptionsDialog(self, Page=''):
         '''Opens options dialog.
 
         @param Page: Page name to open.
-        @type Page: unicode
+        @type Page: str
+        
+        @note: See https://developer.skype.com/Docs/ApiDoc/OPEN_OPTIONS for known Page values.
         '''
         self.OpenDialog('OPTIONS', Page)
 
@@ -206,7 +210,7 @@ class IClient(object):
         '''Opens send contacts dialog.
 
         @param Username: Optional Skypename of the user.
-        @type Username: unicode
+        @type Username: str
         '''
         self.OpenDialog('SENDCONTACTS', Username)
 
@@ -222,7 +226,7 @@ class IClient(object):
         '''Opens user information dialog.
 
         @param Username: Skypename of the user.
-        @type Username: unicode
+        @type Username: str
         '''
         self.OpenDialog('USERINFO', Username)
 
@@ -264,15 +268,15 @@ class IClient(object):
     ''')
 
     def _GetWallpaper(self):
-        return self._Skype.Variable('WALLPAPER')
+        return unicode2path(self._Skype.Variable('WALLPAPER'))
 
     def _SetWallpaper(self, value):
-        self._Skype.Variable('WALLPAPER', value)
+        self._Skype.Variable('WALLPAPER', path2unicode(value))
 
     Wallpaper = property(_GetWallpaper, _SetWallpaper,
     doc='''Path to client wallpaper bitmap.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetWindowState(self):
@@ -297,7 +301,7 @@ class IPluginEvent(Cached):
 
     def _Init(self, Id, Skype):
         self._Skype = Skype
-        self._Id = unicode(Id)
+        self._Id = tounicode(Id)
 
     def Delete(self):
         '''Deletes the event from the events pane in the Skype client.
@@ -323,17 +327,17 @@ class IPluginMenuItem(Cached):
 
     def _Init(self, Id, Skype, Caption=None, Hint=None, Enabled=None):
         self._Skype = Skype
-        self._Id = unicode(Id)
+        self._Id = tounicode(Id)
         self._CacheDict = {}
-        if Caption != None:
-            self._CacheDict['CAPTION'] = unicode(Caption)
-        if Hint != None:
-            self._CacheDict['HINT'] = unicode(Hint)
-        if Enabled != None:
+        if Caption is not None:
+            self._CacheDict['CAPTION'] = tounicode(Caption)
+        if Hint is not None:
+            self._CacheDict['HINT'] = tounicode(Hint)
+        if Enabled is not None:
             self._CacheDict['ENABLED'] = cndexp(Enabled, u'TRUE', u'FALSE')
 
     def _Property(self, PropName, Set=None):
-        if Set == None:
+        if Set is None:
             return self._CacheDict[PropName]
         self._Skype._Property('MENU_ITEM', self._Id, PropName, Set)
         self._CacheDict[PropName] = unicode(Set)
@@ -347,7 +351,7 @@ class IPluginMenuItem(Cached):
         return self._Property('CAPTION')
 
     def _SetCaption(self, value):
-        self._Property('CAPTION', value)
+        self._Property('CAPTION', tounicode(value))
 
     Caption = property(_GetCaption, _SetCaption,
     doc='''Menu item caption text.
@@ -372,7 +376,7 @@ class IPluginMenuItem(Cached):
         return self._Property('HINT')
 
     def _SetHint(self, value):
-        self._Property('HINT', value)
+        self._Property('HINT', tounicode(value))
 
     Hint = property(_GetHint, _SetHint,
     doc='''Menu item hint text.

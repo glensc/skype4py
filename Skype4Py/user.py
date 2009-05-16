@@ -14,7 +14,7 @@ class IUser(Cached):
 
     def _Init(self, Handle, Skype):
         self._Skype = Skype
-        self._Handle = unicode(Handle)
+        self._Handle = str(Handle)
 
     def _Property(self, PropName, Set=None, Cache=True):
         return self._Skype._Property('USER', self.Handle, PropName, Set, Cache)
@@ -23,14 +23,14 @@ class IUser(Cached):
         '''Saves user avatar to a file.
 
         @param Filename: Destination path.
-        @type Filename: unicode
+        @type Filename: str
         @param AvatarId: Avatar Id.
         @type AvatarId: int
         '''
-        s = 'USER %s AVATAR %s %s' % (self.Handle, AvatarId, Filename)
+        s = 'USER %s AVATAR %s %s' % (self.Handle, AvatarId, path2unicode(Filename))
         self._Skype._DoCommand('GET %s' % s, s)
 
-    def SetBuddyStatusPendingAuthorization(self, Text=''):
+    def SetBuddyStatusPendingAuthorization(self, Text=u''):
         '''Sets the BuddyStaus property to L{budPendingAuthorization<enums.budPendingAuthorization>}
         additionaly specifying the authorization text.
         
@@ -38,7 +38,7 @@ class IUser(Cached):
         @type Text: unicode
         @see: L{BuddyStatus}
         '''
-        self._Property('BUDDYSTATUS', '%d %s' % (budPendingAuthorization, Text), Cache=False)
+        self._Property('BUDDYSTATUS', '%d %s' % (budPendingAuthorization, tounicode(Text)), Cache=False)
 
     def _GetAbout(self):
         return self._Property('ABOUT')
@@ -50,12 +50,12 @@ class IUser(Cached):
     ''')
 
     def _GetAliases(self):
-        return tuple(esplit(self._Property('ALIASES')))
+        return tuple([str(x) for x in esplit(self._Property('ALIASES'))])
 
     Aliases = property(_GetAliases,
     doc='''Aliases of the user.
 
-    @type: tuple of unicode
+    @type: tuple of str
     ''')
 
     def _GetBirthday(self):
@@ -84,7 +84,7 @@ class IUser(Cached):
     ''')
 
     def _GetCanLeaveVoicemail(self):
-        return self._Property('CAN_LEAVE_VM') == 'TRUE'
+        return (self._Property('CAN_LEAVE_VM') == 'TRUE')
 
     CanLeaveVoicemail = property(_GetCanLeaveVoicemail,
     doc='''Tells if it is possible to send voicemail to the user.
@@ -116,16 +116,16 @@ class IUser(Cached):
 
     def _GetCountryCode(self):
         if self._Skype.Protocol < 4:
-            return u''
+            return ''
         value = self._Property('COUNTRY')
         if value:
             value = chop(value)[0]
-        return value
+        return str(value)
 
     CountryCode = property(_GetCountryCode,
     doc='''ISO country code of the user.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetDisplayName(self):
@@ -168,16 +168,16 @@ class IUser(Cached):
     ''')
 
     def _GetHomepage(self):
-        return self._Property('HOMEPAGE')
+        return str(self._Property('HOMEPAGE'))
 
     Homepage = property(_GetHomepage,
     doc='''Homepage URL of the user.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetIsAuthorized(self):
-        return self._Property('ISAUTHORIZED') == 'TRUE'
+        return (self._Property('ISAUTHORIZED') == 'TRUE')
 
     def _SetIsAuthorized(self, value):
         self._Property('ISAUTHORIZED', cndexp(value, 'TRUE', 'FALSE'))
@@ -189,7 +189,7 @@ class IUser(Cached):
     ''')
 
     def _GetIsBlocked(self):
-        return self._Property('ISBLOCKED') == 'TRUE'
+        return (self._Property('ISBLOCKED') == 'TRUE')
 
     def _SetIsBlocked(self, value):
         self._Property('ISBLOCKED', cndexp(value, 'TRUE', 'FALSE'))
@@ -201,7 +201,7 @@ class IUser(Cached):
     ''')
 
     def _GetIsCallForwardActive(self):
-        return self._Property('IS_CF_ACTIVE') == 'TRUE'
+        return (self._Property('IS_CF_ACTIVE') == 'TRUE')
 
     IsCallForwardActive = property(_GetIsCallForwardActive,
     doc='''Tells whether the user has Call Forwarding activated or not.
@@ -210,7 +210,7 @@ class IUser(Cached):
     ''')
 
     def _GetIsSkypeOutContact(self):
-        return self.OnlineStatus == olsSkypeOut
+        return (self.OnlineStatus == olsSkypeOut)
 
     IsSkypeOutContact = property(_GetIsSkypeOutContact,
     doc='''Tells whether a user is a SkypeOut contact.
@@ -219,7 +219,7 @@ class IUser(Cached):
     ''')
 
     def _GetIsVideoCapable(self):
-        return self._Property('IS_VIDEO_CAPABLE') == 'TRUE'
+        return (self._Property('IS_VIDEO_CAPABLE') == 'TRUE')
 
     IsVideoCapable = property(_GetIsVideoCapable,
     doc='''Tells if the user has video capability.
@@ -228,7 +228,7 @@ class IUser(Cached):
     ''')
 
     def _GetIsVoicemailCapable(self):
-        return self._Property('IS_VOICEMAIL_CAPABLE') == 'TRUE'
+        return (self._Property('IS_VOICEMAIL_CAPABLE') == 'TRUE')
 
     IsVoicemailCapable = property(_GetIsVoicemailCapable,
     doc='''Tells if the user has voicemail capability.
@@ -255,12 +255,12 @@ class IUser(Cached):
         value = self._Property('LANGUAGE')
         if value:
             value = chop(value)[0]
-        return value
+        return str(value)
 
     LanguageCode = property(_GetLanguageCode,
     doc='''The ISO language code of the user.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetLastOnline(self):
@@ -303,7 +303,7 @@ class IUser(Cached):
     ''')
 
     def _GetOnlineStatus(self):
-        return self._Property('ONLINESTATUS')
+        return str(self._Property('ONLINESTATUS'))
 
     OnlineStatus = property(_GetOnlineStatus,
     doc='''Online status of the user.
@@ -367,7 +367,7 @@ class IUser(Cached):
     ''')
 
     def _GetSex(self):
-        return self._Property('SEX')
+        return str(self._Property('SEX'))
 
     Sex = property(_GetSex,
     doc='''Sex of the user.
@@ -423,7 +423,7 @@ class IGroup(Cached):
         '''Adds new a user to the group.
 
         @param Username: Skypename of the new user.
-        @type Username: unicode
+        @type Username: str
         '''
         self._Alter('ADDUSER', Username)
 
@@ -436,7 +436,7 @@ class IGroup(Cached):
         '''Removes a user from the group.
 
         @param Username: Skypename of the user.
-        @type Username: unicode
+        @type Username: str
         '''
         self._Alter('REMOVEUSER', Username)
 
@@ -449,12 +449,12 @@ class IGroup(Cached):
         self._Alter('SHARE', MessageText)
 
     def _GetCustomGroupId(self):
-        return self._Property('CUSTOM_GROUP_ID')
+        return str(self._Property('CUSTOM_GROUP_ID'))
 
     CustomGroupId = property(_GetCustomGroupId,
     doc='''Persistent group ID. The custom group ID is a persistent value that does not change.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetDisplayName(self):
@@ -506,7 +506,7 @@ class IGroup(Cached):
     ''')
 
     def _GetType(self):
-        return self._Property('TYPE')
+        return str(self._Property('TYPE'))
 
     Type = property(_GetType,
     doc='''Group type.

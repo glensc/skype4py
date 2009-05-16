@@ -35,15 +35,15 @@ class IVoicemail(Cached):
         None if the device wasn't set. If Set is not None, sets a new value for the device.
         @rtype: unicode, dict or None
         '''
-        if Set == None: # get
+        if Set is None: # get
             args = args2dict(self._Property('CAPTURE_MIC', Cache=False))
             for t in args:
                 if t == callIoDeviceTypePort:
                     args[t] = int(args[t])
-            if DeviceType == None: # get active devices
+            if DeviceType is None: # get active devices
                 return args
             return args.get(DeviceType, None)
-        elif DeviceType != None: # set
+        elif DeviceType is not None: # set
             self._Alter('SET_CAPTURE_MIC', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
         else:
             raise TypeError('DeviceType must be specified if Set is used')
@@ -71,15 +71,15 @@ class IVoicemail(Cached):
         None if the device wasn't set. If Set is not None, sets a new value for the device.
         @rtype: unicode, dict or None
         '''
-        if Set == None: # get
+        if Set is None: # get
             args = args2dict(self._Property('INPUT', Cache=False))
             for t in args:
                 if t == callIoDeviceTypePort:
                     args[t] = int(args[t])
-            if DeviceType == None: # get active devices
+            if DeviceType is None: # get active devices
                 return args
             return args.get(DeviceType, None)
-        elif DeviceType != None: # set
+        elif DeviceType is not None: # set
             self._Alter('SET_INPUT', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
         else:
             raise TypeError('DeviceType must be specified if Set is used')
@@ -102,15 +102,15 @@ class IVoicemail(Cached):
         None if the device wasn't set. If Set is not None, sets a new value for the device.
         @rtype: unicode, dict or None
         '''
-        if Set == None: # get
+        if Set is None: # get
             args = args2dict(self._Property('OUTPUT', Cache=False))
             for t in args:
                 if t == callIoDeviceTypePort:
                     args[t] = int(args[t])
-            if DeviceType == None: # get active devices
+            if DeviceType is None: # get active devices
                 return args
             return args.get(DeviceType, None)
-        elif DeviceType != None: # set
+        elif DeviceType is not None: # set
             self._Alter('SET_OUTPUT', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
         else:
             raise TypeError('DeviceType must be specified if Set is used')
@@ -186,7 +186,7 @@ class IVoicemail(Cached):
     ''')
 
     def _GetFailureReason(self):
-        return self._Property('FAILUREREASON')
+        return str(self._Property('FAILUREREASON'))
 
     FailureReason = property(_GetFailureReason,
     doc='''Voicemail failure reason. Read if L{Status} == L{vmsFailed<enums.vmsFailed>}.
@@ -213,16 +213,16 @@ class IVoicemail(Cached):
     ''')
 
     def _GetPartnerHandle(self):
-        return self._Property('PARTNER_HANDLE')
+        return str(self._Property('PARTNER_HANDLE'))
 
     PartnerHandle = property(_GetPartnerHandle,
     doc='''Skypename for voicemail sender (for incoming) or recipient (for outgoing).
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetStatus(self):
-        return self._Property('STATUS')
+        return str(self._Property('STATUS'))
 
     Status = property(_GetStatus,
     doc='''Voicemail status.
@@ -240,7 +240,7 @@ class IVoicemail(Cached):
     ''')
 
     def _GetType(self):
-        return self._Property('TYPE')
+        return str(self._Property('TYPE'))
 
     Type = property(_GetType,
     doc='''Voicemail type.

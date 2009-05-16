@@ -31,7 +31,7 @@ class ICall(Cached):
         '''Queries if a call can be transferred to a contact or phone number.
 
         @param Target: Skypename or phone number the call is to be transfered to.
-        @type Target: unicode
+        @type Target: str
         @return: True if call can be transfered, False otherwise.
         @rtype: bool
         '''
@@ -52,16 +52,16 @@ class ICall(Cached):
 
         @note: This command functions for active calls only.
         '''
-        if Set == None: # get
+        if Set is None: # get
             args = args2dict(self._Property('CAPTURE_MIC', Cache=False))
             for t in args:
                 if t == callIoDeviceTypePort:
                     args[t] = int(args[t])
-            if DeviceType == None: # get active devices
+            if DeviceType is None: # get active devices
                 return args
             return args.get(DeviceType, None)
-        elif DeviceType != None: # set
-            self._Alter('SET_CAPTURE_MIC', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
+        elif DeviceType is not None: # set
+            self._Alter('SET_CAPTURE_MIC', '%s=%s' % (DeviceType, quote(tounicode(Set), True)))
         else:
             raise TypeError('DeviceType must be specified if Set is used')
 
@@ -95,16 +95,16 @@ class ICall(Cached):
 
         @note: This command functions for active calls only.
         '''
-        if Set == None: # get
+        if Set is None: # get
             args = args2dict(self._Property('INPUT', Cache=False))
             for t in args:
                 if t == callIoDeviceTypePort:
                     args[t] = int(args[t])
-            if DeviceType == None: # get active devices
+            if DeviceType is None: # get active devices
                 return args
             return args.get(DeviceType, None)
-        elif DeviceType != None: # set
-            self._Alter('SET_INPUT', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
+        elif DeviceType is not None: # set
+            self._Alter('SET_INPUT', '%s=%s' % (DeviceType, quote(tounicode(Set), True)))
         else:
             raise TypeError('DeviceType must be specified if Set is used')
 
@@ -140,16 +140,16 @@ class ICall(Cached):
         
         @note: This command functions for active calls only.
         '''
-        if Set == None: # get
+        if Set is None: # get
             args = args2dict(self._Property('OUTPUT', Cache=False))
             for t in args:
                 if t == callIoDeviceTypePort:
                     args[t] = int(args[t])
-            if DeviceType == None: # get active devices
+            if DeviceType is None: # get active devices
                 return args
             return args.get(DeviceType, None)
-        elif DeviceType != None: # set
-            self._Alter('SET_OUTPUT', '%s=%s' % (DeviceType, quote(unicode(Set), True)))
+        elif DeviceType is not None: # set
+            self._Alter('SET_OUTPUT', '%s=%s' % (DeviceType, quote(tounicode(Set), True)))
         else:
             raise TypeError('DeviceType must be specified if Set is used')
 
@@ -187,7 +187,7 @@ class ICall(Cached):
         '''Transfers a call to one or more contacts or phone numbers.
 
         @param Targets: one or more phone numbers or Skypenames the call is beeing transferred to.
-        @type Targets: unicode
+        @type Targets: str
         @see: L{CanTransfer}
 
         @note: You can transfer an incoming call to a group by specifying more than one
@@ -221,7 +221,7 @@ class ICall(Cached):
     DTMF = property(fset=_SetDTMF,
     doc='''Set this property to send DTMF codes. Permitted symbols are: {0..9,#,*}. 
 
-    @type: unicode
+    @type: str
 
     @note: This command functions for active calls only.
     ''')
@@ -245,12 +245,12 @@ class ICall(Cached):
     ''')
 
     def _GetForwardedBy(self):
-        return self._Property('FORWARDED_BY')
+        return str(self._Property('FORWARDED_BY'))
 
     ForwardedBy = property(_GetForwardedBy,
     doc='''Skypename of the user who forwarded a call.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetId(self):
@@ -263,7 +263,7 @@ class ICall(Cached):
     ''')
 
     def _GetInputStatus(self):
-        return self._Property('VAA_INPUT_STATUS') == 'TRUE'
+        return (self._Property('VAA_INPUT_STATUS') == 'TRUE')
 
     InputStatus = property(_GetInputStatus,
     doc='''True if call voice input is enabled.
@@ -291,21 +291,21 @@ class ICall(Cached):
     ''')
 
     def _GetPartnerHandle(self):
-        return self._Property('PARTNER_HANDLE')
+        return str(self._Property('PARTNER_HANDLE'))
 
     PartnerHandle = property(_GetPartnerHandle,
     doc='''The Skypename of the remote caller.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetPstnNumber(self):
-        return self._Property('PSTN_NUMBER')
+        return str(self._Property('PSTN_NUMBER'))
 
     PstnNumber = property(_GetPstnNumber,
     doc='''PSTN number of the call.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetPstnStatus(self):
@@ -406,12 +406,12 @@ class ICall(Cached):
     ''')
 
     def _GetTargetIdentify(self):
-        return self._Property('TARGET_IDENTIFY')
+        return str(self._Property('TARGET_IDENTIFY'))
 
     TargetIdentify = property(_GetTargetIdentify,
     doc='''Target number for incoming SkypeIn calls.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetTimestamp(self):
@@ -434,25 +434,25 @@ class ICall(Cached):
     ''')
 
     def _GetTransferredBy(self):
-        return self._Property('TRANSFERRED_BY')
+        return str(self._Property('TRANSFERRED_BY'))
 
     TransferredBy = property(_GetTransferredBy,
     doc='''Returns the Skypename of the user who transferred the call.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetTransferredTo(self):
-        return self._Property('TRANSFERRED_TO')
+        return str(self._Property('TRANSFERRED_TO'))
 
     TransferredTo = property(_GetTransferredTo,
     doc='''Returns the Skypename of the user or phone number the call has been transferred to.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetTransferStatus(self):
-        return self._Property('TRANSFER_STATUS')
+        return str(self._Property('TRANSFER_STATUS'))
 
     TransferStatus = property(_GetTransferStatus,
     doc='''Returns the call transfer status.
@@ -461,7 +461,7 @@ class ICall(Cached):
     ''')
 
     def _GetType(self):
-        return self._Property('TYPE')
+        return str(self._Property('TYPE'))
 
     Type = property(_GetType,
     doc='''Call type.
@@ -470,7 +470,7 @@ class ICall(Cached):
     ''')
 
     def _GetVideoReceiveStatus(self):
-        return self._Property('VIDEO_RECEIVE_STATUS')
+        return str(self._Property('VIDEO_RECEIVE_STATUS'))
 
     VideoReceiveStatus = property(_GetVideoReceiveStatus,
     doc='''Call video receive status.
@@ -479,7 +479,7 @@ class ICall(Cached):
     ''')
 
     def _GetVideoSendStatus(self):
-        return self._Property('VIDEO_SEND_STATUS')
+        return str(self._Property('VIDEO_SEND_STATUS'))
 
     VideoSendStatus = property(_GetVideoSendStatus,
     doc='''Call video send status.
@@ -488,7 +488,7 @@ class ICall(Cached):
     ''')
 
     def _GetVideoStatus(self):
-        return self._Property('VIDEO_STATUS')
+        return str(self._Property('VIDEO_STATUS'))
 
     VideoStatus = property(_GetVideoStatus,
     doc='''Call video status.
@@ -533,7 +533,7 @@ class IParticipant(Cached):
         return chop(reply, 3)[Prop]
 
     def _GetCallStatus(self):
-        return self._Property(2)
+        return str(self._Property(2))
 
     CallStatus = property(_GetCallStatus,
     doc='''Call status of a participant in a conference call.
@@ -542,7 +542,7 @@ class IParticipant(Cached):
     ''')
 
     def _GetCallType(self):
-        return self._Property(1)
+        return str(self._Property(1))
 
     CallType = property(_GetCallType,
     doc='''Call type in a conference call.
@@ -560,12 +560,12 @@ class IParticipant(Cached):
     ''')
 
     def _GetHandle(self):
-        return self._Property(0)
+        return str(self._Property(0))
 
     Handle = property(_GetHandle,
     doc='''Skypename of a participant in a conference call.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetId(self):

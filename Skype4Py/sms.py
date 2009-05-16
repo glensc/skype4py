@@ -194,7 +194,7 @@ class ISmsMessage(Cached):
     ''')
 
     def _GetReplyToNumber(self):
-        return self._Property('REPLY_TO_NUMBER')
+        return str(self._Property('REPLY_TO_NUMBER'))
 
     def _SetReplyToNumber(self, value):
         self._Property('REPLY_TO_NUMBER', value)
@@ -202,7 +202,7 @@ class ISmsMessage(Cached):
     ReplyToNumber = property(_GetReplyToNumber, _SetReplyToNumber,
     doc='''Reply-to number for this SMS message.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _SetSeen(self, value):
@@ -224,7 +224,7 @@ class ISmsMessage(Cached):
     ''')
 
     def _GetTargetNumbers(self):
-        return tuple(esplit(self._Property('TARGET_NUMBERS'), ', '))
+        return tuple([str(x) for x in esplit(self._Property('TARGET_NUMBERS'), ', ')])
 
     def _SetTargetNumbers(self, value):
         self._Property('TARGET_NUMBERS', ', '.join(value))
@@ -232,7 +232,7 @@ class ISmsMessage(Cached):
     TargetNumbers = property(_GetTargetNumbers, _SetTargetNumbers,
     doc='''Target phone numbers.
 
-    @type: tuple of unicode
+    @type: tuple of str
     ''')
 
     def _GetTargets(self):
@@ -255,7 +255,7 @@ class ISmsMessage(Cached):
     ''')
 
     def _GetType(self):
-        return self._Property('TYPE')
+        return str(self._Property('TYPE'))
 
     Type = property(_GetType,
     doc='''SMS message type
@@ -273,7 +273,7 @@ class ISmsTarget(Cached):
 
     def _Init(self, Number_Message):
         Number, Message = Number_Message
-        self._Number = Number
+        self._Number = str(Number)
         self._Message = Message
 
     def _GetMessage(self):
@@ -291,14 +291,14 @@ class ISmsTarget(Cached):
     Number = property(_GetNumber,
     doc='''Target phone number.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetStatus(self):
         for t in esplit(self._Message._Property('TARGET_STATUSES'), ', '):
             number, status = t.split('=')
             if number == self._Number:
-                return status
+                return str(status)
 
     Status = property(_GetStatus,
     doc='''Status of this target.

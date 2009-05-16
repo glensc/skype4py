@@ -7,7 +7,7 @@ import os
 
 # Following code is needed when building executable files using py2exe.
 # Together with the Languages.__init__ it makes sure that all languages
-# are included in the package built by py2exe. The tool lookes just at
+# are included in the package built by py2exe. The tool looks just at
 # the imports, it ignores the 'if' statement.
 #
 # More about py2exe: http://www.py2exe.org/

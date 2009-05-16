@@ -17,7 +17,7 @@ class IApplication(Cached):
         return self._Skype._Alter('APPLICATION', self._Name, AlterName, Args)
 
     def _Init(self, Name, Skype):
-        self._Name = unicode(Name)
+        self._Name = tounicode(Name)
         self._Skype = Skype
 
     def _Property(self, PropName, Set=None):
@@ -34,7 +34,7 @@ class IApplication(Cached):
         '''Connects application to user.
 
         @param Username: Name of the user to connect to.
-        @type Username: unicode
+        @type Username: str
         @param WaitConnected: If True, causes the method to wait untill the connection is established.
         @type WaitConnected: bool
         @return: If C{WaitConnected} is True, returns the stream which can be used to send the data.
@@ -75,7 +75,7 @@ class IApplication(Cached):
         @param Streams: Streams to send the datagram to or None if all currently connected streams should be used.
         @type Streams: sequence of L{IApplicationStream}
         '''
-        if Streams == None:
+        if Streams is None:
             Streams = self.Streams
         for s in Streams:
             s.SendDatagram(Text)
@@ -146,7 +146,7 @@ class IApplicationStream(Cached):
         return '<%s with Handle=%s, Application=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Handle), repr(self.Application))
 
     def _Init(self, Handle, Application):
-        self._Handle = Handle
+        self._Handle = str(Handle)
         self._Application = Application
 
     def Disconnect(self):
@@ -172,7 +172,7 @@ class IApplicationStream(Cached):
         @param Text: Datagram to send.
         @type Text: unicode
         '''
-        self._Application._Alter('DATAGRAM', '%s %s' % (self._Handle, Text))
+        self._Application._Alter('DATAGRAM', '%s %s' % (self._Handle, tounicode(Text)))
 
     def Write(self, Text):
         '''Writes data to stream.
@@ -180,7 +180,7 @@ class IApplicationStream(Cached):
         @param Text: Data to send.
         @type Text: unicode
         '''
-        self._Application._Alter('WRITE', '%s %s' % (self._Handle, Text))
+        self._Application._Alter('WRITE', '%s %s' % (self._Handle, tounicode(Text)))
 
     write = Write
 
@@ -210,10 +210,10 @@ class IApplicationStream(Cached):
 
     def _GetDataLength(self):
         i = self.__GetDataLength_GetStreamLength('SENDING')
-        if i != None:
+        if i is not None:
             return i
         i = self.__GetDataLength_GetStreamLength('RECEIVED')
-        if i != None:
+        if i is not None:
             return i
         return 0
 
@@ -229,7 +229,7 @@ class IApplicationStream(Cached):
     Handle = property(_GetHandle,
     doc='''Stream handle in u'<Skypename>:<n>' format.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetPartnerHandle(self):
@@ -238,5 +238,5 @@ class IApplicationStream(Cached):
     PartnerHandle = property(_GetPartnerHandle,
     doc='''Skypename of the user this stream is connected to.
 
-    @type: unicode
+    @type: str
     ''')

@@ -102,7 +102,7 @@ class IProfile(object):
     ''')
 
     def _GetCallApplyCF(self):
-        return self._Property('CALL_APPLY_CF') == 'TRUE'
+        return (self._Property('CALL_APPLY_CF') == 'TRUE')
 
     def _SetCallApplyCF(self, value):
         self._Property('CALL_APPLY_CF', cndexp(value, 'TRUE', 'FALSE'))
@@ -114,7 +114,7 @@ class IProfile(object):
     ''')
 
     def _GetCallForwardRules(self):
-        return self._Property('CALL_FORWARD_RULES')
+        return str(self._Property('CALL_FORWARD_RULES'))
 
     def _SetCallForwardRules(self, value):
         self._Property('CALL_FORWARD_RULES', value)
@@ -122,7 +122,7 @@ class IProfile(object):
     CallForwardRules = property(_GetCallForwardRules, _SetCallForwardRules,
     doc='''Call forwarding rules of the profile.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetCallNoAnswerTimeout(self):
@@ -138,7 +138,7 @@ class IProfile(object):
     ''')
 
     def _GetCallSendToVM(self):
-        return self._Property('CALL_SEND_TO_VM') == 'TRUE'
+        return (self._Property('CALL_SEND_TO_VM') == 'TRUE')
 
     def _SetCallSendToVM(self, value):
         self._Property('CALL_SEND_TO_VM', cndexp(value, 'TRUE', 'FALSE'))
@@ -186,7 +186,7 @@ class IProfile(object):
     ''')
 
     def _GetHomepage(self):
-        return self._Property('HOMEPAGE')
+        return str(self._Property('HOMEPAGE'))
 
     def _SetHomepage(self, value):
         self._Property('HOMEPAGE', value)
@@ -194,7 +194,7 @@ class IProfile(object):
     Homepage = property(_GetHomepage, _SetHomepage,
     doc='''"Homepage" field of the profile.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetIPCountry(self):
@@ -207,7 +207,7 @@ class IProfile(object):
     ''')
 
     def _GetLanguages(self):
-        return tuple(esplit(self._Property('LANGUAGES')))
+        return tuple([str(x) for x in esplit(self._Property('LANGUAGES'))])
 
     def _SetLanguages(self, value):
         self._Property('LANGUAGES', ' '.join(value))
@@ -215,7 +215,7 @@ class IProfile(object):
     Languages = property(_GetLanguages, _SetLanguages,
     doc='''"ISO language codes of the profile.
 
-    @type: tuple of unicode
+    @type: tuple of str
     ''')
 
     def _GetMoodText(self):
@@ -292,7 +292,7 @@ class IProfile(object):
     ''')
 
     def _GetSex(self):
-        return self._Property('SEX')
+        return str(self._Property('SEX'))
 
     def _SetSex(self, value):
         self._Property('SEX', value)
@@ -316,7 +316,7 @@ class IProfile(object):
     ''')
 
     def _GetValidatedSmsNumbers(self):
-        return tuple(esplit(self._Property('SMS_VALIDATED_NUMBERS'), ', '))
+        return tuple([str(x) for x in esplit(self._Property('SMS_VALIDATED_NUMBERS'), ', ')])
 
     ValidatedSmsNumbers = property(_GetValidatedSmsNumbers,
     doc='''List of phone numbers the user has registered for usage in reply-to field of SMS messages.

@@ -24,12 +24,12 @@ class ISettings(object):
         @param Id: Optional avatar Id.
         @type Id: int
         @param Set: New avatar file name.
-        @type Set: unicode
+        @type Set: str
         @deprecated: Use L{LoadAvatarFromFile} instead.
         '''
         from warnings import warn
         warn('ISettings.Avatar: Use ISettings.LoadAvatarFromFile instead.', DeprecationWarning, stacklevel=2)
-        if Set == None:
+        if Set is None:
             raise TypeError('Argument \'Set\' is mandatory!')
         self.LoadAvatarFromFile(Set, Id)
 
@@ -37,11 +37,11 @@ class ISettings(object):
         '''Loads user avatar picture from file.
 
         @param Filename: Name of the avatar file.
-        @type Filename: unicode
+        @type Filename: str
         @param AvatarId: Optional avatar Id.
         @type AvatarId: int
         '''
-        s = 'AVATAR %s %s' % (AvatarId, Filename)
+        s = 'AVATAR %s %s' % (AvatarId, path2unicode(Filename))
         self._Skype._DoCommand('SET %s' % s, s)
 
     def ResetIdleTimer(self):
@@ -55,11 +55,13 @@ class ISettings(object):
         @param Id: Ringtone Id
         @type Id: int
         @param Set: Path to new ringtone or None if the current path should be queried.
-        @type Set: unicode
+        @type Set: str
         @return: Current path if Set=None, None otherwise.
         @rtype: unicode or None
         '''
-        return self._Skype._Property('RINGTONE', Id, '', Set)
+        if Set is None:
+            return self._Skype._Property('RINGTONE', Id)
+        self._Skype._Property('RINGTONE', Id, '', path2unicode(Set))
 
     def RingToneStatus(self, Id=1, Set=None):
         '''Enables/disables a ringtone.
@@ -72,31 +74,31 @@ class ISettings(object):
         @return: Current status if Set=None, None otherwise.
         @rtype: bool
         '''
-        if Set == None:
-            return self._Skype._Property('RINGTONE', Id, 'STATUS') == 'ON'
-        return self._Skype._Property('RINGTONE', Id, 'STATUS', cndexp(Set, 'ON', 'OFF'))
+        if Set is None:
+            return (self._Skype._Property('RINGTONE', Id, 'STATUS') == 'ON')
+        self._Skype._Property('RINGTONE', Id, 'STATUS', cndexp(Set, 'ON', 'OFF'))
 
     def SaveAvatarToFile(self, Filename, AvatarId=1):
         '''Saves user avatar picture to file.
 
         @param Filename: Destination path.
-        @type Filename: unicode
+        @type Filename: str
         @param AvatarId: Avatar Id
         @type AvatarId: int
         '''
-        s = 'AVATAR %s %s' % (AvatarId, Filename)
+        s = 'AVATAR %s %s' % (AvatarId, path2unicode(Filename))
         self._Skype._DoCommand('GET %s' % s, s)
 
     def _Get_Skype(self):
         skype = self._SkypeRef()
         if skype:
             return skype
-        raise Exception()
+        raise ISkypeError('Skype4Py internal error')
 
     _Skype = property(_Get_Skype)
 
     def _GetAEC(self):
-        return self._Skype.Variable('AEC') == 'ON'
+        return (self._Skype.Variable('AEC') == 'ON')
 
     def _SetAEC(self, value):
         self._Skype.Variable('AEC', cndexp(value, 'ON', 'OFF'))
@@ -110,7 +112,7 @@ class ISettings(object):
     ''')
 
     def _GetAGC(self):
-        return self._Skype.Variable('AGC') == 'ON'
+        return (self._Skype.Variable('AGC') == 'ON')
 
     def _SetAGC(self, value):
         self._Skype.Variable('AGC', cndexp(value, 'ON', 'OFF'))
@@ -148,7 +150,7 @@ class ISettings(object):
     ''')
 
     def _GetAutoAway(self):
-        return self._Skype.Variable('AUTOAWAY') == 'ON'
+        return (self._Skype.Variable('AUTOAWAY') == 'ON')
 
     def _SetAutoAway(self, value):
         self._Skype.Variable('AUTOAWAY', cndexp(value, 'ON', 'OFF'))
@@ -160,7 +162,7 @@ class ISettings(object):
     ''')
 
     def _GetLanguage(self):
-        return self._Skype.Variable('UI_LANGUAGE')
+        return str(self._Skype.Variable('UI_LANGUAGE'))
 
     def _SetLanguage(self, value):
         self._Skype.Variable('UI_LANGUAGE', value)
@@ -168,11 +170,11 @@ class ISettings(object):
     Language = property(_GetLanguage, _SetLanguage,
     doc='''Language of the Skype client as an ISO code.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetPCSpeaker(self):
-        return self._Skype.Variable('PCSPEAKER') == 'ON'
+        return (self._Skype.Variable('PCSPEAKER') == 'ON')
 
     def _SetPCSpeaker(self, value):
         self._Skype.Variable('PCSPEAKER', cndexp(value, 'ON', 'OFF'))

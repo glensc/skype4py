@@ -18,7 +18,7 @@ class IChat(Cached):
 
     def _Init(self, Name, Skype):
         self._Skype = Skype
-        self._Name = Name
+        self._Name = str(Name)
 
     def _Property(self, PropName, Value=None, Cache=True):
         return self._Skype._Property('CHAT', self._Name, PropName, Value, Cache)
@@ -57,7 +57,7 @@ class IChat(Cached):
         @param Password: Password
         @type Password: unicode
         '''
-        self._Alter('ENTERPASSWORD', Password)
+        self._Alter('ENTERPASSWORD', tounicode(Password))
 
     def Join(self):
         '''Joins the chat.
@@ -67,16 +67,16 @@ class IChat(Cached):
     def Kick(self, Handle):
         '''Kicks a member from chat.
 
-        @param Handle: Handle
-        @type Handle: unicode
+        @param Handle: Skype username.
+        @type Handle: str
         '''
         self._Alter('KICK', Handle)
 
     def KickBan(self, Handle):
         '''Kicks and bans a member from chat.
 
-        @param Handle: Handle
-        @type Handle: unicode
+        @param Handle: Skype username.
+        @type Handle: str
         '''
         self._Alter('KICKBAN', Handle)
 
@@ -98,7 +98,8 @@ class IChat(Cached):
         @return: Message object
         @rtype: L{IChatMessage}
         '''
-        return IChatMessage(chop(self._Skype._DoCommand('CHATMESSAGE %s %s' % (self._Name, MessageText)), 2)[1], self._Skype)
+        return IChatMessage(chop(self._Skype._DoCommand('CHATMESSAGE %s %s' % (self._Name,
+            tounicode(MessageText))), 2)[1], self._Skype)
 
     def SetPassword(self, Password, Hint=''):
         '''Sets the chat password.
@@ -110,7 +111,7 @@ class IChat(Cached):
         '''
         if ' ' in Password:
             raise ValueError('Password mut be one word')
-        self._Alter('SETPASSWORD', '%s %s' % (Password, Hint))
+        self._Alter('SETPASSWORD', '%s %s' % (tounicode(Password), tounicode(Hint)))
 
     def Unbookmark(self):
         '''Unbookmarks the chat.
@@ -156,7 +157,7 @@ class IChat(Cached):
     ''')
 
     def _SetAlertString(self, value):
-        self._Alter('SETALERTSTRING', quote('=%s' % value))
+        self._Alter('SETALERTSTRING', quote('=%s' % tounicode(value)))
 
     AlertString = property(fset=_SetAlertString,
     doc='''Chat alert string. Only messages containing words from this string will cause a
@@ -175,16 +176,16 @@ class IChat(Cached):
     ''')
 
     def _GetBlob(self):
-        return self._Property('BLOB')
+        return str(self._Property('BLOB'))
 
     Blob = property(_GetBlob,
     doc='''Chat blob.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetBookmarked(self):
-        return self._Property('BOOKMARKED') == 'TRUE'
+        return (self._Property('BOOKMARKED') == 'TRUE')
 
     Bookmarked = property(_GetBookmarked,
     doc='''Tells if this chat is bookmarked.
@@ -206,7 +207,7 @@ class IChat(Cached):
         return self._Property('DESCRIPTION')
 
     def _SetDescription(self, value):
-        self._Property('DESCRIPTION', value)
+        self._Property('DESCRIPTION', tounicode(value))
 
     Description = property(_GetDescription, _SetDescription,
     doc='''Chat description.
@@ -215,12 +216,12 @@ class IChat(Cached):
     ''')
 
     def _GetDialogPartner(self):
-        return self._Property('DIALOG_PARTNER')
+        return str(self._Property('DIALOG_PARTNER'))
 
     DialogPartner = property(_GetDialogPartner,
     doc='''Skypename of the chat dialog partner.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetFriendlyName(self):
@@ -236,7 +237,7 @@ class IChat(Cached):
         return self._Property('GUIDELINES')
 
     def _SetGuideLines(self, value):
-        self._Alter('SETGUIDELINES', value)
+        self._Alter('SETGUIDELINES', tounicode(value))
 
     GuideLines = property(_GetGuideLines, _SetGuideLines,
     doc='''Chat guidelines.
@@ -272,7 +273,7 @@ class IChat(Cached):
     ''')
 
     def _GetMyRole(self):
-        return self._Property('MYROLE')
+        return str(self._Property('MYROLE'))
 
     MyRole = property(_GetMyRole,
     doc='''My chat role in a public chat.
@@ -281,7 +282,7 @@ class IChat(Cached):
     ''')
 
     def _GetMyStatus(self):
-        return self._Property('MYSTATUS')
+        return str(self._Property('MYSTATUS'))
 
     MyStatus = property(_GetMyStatus,
     doc='''My status in a public chat.
@@ -338,7 +339,7 @@ class IChat(Cached):
     ''')
 
     def _GetStatus(self):
-        return self._Property('STATUS')
+        return str(self._Property('STATUS'))
 
     Status = property(_GetStatus,
     doc='''Status.
@@ -356,6 +357,8 @@ class IChat(Cached):
     @see: L{Datetime}
     ''')
 
+    # Note. When TOPICXML is set, the value is stripped of XML tags and updated in TOPIC.
+
     def _GetTopic(self):
         try:
             topicxml = self._Property('TOPICXML')
@@ -367,9 +370,9 @@ class IChat(Cached):
 
     def _SetTopic(self, value):
         try:
-            self._Alter('SETTOPICXML', value)
+            self._Alter('SETTOPICXML', tounicode(value))
         except ISkypeError:
-            self._Alter('SETTOPIC', value)
+            self._Alter('SETTOPIC', tounicode(value))
 
     Topic = property(_GetTopic, _SetTopic,
     doc='''Chat topic.
@@ -390,7 +393,7 @@ class IChat(Cached):
     ''')
 
     def _GetType(self):
-        return self._Property('TYPE')
+        return str(self._Property('TYPE'))
 
     Type = property(_GetType,
     doc='''Chat type.
@@ -422,7 +425,7 @@ class IChatMessage(Cached):
         return self._Property('BODY')
 
     def _SetBody(self, value):
-        self._Property('BODY', value)
+        self._Property('BODY', tounicode(value))
 
     Body = property(_GetBody, _SetBody,
     doc='''Chat message body.
@@ -440,12 +443,12 @@ class IChatMessage(Cached):
     ''')
 
     def _GetChatName(self):
-        return self._Property('CHATNAME')
+        return str(self._Property('CHATNAME'))
 
     ChatName = property(_GetChatName,
     doc='''Name of the chat this message was posted on.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetDatetime(self):
@@ -459,12 +462,12 @@ class IChatMessage(Cached):
     ''')
 
     def _GetEditedBy(self):
-        return self._Property('EDITED_BY')
+        return str(self._Property('EDITED_BY'))
 
     EditedBy = property(_GetEditedBy,
     doc='''Skypename of the user who edited this message.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetEditedDatetime(self):
@@ -496,12 +499,12 @@ class IChatMessage(Cached):
     ''')
 
     def _GetFromHandle(self):
-        return self._Property('FROM_HANDLE')
+        return str(self._Property('FROM_HANDLE'))
 
     FromHandle = property(_GetFromHandle,
     doc='''Skypename of the message sender.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetId(self):
@@ -514,7 +517,7 @@ class IChatMessage(Cached):
     ''')
 
     def _GetIsEditable(self):
-        return self._Property('IS_EDITABLE') == 'TRUE'
+        return (self._Property('IS_EDITABLE') == 'TRUE')
 
     IsEditable = property(_GetIsEditable,
     doc='''Tells if message body is editable.
@@ -523,7 +526,7 @@ class IChatMessage(Cached):
     ''')
 
     def _GetLeaveReason(self):
-        return self._Property('LEAVEREASON')
+        return str(self._Property('LEAVEREASON'))
 
     LeaveReason = property(_GetLeaveReason,
     doc='''LeaveReason.
@@ -543,7 +546,7 @@ class IChatMessage(Cached):
     doc='''Marks a missed chat message as seen.
 
     @type: bool
-    @deprecated: Unpythonic, use L{MarkAsSeen} instead.
+    @deprecated: Extremely unpythonic, use L{MarkAsSeen} instead.
     ''')
 
     def _GetSender(self):
@@ -556,7 +559,7 @@ class IChatMessage(Cached):
     ''')
 
     def _GetStatus(self):
-        return self._Property('STATUS')
+        return str(self._Property('STATUS'))
 
     Status = property(_GetStatus,
     doc='''Status of the chat messsage.
@@ -575,7 +578,7 @@ class IChatMessage(Cached):
     ''')
 
     def _GetType(self):
-        return self._Property('TYPE')
+        return str(self._Property('TYPE'))
 
     Type = property(_GetType,
     doc='''Type of chat message.
@@ -618,7 +621,7 @@ class IChatMember(Cached):
         @return: True if the new role can be applied, False otherwise.
         @rtype: bool
         '''
-        return self._Alter('CANSETROLETO', Role) == 'TRUE'
+        return (self._Alter('CANSETROLETO', Role) == 'TRUE')
 
     def _GetChat(self):
         return IChat(self._Property('CHATNAME'), self._Skype)
@@ -630,12 +633,12 @@ class IChatMember(Cached):
     ''')
 
     def _GetHandle(self):
-        return self._Property('IDENTITY')
+        return str(self._Property('IDENTITY'))
 
     Handle = property(_GetHandle,
     doc='''Member Skypename.
 
-    @type: unicode
+    @type: str
     ''')
 
     def _GetId(self):
@@ -648,7 +651,7 @@ class IChatMember(Cached):
     ''')
 
     def _GetIsActive(self):
-        return self._Property('IS_ACTIVE') == 'TRUE'
+        return (self._Property('IS_ACTIVE') == 'TRUE')
 
     IsActive = property(_GetIsActive,
     doc='''Member activity status.
@@ -657,7 +660,7 @@ class IChatMember(Cached):
     ''')
 
     def _GetRole(self):
-        return self._Property('ROLE')
+        return str(self._Property('ROLE'))
 
     def _SetRole(self, value):
         self._Alter('SETROLETO', value)

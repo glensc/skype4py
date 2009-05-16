@@ -29,11 +29,11 @@ class ICommand(object):
         '''If set to True, L{ISkype.SendCommand<skype.ISkype.SendCommand>} will block until the reply is received.
         @type: bool'''
 
-        self.Command = unicode(Command)
+        self.Command = tounicode(Command)
         '''Command string.
         @type: unicode'''
 
-        self.Expected = unicode(Expected)
+        self.Expected = tounicode(Expected)
         '''Expected reply.
         @type: unicode'''
 
