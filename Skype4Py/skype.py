@@ -1279,7 +1279,7 @@ class Skype(EventHandlingBase):
     The units depend on the type. For float it is the number of seconds, for int or long
     it is the number of milliseconds. Floats are commonly used in Python modules to express
     timeouts (see time.sleep() for a basic example). Milliseconds are supported for backward
-    compatibility. Skype4Py support for real float timeouts was introduced in version 1.0.31.2.
+    compatibility. Skype4Py support for real float timeouts was introduced in version 1.0.31.1.
 
     The default value is 30000 milliseconds (int).
 

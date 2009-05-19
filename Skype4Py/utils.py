@@ -23,7 +23,7 @@ def use_generators(yes=True):
     
     Generators are disabled by default for backward compatibility.
     
-    New in 1.0.31.2.
+    New in 1.0.31.1.
 
     @param yes: True/False enables/disables the generator objects.
     @type yes: bool

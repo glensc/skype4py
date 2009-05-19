@@ -76,6 +76,6 @@ from enums import *
 from utils import use_generators
 
 
-__version__ = '1.0.31.2'
+__version__ = '1.0.31.1'
 '''The version of Skype4Py.'''
 
