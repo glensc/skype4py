@@ -303,7 +303,7 @@ class SkypeAPI(SkypeAPIBase):
 
     def set_friendly_name(self, friendly_name):
         SkypeAPIBase.set_friendly_name(self, friendly_name)
-        if self.AttachmentStatus == apiAttachSuccess:
+        if self.attachment_status == apiAttachSuccess:
             # reattach with the new name
             self.set_attachment_status(apiAttachUnknown)
             self.attach()
@@ -311,7 +311,7 @@ class SkypeAPI(SkypeAPIBase):
     def _attach_ftimeout(self):
         self.wait = False
 
-    def attach(self, timeout, Wait=True):
+    def attach(self, timeout, wait=True):
         if self.attachment_status == apiAttachSuccess:
             return
         if not self.isAlive():

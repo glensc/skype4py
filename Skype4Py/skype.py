@@ -248,7 +248,7 @@ class Skype(EventHandlingBase):
                 elif object_type == 'CHAT':
                     o = Chat(object_id, self)
                     if prop_name == 'MEMBERS':
-                        self._CallEventHandler('ChatMembersChanged', o, gen(IUser(x, self) for x in split(value)))
+                        self._CallEventHandler('ChatMembersChanged', o, gen(User(x, self) for x in split(value)))
                     if prop_name in ('OPENED', 'CLOSED'):
                         self._CallEventHandler('ChatWindowState', o, (prop_name == 'OPENED'))
                 elif object_type == 'CHATMEMBER':
@@ -262,16 +262,16 @@ class Skype(EventHandlingBase):
                 elif object_type == 'APPLICATION':
                     o = Application(object_id, self)
                     if prop_name == 'CONNECTING':
-                        self._CallEventHandler('ApplicationConnecting', o, gen(IUser(x, self) for x in split(value)))
+                        self._CallEventHandler('ApplicationConnecting', o, gen(User(x, self) for x in split(value)))
                     elif prop_name == 'STREAMS':
-                        self._CallEventHandler('ApplicationStreams', o, gen(IApplicationStream(x, o) for x in split(value)))
+                        self._CallEventHandler('ApplicationStreams', o, gen(ApplicationStream(x, o) for x in split(value)))
                     elif prop_name == 'DATAGRAM':
                         handle, text = chop(value)
-                        self._CallEventHandler('ApplicationDatagram', o, IApplicationStream(handle, o), text)
+                        self._CallEventHandler('ApplicationDatagram', o, ApplicationStream(handle, o), text)
                     elif prop_name == 'SENDING':
-                        self._CallEventHandler('ApplicationSending', o, gen(IApplicationStream(x.split('=')[0], o) for x in split(value)))
+                        self._CallEventHandler('ApplicationSending', o, gen(ApplicationStream(x.split('=')[0], o) for x in split(value)))
                     elif prop_name == 'RECEIVED':
-                        self._CallEventHandler('ApplicationReceiving', o, gen(IApplicationStream(x.split('=')[0], o) for x in split(value)))
+                        self._CallEventHandler('ApplicationReceiving', o, gen(ApplicationStream(x.split('=')[0], o) for x in split(value)))
                 elif object_type == 'GROUP':
                     o = Group(object_id, self)
                     if prop_name == 'VISIBLE':
@@ -279,7 +279,7 @@ class Skype(EventHandlingBase):
                     elif prop_name == 'EXPANDED':
                         self._CallEventHandler('GroupExpanded', o, (value == 'TRUE'))
                     elif prop_name == 'USERS':
-                        self._CallEventHandler('GroupUsers', o, gen(IUser(x, self) for x in split(value, ', ')))
+                        self._CallEventHandler('GroupUsers', o, gen(User(x, self) for x in split(value, ', ')))
                 elif object_type == 'SMS':
                     o = SmsMessage(object_id, self)
                     if prop_name == 'STATUS':
@@ -287,7 +287,7 @@ class Skype(EventHandlingBase):
                     elif prop_name == 'TARGET_STATUSES':
                         for t in split(value, ', '):
                             number, status = t.split('=')
-                            self._CallEventHandler('SmsTargetStatusChanged', ISmsTarget((number, o)), str(status))
+                            self._CallEventHandler('SmsTargetStatusChanged', SmsTarget((number, o)), str(status))
                 elif object_type == 'FILETRANSFER':
                     o = FileTransfer(object_id, self)
                     if prop_name == 'STATUS':
@@ -1266,7 +1266,7 @@ class Skype(EventHandlingBase):
         return self._Timeout
 
     def _SetTimeout(self, Value):
-        if not instance(Value, (int, long, float)):
+        if not isinstance(Value, (int, long, float)):
             raise TypeError('%s: wrong type, expected float (seconds), int or long (milliseconds)' %
                 repr(type(Value)))
         self._Timeout = Value

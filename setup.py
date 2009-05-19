@@ -34,7 +34,7 @@ class install_lib(old_install_lib):
     '''Handles the 'install_lib' command.
 
     This modified version of install_lib command installs only the necessary
-    platform modules from the Skype4Py.API package.
+    platform modules from the Skype4Py.api subpackage.
     '''
 
     def install(self):
@@ -54,7 +54,7 @@ class install_lib(old_install_lib):
     def adapt_build_to_platform(self):
         # We have to remove unneeded files from the build directory. First,
         # decide what platform we're on; this code is similar to the one
-        # in Skype4Py/API/__init__.py which decides what submodule to
+        # in Skype4Py/api/__init__.py which decides what submodule to
         # import at runtime.
         if sys.platform[:3] == 'win':
             platform = 'windows'
@@ -63,10 +63,10 @@ class install_lib(old_install_lib):
         else:
             platform = 'posix'
 
-        # Scan the <build_dir>/Skype4Py/API directory and remove all files
+        # Scan the <build_dir>/Skype4Py/api directory and remove all files
         # which names do not start with either '__' (for __init__) or the
         # detected platform.
-        path = os.path.join(self.build_dir, os.path.join('Skype4Py', 'API'))
+        path = os.path.join(self.build_dir, os.path.join('Skype4Py', 'api'))
         for name in os.listdir(path):
             if not (name.startswith('__') or name.startswith(platform)):
                 os.remove(os.path.join(path, name))
