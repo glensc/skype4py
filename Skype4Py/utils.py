@@ -7,8 +7,45 @@ import threading
 from new import instancemethod
 
 
-__all__ = ['tounicode', 'path2unicode', 'unicode2path', 'chop', 'args2dict', 'quote',
-           'esplit', 'cndexp', 'WeakCallableRef', 'EventHandlingBase', 'Cached']
+__all__ = ['use_generators', 'gen', 'tounicode', 'path2unicode', 'unicode2path',
+           'chop', 'args2dict', 'quote', 'split', 'cndexp', 'WeakCallableRef',
+           'EventHandlingBase', 'Cached']
+
+
+# Disabled by default for backward compatibility.
+generators_enabled = False
+
+
+def use_generators(yes=True):
+    '''Enables or disables the use of generator objects throughout Skype4Py.
+    If generator objects are enabled, whenever Skype4Py is expected to return
+    a collection (usually a tuple), a generator object will be returned instead.
+    
+    Generators are disabled by default for backward compatibility.
+    
+    New in 1.0.31.2.
+
+    @param yes: True/False enables/disables the generator objects.
+    @type yes: bool
+    '''
+    global generators_enabled
+    generators_enabled = yes
+
+
+def gen(genobj, fallback=tuple):
+    '''Takes a generator object and returns it unchanged if generators were
+    enabled using L{use_generators}. Otherwise falls back to the type passed
+    using fallback argument, which is a tuple by default.
+
+    @param genobj: Generator object to be processed.
+    @type genobj: generator object
+    @param fallback: Fallback collection type, normally a list or tuple.
+    @return: Unchanged generator or converted to the fallback type.
+    '''
+    global generators_enabled
+    if generators_enabled:
+        return genobj
+    return fallback(genobj)
 
 
 def tounicode(s):
@@ -22,7 +59,7 @@ def tounicode(s):
     '''
     if isinstance(s, unicode):
         return s
-    return s.decode('utf8')
+    return s.decode('utf-8')
     
     
 def path2unicode(path):
@@ -132,8 +169,8 @@ def quote(s, always=False):
     return s
 
 
-def esplit(s, d=None):
-    '''Splits a string into words.
+def split(s, d=None):
+    '''Splits a string.
 
     @param s: String to split.
     @type s: str or unicode
@@ -384,7 +421,7 @@ class EventHandlingBase(object):
         for event in self._EventNames:
             self._EventHandlers[event] = []
 
-    def _CallEventHandler(self, Event, *args, **kwargs):
+    def _CallEventHandler(self, Event, *Args, **KwArgs):
         '''Calls all event handlers defined for given Event (str), additional parameters
         will be passed unchanged to event handlers, all event handlers are fired on
         separate threads.
@@ -420,7 +457,7 @@ class EventHandlingBase(object):
             t = self._EventThreads[Event] = EventHandlingThread(Event)
         # enqueue handlers in thread
         for h in handlers:
-            t.enqueue(h, args, kwargs)
+            t.enqueue(h, Args, KwArgs)
         # start serial event processing
         try:
             t.lock.release()
@@ -510,9 +547,9 @@ class EventHandlingBase(object):
                         lambda self, value: self._SetDefaultEventHandler(Event, value))
 
     @classmethod
-    def _AddEvents(cls, klass):
-        '''Adds events to class based on 'klass' attributes.'''
-        for event in dir(klass):
+    def _AddEvents(cls, Class):
+        '''Adds events to class based on 'Class' attributes.'''
+        for event in dir(Class):
             if not event.startswith('_'):
                 setattr(cls, 'On%s' % event, cls.__AddEvents_make_event(event))
                 cls._EventNames.append(event)
@@ -528,16 +565,16 @@ class Cached(object):
     @warning: C{__init__()} is always called, don't use it to prevent initializing an already
     initialized object. Use C{_Init()} instead, it is called only once.
     '''
-    _cache_ = weakref.WeakValueDictionary()
+    _Cache = weakref.WeakValueDictionary()
 
-    def __new__(cls, Id, *args, **kwargs):
+    def __new__(cls, Id, *Args, **KwArgs):
         h = cls, Id
         try:
-            return cls._cache_[h]
+            return cls._Cache[h]
         except KeyError:
             o = object.__new__(cls)
-            cls._cache_[h] = o
-            o._Init(Id, *args, **kwargs)
+            cls._Cache[h] = o
+            o._Init(Id, *Args, **KwArgs)
             return o
             
     def _Init(self, Id):

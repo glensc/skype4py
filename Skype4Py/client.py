@@ -1,10 +1,11 @@
 '''Skype client user interface control.
 '''
 
+import weakref
+
 from enums import *
 from errors import SkypeError
 from utils import *
-import weakref
 
 
 class Client(object):
@@ -238,7 +239,7 @@ class Client(object):
     def Shutdown(self):
         '''Closes Skype application.
         '''
-        self._Skype._API.Shutdown()
+        self._Skype._API.shutdown()
 
     def Start(self, Minimized=False, Nosplash=False):
         '''Starts Skype application.
@@ -248,7 +249,7 @@ class Client(object):
         @param Nosplash: If True, no splash screen is displayed upon startup.
         @type Nosplash: bool
         '''
-        self._Skype._API.Start(Minimized, Nosplash)
+        self._Skype._API.startup(Minimized, Nosplash)
 
     def _Get_Skype(self):
         skype = self._SkypeRef()
@@ -259,7 +260,7 @@ class Client(object):
     _Skype = property(_Get_Skype)
 
     def _GetIsRunning(self):
-        return self._Skype._API.IsRunning()
+        return self._Skype._API.is_running()
 
     IsRunning = property(_GetIsRunning,
     doc='''Tells if Skype client is running.
@@ -270,8 +271,8 @@ class Client(object):
     def _GetWallpaper(self):
         return unicode2path(self._Skype.Variable('WALLPAPER'))
 
-    def _SetWallpaper(self, value):
-        self._Skype.Variable('WALLPAPER', path2unicode(value))
+    def _SetWallpaper(self, Value):
+        self._Skype.Variable('WALLPAPER', path2unicode(Value))
 
     Wallpaper = property(_GetWallpaper, _SetWallpaper,
     doc='''Path to client wallpaper bitmap.
@@ -282,8 +283,8 @@ class Client(object):
     def _GetWindowState(self):
         return self._Skype.Variable('WINDOWSTATE')
 
-    def _SetWindowState(self, value):
-        self._Skype.Variable('WINDOWSTATE', value)
+    def _SetWindowState(self, Value):
+        self._Skype.Variable('WINDOWSTATE', Value)
 
     WindowState = property(_GetWindowState, _SetWindowState,
     doc='''Client window state.
@@ -350,8 +351,8 @@ class PluginMenuItem(Cached):
     def _GetCaption(self):
         return self._Property('CAPTION')
 
-    def _SetCaption(self, value):
-        self._Property('CAPTION', tounicode(value))
+    def _SetCaption(self, Value):
+        self._Property('CAPTION', tounicode(Value))
 
     Caption = property(_GetCaption, _SetCaption,
     doc='''Menu item caption text.
@@ -362,8 +363,8 @@ class PluginMenuItem(Cached):
     def _GetEnabled(self):
         return self._Property('ENABLED') == 'TRUE'
 
-    def _SetEnabled(self, value):
-        self._Property('ENABLED', cndexp(value, 'TRUE', 'FALSE'))
+    def _SetEnabled(self, Value):
+        self._Property('ENABLED', cndexp(Value, 'TRUE', 'FALSE'))
 
     Enabled = property(_GetEnabled, _SetEnabled,
     doc='''Defines whether the menu item is enabled when a user launches Skype. If no value is defined,
@@ -375,8 +376,8 @@ class PluginMenuItem(Cached):
     def _GetHint(self):
         return self._Property('HINT')
 
-    def _SetHint(self, value):
-        self._Property('HINT', tounicode(value))
+    def _SetHint(self, Value):
+        self._Property('HINT', tounicode(Value))
 
     Hint = property(_GetHint, _SetHint,
     doc='''Menu item hint text.

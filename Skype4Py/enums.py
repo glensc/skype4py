@@ -1,7 +1,7 @@
 '''
 Skype4Py constants.
 
-  1. Usage.
+  1. B{Usage.}
 
     All constants are available at the C{Skype4Py} package level. Example::
 

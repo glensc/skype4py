@@ -1,10 +1,11 @@
 '''Data channels for calls.
 '''
 
+import time
+
 from utils import *
 from enums import *
 from errors import SkypeError
-import time
 
 
 class CallChannel(object):
@@ -145,43 +146,43 @@ class CallChannelManager(EventHandlingBase):
         self._ChannelType = cctReliable
         self._Channels = []
 
-    def _OnApplicationDatagram(self, pApp, pStream, Text):
-        if pApp == self._Application:
+    def _OnApplicationDatagram(self, App, Stream, Text):
+        if App == self._Application:
             for ch in self_Channels:
-                if ch.Stream == pStream:
+                if ch.Stream == Stream:
                     msg = CallChannelMessage(Text)
                     self._CallEventHandler('Message', self, ch, msg)
                     break
 
-    def _OnApplicationReceiving(self, pApp, pStreams):
-        if pApp == self._Application:
+    def _OnApplicationReceiving(self, App, Streams):
+        if App == self._Application:
             for ch in self._Channels:
-                if ch.Stream in pStreams:
+                if ch.Stream in Streams:
                     msg = CallChannelMessage(ch.Stream.Read())
                     self._CallEventHandler('Message', self, ch, msg)
 
-    def _OnApplicationStreams(self, pApp, pStreams):
-        if pApp == self._Application:
+    def _OnApplicationStreams(self, App, Streams):
+        if App == self._Application:
             for ch in self._Channels:
-                if ch.Stream not in pStreams:
+                if ch.Stream not in Streams:
                     self._Channels.remove(ch)
-                    self._CallEventHandler('Channels', self, tuple(self._Channels))
+                    self._CallEventHandler('Channels', self, self.Channels)
 
-    def _OnCallStatus(self, pCall, Status):
+    def _OnCallStatus(self, Call, Status):
         if Status == clsRinging:
             if self._Application is None:
                 self.CreateApplication()
-            self._Application.Connect(pCall.PartnerHandle, True)
+            self._Application.Connect(Call.PartnerHandle, True)
             for stream in self._Application.Streams:
-                if stream.PartnerHandle == pCall.PartnerHandle:
-                    self._Channels.append(CallChannel(self, pCall, stream, self._ChannelType))
-                    self._CallEventHandler('Channels', self, tuple(self._Channels))
+                if stream.PartnerHandle == Call.PartnerHandle:
+                    self._Channels.append(CallChannel(self, Call, stream, self._ChannelType))
+                    self._CallEventHandler('Channels', self, self.Channels)
                     break
         elif Status in (clsCancelled, clsFailed, clsFinished, clsRefused, clsMissed):
             for ch in self._Channels:
-                if ch.Call == pCall:
+                if ch.Call == Call:
                     self._Channels.remove(ch)
-                    self._CallEventHandler('Channels', self, tuple(self._Channels))
+                    self._CallEventHandler('Channels', self, self.Channels)
                     try:
                         ch.Stream.Disconnect()
                     except SkypeError:
@@ -223,7 +224,7 @@ class CallChannelManager(EventHandlingBase):
         self._Skype = None
 
     def _GetChannels(self):
-        return tuple(self._Channels)
+        return gen(x for x in self._Channels)
 
     Channels = property(_GetChannels,
     doc='''All call data channels.
@@ -234,8 +235,8 @@ class CallChannelManager(EventHandlingBase):
     def _GetChannelType(self):
         return self._ChannelType
 
-    def _SetChannelType(self, ChannelType):
-        self._ChannelType = str(ChannelType)
+    def _SetChannelType(self, Value):
+        self._ChannelType = str(Value)
 
     ChannelType = property(_GetChannelType, _SetChannelType,
     doc='''Queries/sets the default channel type.
@@ -255,8 +256,8 @@ class CallChannelManager(EventHandlingBase):
     def _GetName(self):
         return self._Name
 
-    def _SetName(self, Name):
-        self._Name = tounicode(Name)
+    def _SetName(self, Value):
+        self._Name = tounicode(Value)
 
     Name = property(_GetName, _SetName,
     doc='''Queries/sets the application context name.
@@ -317,8 +318,8 @@ class CallChannelMessage(object):
     def _GetText(self):
         return self._Text
 
-    def _SetText(self, Text):
-        self._Text = tounicode(Text)
+    def _SetText(self, Value):
+        self._Text = tounicode(Value)
 
     Text = property(_GetText, _SetText,
     doc='''Queries/sets message text.

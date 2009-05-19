@@ -1,8 +1,9 @@
 '''Current user profile.
 '''
 
-from utils import *
 import weakref
+
+from utils import *
 
 
 class Profile(object):
@@ -31,8 +32,8 @@ class Profile(object):
     def _GetAbout(self):
         return self._Property('ABOUT')
 
-    def _SetAbout(self, value):
-        self._Property('ABOUT', value)
+    def _SetAbout(self, Value):
+        self._Property('ABOUT', Value)
 
     About = property(_GetAbout, _SetAbout,
     doc='''"About" field of the profile.
@@ -89,9 +90,9 @@ class Profile(object):
             from time import strptime
             return date(*strptime(value, '%Y%m%d')[:3])
 
-    def _SetBirthday(self, value):
-        if value:
-            self._Property('BIRTHDAY', value.strftime('%Y%m%d'))
+    def _SetBirthday(self, Value):
+        if Value:
+            self._Property('BIRTHDAY', Value.strftime('%Y%m%d'))
         else:
             self._Property('BIRTHDAY', 0)
 
@@ -104,8 +105,8 @@ class Profile(object):
     def _GetCallApplyCF(self):
         return (self._Property('CALL_APPLY_CF') == 'TRUE')
 
-    def _SetCallApplyCF(self, value):
-        self._Property('CALL_APPLY_CF', cndexp(value, 'TRUE', 'FALSE'))
+    def _SetCallApplyCF(self, Value):
+        self._Property('CALL_APPLY_CF', cndexp(Value, 'TRUE', 'FALSE'))
 
     CallApplyCF = property(_GetCallApplyCF, _SetCallApplyCF,
     doc='''Tells if call forwarding is enabled in the profile.
@@ -116,8 +117,8 @@ class Profile(object):
     def _GetCallForwardRules(self):
         return str(self._Property('CALL_FORWARD_RULES'))
 
-    def _SetCallForwardRules(self, value):
-        self._Property('CALL_FORWARD_RULES', value)
+    def _SetCallForwardRules(self, Value):
+        self._Property('CALL_FORWARD_RULES', Value)
 
     CallForwardRules = property(_GetCallForwardRules, _SetCallForwardRules,
     doc='''Call forwarding rules of the profile.
@@ -128,8 +129,8 @@ class Profile(object):
     def _GetCallNoAnswerTimeout(self):
         return int(self._Property('CALL_NOANSWER_TIMEOUT'))
 
-    def _SetCallNoAnswerTimeout(self, value):
-        self._Property('CALL_NOANSWER_TIMEOUT', value)
+    def _SetCallNoAnswerTimeout(self, Value):
+        self._Property('CALL_NOANSWER_TIMEOUT', Value)
 
     CallNoAnswerTimeout = property(_GetCallNoAnswerTimeout, _SetCallNoAnswerTimeout,
     doc='''Number of seconds a call will ring without being answered before it stops ringing.
@@ -140,8 +141,8 @@ class Profile(object):
     def _GetCallSendToVM(self):
         return (self._Property('CALL_SEND_TO_VM') == 'TRUE')
 
-    def _SetCallSendToVM(self, value):
-        self._Property('CALL_SEND_TO_VM', cndexp(value, 'TRUE', 'FALSE'))
+    def _SetCallSendToVM(self, Value):
+        self._Property('CALL_SEND_TO_VM', cndexp(Value, 'TRUE', 'FALSE'))
 
     CallSendToVM = property(_GetCallSendToVM, _SetCallSendToVM,
     doc='''Tells whether calls will be sent to the voicemail.
@@ -152,8 +153,8 @@ class Profile(object):
     def _GetCity(self):
         return self._Property('CITY')
 
-    def _SetCity(self, value):
-        self._Property('CITY', value)
+    def _SetCity(self, Value):
+        self._Property('CITY', Value)
 
     City = property(_GetCity, _SetCity,
     doc='''"City" field of the profile.
@@ -164,8 +165,8 @@ class Profile(object):
     def _GetCountry(self):
         return chop(self._Property('COUNTRY'))[0]
 
-    def _SetCountry(self, value):
-        self._Property('COUNTRY', value)
+    def _SetCountry(self, Value):
+        self._Property('COUNTRY', Value)
 
     Country = property(_GetCountry, _SetCountry,
     doc='''"Country" field of the profile.
@@ -176,8 +177,8 @@ class Profile(object):
     def _GetFullName(self):
         return self._Property('FULLNAME')
 
-    def _SetFullName(self, value):
-        self._Property('FULLNAME', value)
+    def _SetFullName(self, Value):
+        self._Property('FULLNAME', Value)
 
     FullName = property(_GetFullName, _SetFullName,
     doc='''"Full name" field of the profile.
@@ -188,8 +189,8 @@ class Profile(object):
     def _GetHomepage(self):
         return self._Property('HOMEPAGE')
 
-    def _SetHomepage(self, value):
-        self._Property('HOMEPAGE', value)
+    def _SetHomepage(self, Value):
+        self._Property('HOMEPAGE', Value)
 
     Homepage = property(_GetHomepage, _SetHomepage,
     doc='''"Homepage" field of the profile.
@@ -207,10 +208,10 @@ class Profile(object):
     ''')
 
     def _GetLanguages(self):
-        return tuple([str(x) for x in esplit(self._Property('LANGUAGES'))])
+        return gen(str(x) for x in split(self._Property('LANGUAGES')))
 
-    def _SetLanguages(self, value):
-        self._Property('LANGUAGES', ' '.join(value))
+    def _SetLanguages(self, Value):
+        self._Property('LANGUAGES', ' '.join(Value))
 
     Languages = property(_GetLanguages, _SetLanguages,
     doc='''"ISO language codes of the profile.
@@ -221,8 +222,8 @@ class Profile(object):
     def _GetMoodText(self):
         return self._Property('MOOD_TEXT')
 
-    def _SetMoodText(self, value):
-        self._Property('MOOD_TEXT', value)
+    def _SetMoodText(self, Value):
+        self._Property('MOOD_TEXT', Value)
 
     MoodText = property(_GetMoodText, _SetMoodText,
     doc='''"Mood text" field of the profile.
@@ -233,8 +234,8 @@ class Profile(object):
     def _GetPhoneHome(self):
         return self._Property('PHONE_HOME')
 
-    def _SetPhoneHome(self, value):
-        self._Property('PHONE_HOME', value)
+    def _SetPhoneHome(self, Value):
+        self._Property('PHONE_HOME', Value)
 
     PhoneHome = property(_GetPhoneHome, _SetPhoneHome,
     doc='''"Phone home" field of the profile.
@@ -245,8 +246,8 @@ class Profile(object):
     def _GetPhoneMobile(self):
         return self._Property('PHONE_MOBILE')
 
-    def _SetPhoneMobile(self, value):
-        self._Property('PHONE_MOBILE', value)
+    def _SetPhoneMobile(self, Value):
+        self._Property('PHONE_MOBILE', Value)
 
     PhoneMobile = property(_GetPhoneMobile, _SetPhoneMobile,
     doc='''"Phone mobile" field of the profile.
@@ -257,8 +258,8 @@ class Profile(object):
     def _GetPhoneOffice(self):
         return self._Property('PHONE_OFFICE')
 
-    def _SetPhoneOffice(self, value):
-        self._Property('PHONE_OFFICE', value)
+    def _SetPhoneOffice(self, Value):
+        self._Property('PHONE_OFFICE', Value)
 
     PhoneOffice = property(_GetPhoneOffice, _SetPhoneOffice,
     doc='''"Phone office" field of the profile.
@@ -269,8 +270,8 @@ class Profile(object):
     def _GetProvince(self):
         return self._Property('PROVINCE')
 
-    def _SetProvince(self, value):
-        self._Property('PROVINCE', value)
+    def _SetProvince(self, Value):
+        self._Property('PROVINCE', Value)
 
     Province = property(_GetProvince, _SetProvince,
     doc='''"Province" field of the profile.
@@ -281,8 +282,8 @@ class Profile(object):
     def _GetRichMoodText(self):
         return self._Property('RICH_MOOD_TEXT')
 
-    def _SetRichMoodText(self, value):
-        self._Property('RICH_MOOD_TEXT', value)
+    def _SetRichMoodText(self, Value):
+        self._Property('RICH_MOOD_TEXT', Value)
 
     RichMoodText = property(_GetRichMoodText, _SetRichMoodText,
     doc='''Rich mood text of the profile.
@@ -294,8 +295,8 @@ class Profile(object):
     def _GetSex(self):
         return str(self._Property('SEX'))
 
-    def _SetSex(self, value):
-        self._Property('SEX', value)
+    def _SetSex(self, Value):
+        self._Property('SEX', Value)
 
     Sex = property(_GetSex, _SetSex,
     doc='''"Sex" field of the profile.
@@ -306,8 +307,8 @@ class Profile(object):
     def _GetTimezone(self):
         return int(self._Property('TIMEZONE'))
 
-    def _SetTimezone(self, value):
-        self._Property('TIMEZONE', value)
+    def _SetTimezone(self, Value):
+        self._Property('TIMEZONE', Value)
 
     Timezone = property(_GetTimezone, _SetTimezone,
     doc='''Timezone of the current profile in minutes from GMT.
@@ -316,7 +317,7 @@ class Profile(object):
     ''')
 
     def _GetValidatedSmsNumbers(self):
-        return tuple([str(x) for x in esplit(self._Property('SMS_VALIDATED_NUMBERS'), ', ')])
+        return gen(str(x) for x in split(self._Property('SMS_VALIDATED_NUMBERS'), ', '))
 
     ValidatedSmsNumbers = property(_GetValidatedSmsNumbers,
     doc='''List of phone numbers the user has registered for usage in reply-to field of SMS messages.

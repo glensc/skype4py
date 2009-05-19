@@ -215,8 +215,8 @@ class Call(Cached):
     @see: L{Timestamp}
     ''')
 
-    def _SetDTMF(self, value):
-        self._Alter('DTMF', value)
+    def _SetDTMF(self, Value):
+        self._Alter('DTMF', Value)
 
     DTMF = property(fset=_SetDTMF,
     doc='''Set this property to send DTMF codes. Permitted symbols are: {0..9,#,*}. 
@@ -273,7 +273,7 @@ class Call(Cached):
 
     def _GetParticipants(self):
         count = int(self._Property('CONF_PARTICIPANTS_COUNT'))
-        return tuple([Participant((self._Id, x), self._Skype) for x in xrange(count)])
+        return gen(Participant((self._Id, x), self._Skype) for x in xrange(count))
 
     Participants = property(_GetParticipants,
     doc='''Participants of a conference call not hosted by the user.
@@ -373,8 +373,8 @@ class Call(Cached):
     def _GetSeen(self):
         return self._Property('SEEN') == 'TRUE'
 
-    def _SetSeen(self, value):
-        self._Property('SEEN', cndexp(value, 'TRUE', 'FALSE'))
+    def _SetSeen(self, Value):
+        self._Property('SEEN', cndexp(Value, 'TRUE', 'FALSE'))
 
     Seen = property(_GetSeen, _SetSeen,
     doc='''Queries/sets the seen status of the call. True if the call was seen, False otherwise.
@@ -387,8 +387,8 @@ class Call(Cached):
     def _GetStatus(self):
         return self._Property('STATUS')
 
-    def _SetStatus(self, value):
-        self._Property('STATUS', str(value))
+    def _SetStatus(self, Value):
+        self._Property('STATUS', str(Value))
 
     Status = property(_GetStatus, _SetStatus,
     doc='''The call status.
@@ -522,11 +522,11 @@ class Participant(Cached):
     def __repr__(self):
         return '<%s with Id=%s, Idx=%s, Handle=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Idx), repr(self.Handle))
 
-    def _Init(self, Id_Idx, Skype):
+    def _Init(self, IdIdx, Skype):
         self._Skype = Skype
-        Id, Idx = Id_Idx
-        self._Id = int(Id)
-        self._Idx = int(Idx)
+        id_, idx = IdIdx
+        self._Id = int(id_)
+        self._Idx = int(idx)
 
     def _Property(self, Prop):
         reply = self._Skype._Property('CALL', self._Id, 'CONF_PARTICIPANT %d' % self._Idx)
@@ -617,7 +617,7 @@ class Conference(Cached):
             c.Resume()
 
     def _GetActiveCalls(self):
-        return tuple([x for x in self._Skype.ActiveCalls if x.ConferenceId == self._Id])
+        return gen(x for x in self._Skype.ActiveCalls if x.ConferenceId == self._Id)
 
     ActiveCalls = property(_GetActiveCalls,
     doc='''Active calls with the same conference ID.
@@ -626,7 +626,7 @@ class Conference(Cached):
     ''')
 
     def _GetCalls(self):
-        return tuple([x for x in self._Skype.Calls() if x.ConferenceId == self._Id])
+        return gen(x for x in self._Skype.Calls() if x.ConferenceId == self._Id)
 
     Calls = property(_GetCalls,
     doc='''Calls with the same conference ID.

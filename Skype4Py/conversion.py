@@ -1,19 +1,20 @@
 '''Conversion between constants and text.
 '''
 
-import enums
 import os
+
+import enums
 
 
 # Following code is needed when building executable files using py2exe.
-# Together with the Languages.__init__ it makes sure that all languages
+# Together with the lang.__init__ it makes sure that all languages
 # are included in the package built by py2exe. The tool looks just at
 # the imports, it ignores the 'if' statement.
 #
 # More about py2exe: http://www.py2exe.org/
 
 if False:
-    import Languages
+    import lang
     
 
 class Conversion(object):
@@ -26,18 +27,18 @@ class Conversion(object):
         @param Skype: Skype object.
         @type Skype: L{Skype}
         '''
-        self._Language = u''
+        self._Language = ''
         self._Module = None
         self._SetLanguage('en')
 
-    def _TextTo(self, prefix, value):
-        enum = [z for z in [(y, getattr(enums, y)) for y in [x for x in dir(enums) if x.startswith(prefix)]] if z[1] == value]
+    def _TextTo(self, Prefix, Value):
+        enum = [z for z in [(y, getattr(enums, y)) for y in [x for x in dir(enums) if x.startswith(Prefix)]] if z[1] == Value]
         if enum:
-            return str(value)
+            return str(Value)
         raise ValueError('Bad text')
 
-    def _ToText(self, prefix, value):
-        enum = [z for z in [(y, getattr(enums, y)) for y in [x for x in dir(enums) if x.startswith(prefix)]] if z[1] == value]
+    def _ToText(self, Prefix, Value):
+        enum = [z for z in [(y, getattr(enums, y)) for y in [x for x in dir(enums) if x.startswith(Prefix)]] if z[1] == Value]
         if enum:
             try:
                 return unicode(getattr(self._Module, enum[0][0]))
@@ -429,8 +430,8 @@ class Conversion(object):
 
     def _SetLanguage(self, Language):
         try:
-            self._Module = __import__('Languages.%s' % Language, globals(), locals(), ['Languages'])
-            self._Language = unicode(Language)
+            self._Module = __import__('lang.%s' % Language, globals(), locals(), ['lang'])
+            self._Language = str(Language)
         except ImportError:
             raise ValueError('Unknown language: %s' % Language)
 
@@ -440,5 +441,5 @@ class Conversion(object):
     Currently supported languages: ar, bg, cs, cz, da, de, el, en, es, et, fi, fr, he, hu, it, ja, ko,
     lt, lv, nl, no, pl, pp, pt, ro, ru, sv, tr, x1.
 
-    @type: unicode
+    @type: str
     ''')

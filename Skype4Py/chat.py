@@ -119,7 +119,7 @@ class Chat(Cached):
         self._Alter('UNBOOKMARK')
 
     def _GetActiveMembers(self):
-        return tuple([User(x, self._Skype) for x in esplit(self._Property('ACTIVEMEMBERS', Cache=False))])
+        return gen(User(x, self._Skype) for x in split(self._Property('ACTIVEMEMBERS', Cache=False)))
 
     ActiveMembers = property(_GetActiveMembers,
     doc='''Active members of a chat.
@@ -156,8 +156,8 @@ class Chat(Cached):
     @type: L{User}
     ''')
 
-    def _SetAlertString(self, value):
-        self._Alter('SETALERTSTRING', quote('=%s' % tounicode(value)))
+    def _SetAlertString(self, Value):
+        self._Alter('SETALERTSTRING', quote('=%s' % tounicode(Value)))
 
     AlertString = property(fset=_SetAlertString,
     doc='''Chat alert string. Only messages containing words from this string will cause a
@@ -167,7 +167,7 @@ class Chat(Cached):
     ''')
 
     def _GetApplicants(self):
-        return tuple([User(x, self._Skype) for x in esplit(self._Property('APPLICANTS'))])
+        return gen(User(x, self._Skype) for x in split(self._Property('APPLICANTS')))
 
     Applicants = property(_GetApplicants,
     doc='''Chat applicants.
@@ -206,8 +206,8 @@ class Chat(Cached):
     def _GetDescription(self):
         return self._Property('DESCRIPTION')
 
-    def _SetDescription(self, value):
-        self._Property('DESCRIPTION', tounicode(value))
+    def _SetDescription(self, Value):
+        self._Property('DESCRIPTION', tounicode(Value))
 
     Description = property(_GetDescription, _SetDescription,
     doc='''Chat description.
@@ -236,8 +236,8 @@ class Chat(Cached):
     def _GetGuideLines(self):
         return self._Property('GUIDELINES')
 
-    def _SetGuideLines(self, value):
-        self._Alter('SETGUIDELINES', tounicode(value))
+    def _SetGuideLines(self, Value):
+        self._Alter('SETGUIDELINES', tounicode(Value))
 
     GuideLines = property(_GetGuideLines, _SetGuideLines,
     doc='''Chat guidelines.
@@ -246,7 +246,7 @@ class Chat(Cached):
     ''')
 
     def _GetMemberObjects(self):
-        return tuple([ChatMember(x, self._Skype) for x in esplit(self._Property('MEMBEROBJECTS'), ', ')])
+        return gen(ChatMember(x, self._Skype) for x in split(self._Property('MEMBEROBJECTS'), ', '))
 
     MemberObjects = property(_GetMemberObjects,
     doc='''Chat members as member objects.
@@ -255,7 +255,7 @@ class Chat(Cached):
     ''')
 
     def _GetMembers(self):
-        return tuple([User(x, self._Skype) for x in esplit(self._Property('MEMBERS'))])
+        return gen(User(x, self._Skype) for x in split(self._Property('MEMBERS')))
 
     Members = property(_GetMembers,
     doc='''Chat members.
@@ -264,7 +264,7 @@ class Chat(Cached):
     ''')
 
     def _GetMessages(self):
-        return tuple([ChatMessage(x ,self._Skype) for x in esplit(self._Property('CHATMESSAGES', Cache=False), ', ')])
+        return gen(ChatMessage(x ,self._Skype) for x in split(self._Property('CHATMESSAGES', Cache=False), ', '))
 
     Messages = property(_GetMessages,
     doc='''All chat messages.
@@ -302,8 +302,8 @@ class Chat(Cached):
     def _GetOptions(self):
         return int(self._Property('OPTIONS'))
 
-    def _SetOptions(self, value):
-        self._Alter('SETOPTIONS', value)
+    def _SetOptions(self, Value):
+        self._Alter('SETOPTIONS', Value)
 
     Options = property(_GetOptions, _SetOptions,
     doc='''Chat options. A mask.
@@ -321,7 +321,7 @@ class Chat(Cached):
     ''')
 
     def _GetPosters(self):
-        return tuple([User(x, self._Skype) for x in esplit(self._Property('POSTERS'))])
+        return gen(User(x, self._Skype) for x in split(self._Property('POSTERS')))
 
     Posters = property(_GetPosters,
     doc='''Users who have posted messages to this chat.
@@ -330,7 +330,7 @@ class Chat(Cached):
     ''')
 
     def _GetRecentMessages(self):
-        return tuple([ChatMessage(x, self._Skype) for x in esplit(self._Property('RECENTCHATMESSAGES', Cache=False), ', ')])
+        return gen(ChatMessage(x, self._Skype) for x in split(self._Property('RECENTCHATMESSAGES', Cache=False), ', '))
 
     RecentMessages = property(_GetRecentMessages,
     doc='''Most recent chat messages.
@@ -368,11 +368,11 @@ class Chat(Cached):
             pass
         return self._Property('TOPIC')
 
-    def _SetTopic(self, value):
+    def _SetTopic(self, Value):
         try:
-            self._Alter('SETTOPICXML', tounicode(value))
+            self._Alter('SETTOPICXML', tounicode(Value))
         except SkypeError:
-            self._Alter('SETTOPIC', tounicode(value))
+            self._Alter('SETTOPIC', tounicode(Value))
 
     Topic = property(_GetTopic, _SetTopic,
     doc='''Chat topic.
@@ -383,8 +383,8 @@ class Chat(Cached):
     def _GetTopicXML(self):
         return self._Property('TOPICXML')
 
-    def _SetTopicXML(self, value):
-        self._Property('TOPICXML', value)
+    def _SetTopicXML(self, Value):
+        self._Property('TOPICXML', Value)
 
     TopicXML = property(_GetTopicXML, _SetTopicXML,
     doc='''Chat topic in XML format.
@@ -424,8 +424,8 @@ class ChatMessage(Cached):
     def _GetBody(self):
         return self._Property('BODY')
 
-    def _SetBody(self, value):
-        self._Property('BODY', tounicode(value))
+    def _SetBody(self, Value):
+        self._Property('BODY', tounicode(Value))
 
     Body = property(_GetBody, _SetBody,
     doc='''Chat message body.
@@ -534,10 +534,10 @@ class ChatMessage(Cached):
     @type: L{Chat leave reason<enums.leaUnknown>}
     ''')
 
-    def _SetSeen(self, value):
+    def _SetSeen(self, Value):
         from warnings import warn
         warn('ChatMessage.Seen = x: Use ChatMessage.MarkAsSeen() instead.', DeprecationWarning, stacklevel=2)
-        if value:
+        if Value:
             self.MarkAsSeen()
         else:
             raise SkypeError(0, 'Seen can only be set to True')
@@ -587,7 +587,7 @@ class ChatMessage(Cached):
     ''')
 
     def _GetUsers(self):
-        return tuple([User(self._Skype, x) for x in esplit(self._Property('USERS'))])
+        return gen(User(self._Skype, x) for x in split(self._Property('USERS')))
 
     Users = property(_GetUsers,
     doc='''Users added to the chat.
@@ -662,8 +662,8 @@ class ChatMember(Cached):
     def _GetRole(self):
         return str(self._Property('ROLE'))
 
-    def _SetRole(self, value):
-        self._Alter('SETROLETO', value)
+    def _SetRole(self, Value):
+        self._Alter('SETROLETO', Value)
 
     Role = property(_GetRole, _SetRole,
     doc='''Chat Member role.

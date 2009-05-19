@@ -1,7 +1,9 @@
 '''Main Skype interface.
 '''
 
-from API import Command, SkypeAPI
+import threading
+
+from api import *
 from errors import *
 from enums import *
 from utils import *
@@ -16,7 +18,6 @@ from application import *
 from voicemail import *
 from sms import *
 from filetransfer import *
-import threading
 
 
 class Skype(EventHandlingBase):
@@ -181,7 +182,7 @@ class Skype(EventHandlingBase):
 
         @param Events: An optional object with event handlers. See L{EventHandlingBase} for more information on events.
         @type Events: object
-        @param Options: Addtional options for the low-level API handler. For supported options, go to L{Skype4Py.API}
+        @param Options: Addtional options for the low-level API handler. For supported options, go to L{Skype4Py.api}
         subpackage and select your platform.
         @type Options: kwargs
         '''
@@ -189,7 +190,8 @@ class Skype(EventHandlingBase):
         if Events:
             self._SetEventHandlerObj(Events)
 
-        self._API = SkypeAPI(self._Handler, Options)
+        self._API = SkypeAPI(Options)
+        self._API.register_handler(self._Handler)
 
         self._Cache = True
         self.ResetCache()
@@ -205,159 +207,159 @@ class Skype(EventHandlingBase):
         '''Frees all resources.
         '''
         if hasattr(self, '_API'):
-            self._API.Close()
+            self._API.close()
 
-    def _Handler(self, mode, arg):
+    def _Handler(self, Mode, Arg):
         # low-level API callback
-        if mode == 'rece_api':
-            self._CallEventHandler('Notify', arg)
-            a, b = chop(arg)
-            ObjectType = None
+        if Mode == 'rece_api':
+            self._CallEventHandler('Notify', Arg)
+            a, b = chop(Arg)
+            object_type = None
             # if..elif handling cache and most event handlers
             if a in ('CALL', 'USER', 'GROUP', 'CHAT', 'CHATMESSAGE', 'CHATMEMBER', 'VOICEMAIL', 'APPLICATION', 'SMS', 'FILETRANSFER'):
-                ObjectType, ObjectId, PropName, Value = [a] + chop(b, 2)
-                self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
-                if ObjectType == 'USER':
-                    o = User(ObjectId, self)
-                    if PropName == 'ONLINESTATUS':
-                        self._CallEventHandler('OnlineStatus', o, str(Value))
-                    elif PropName == 'MOOD_TEXT' or PropName == 'RICH_MOOD_TEXT':
-                        self._CallEventHandler('UserMood', o, Value)
-                    elif PropName == 'RECEIVEDAUTHREQUEST':
+                object_type, object_id, prop_name, value = [a] + chop(b, 2)
+                self._CacheDict[str(object_type), str(object_id), str(prop_name)] = value
+                if object_type == 'USER':
+                    o = User(object_id, self)
+                    if prop_name == 'ONLINESTATUS':
+                        self._CallEventHandler('OnlineStatus', o, str(value))
+                    elif prop_name == 'MOOD_TEXT' or prop_name == 'RICH_MOOD_TEXT':
+                        self._CallEventHandler('UserMood', o, value)
+                    elif prop_name == 'RECEIVEDAUTHREQUEST':
                         self._CallEventHandler('UserAuthorizationRequestReceived', o)
-                elif ObjectType == 'CALL':
-                    o = Call(ObjectId, self)
-                    if PropName == 'STATUS':
-                        self._CallEventHandler('CallStatus', o, str(Value))
-                    elif PropName == 'SEEN':
-                        self._CallEventHandler('CallSeenStatusChanged', o, (Value == 'TRUE'))
-                    elif PropName == 'VAA_INPUT_STATUS':
-                        self._CallEventHandler('CallInputStatusChanged', o, (Value == 'TRUE'))
-                    elif PropName == 'TRANSFER_STATUS':
-                        self._CallEventHandler('CallTransferStatusChanged', o, str(Value))
-                    elif PropName == 'DTMF':
-                        self._CallEventHandler('CallDtmfReceived', o, str(Value))
-                    elif PropName == 'VIDEO_STATUS':
-                        self._CallEventHandler('CallVideoStatusChanged', o, str(Value))
-                    elif PropName == 'VIDEO_SEND_STATUS':
-                        self._CallEventHandler('CallVideoSendStatusChanged', o, str(Value))
-                    elif PropName == 'VIDEO_RECEIVE_STATUS':
-                        self._CallEventHandler('CallVideoReceiveStatusChanged', o, str(Value))
-                elif ObjectType == 'CHAT':
-                    o = Chat(ObjectId, self)
-                    if PropName == 'MEMBERS':
-                        self._CallEventHandler('ChatMembersChanged', o, tuple([IUser(x, self) for x in esplit(Value)]))
-                    if PropName in ('OPENED', 'CLOSED'):
-                        self._CallEventHandler('ChatWindowState', o, (PropName == 'OPENED'))
-                elif ObjectType == 'CHATMEMBER':
-                    o = ChatMember(ObjectId, self)
-                    if PropName == 'ROLE':
-                        self._CallEventHandler('ChatMemberRoleChanged', o, str(Value))
-                elif ObjectType == 'CHATMESSAGE':
-                    o = ChatMessage(ObjectId, self)
-                    if PropName == 'STATUS':
-                        self._CallEventHandler('MessageStatus', o, str(Value))
-                elif ObjectType == 'APPLICATION':
-                    o = Application(ObjectId, self)
-                    if PropName == 'CONNECTING':
-                        self._CallEventHandler('ApplicationConnecting', o, tuple([IUser(x, self) for x in esplit(Value)]))
-                    elif PropName == 'STREAMS':
-                        self._CallEventHandler('ApplicationStreams', o, tuple([IApplicationStream(x, o) for x in esplit(Value)]))
-                    elif PropName == 'DATAGRAM':
-                        handle, text = chop(Value)
+                elif object_type == 'CALL':
+                    o = Call(object_id, self)
+                    if prop_name == 'STATUS':
+                        self._CallEventHandler('CallStatus', o, str(value))
+                    elif prop_name == 'SEEN':
+                        self._CallEventHandler('CallSeenStatusChanged', o, (value == 'TRUE'))
+                    elif prop_name == 'VAA_INPUT_STATUS':
+                        self._CallEventHandler('CallInputStatusChanged', o, (value == 'TRUE'))
+                    elif prop_name == 'TRANSFER_STATUS':
+                        self._CallEventHandler('CallTransferStatusChanged', o, str(value))
+                    elif prop_name == 'DTMF':
+                        self._CallEventHandler('CallDtmfReceived', o, str(value))
+                    elif prop_name == 'VIDEO_STATUS':
+                        self._CallEventHandler('CallVideoStatusChanged', o, str(value))
+                    elif prop_name == 'VIDEO_SEND_STATUS':
+                        self._CallEventHandler('CallVideoSendStatusChanged', o, str(value))
+                    elif prop_name == 'VIDEO_RECEIVE_STATUS':
+                        self._CallEventHandler('CallVideoReceiveStatusChanged', o, str(value))
+                elif object_type == 'CHAT':
+                    o = Chat(object_id, self)
+                    if prop_name == 'MEMBERS':
+                        self._CallEventHandler('ChatMembersChanged', o, gen(IUser(x, self) for x in split(value)))
+                    if prop_name in ('OPENED', 'CLOSED'):
+                        self._CallEventHandler('ChatWindowState', o, (prop_name == 'OPENED'))
+                elif object_type == 'CHATMEMBER':
+                    o = ChatMember(object_id, self)
+                    if prop_name == 'ROLE':
+                        self._CallEventHandler('ChatMemberRoleChanged', o, str(value))
+                elif object_type == 'CHATMESSAGE':
+                    o = ChatMessage(object_id, self)
+                    if prop_name == 'STATUS':
+                        self._CallEventHandler('MessageStatus', o, str(value))
+                elif object_type == 'APPLICATION':
+                    o = Application(object_id, self)
+                    if prop_name == 'CONNECTING':
+                        self._CallEventHandler('ApplicationConnecting', o, gen(IUser(x, self) for x in split(value)))
+                    elif prop_name == 'STREAMS':
+                        self._CallEventHandler('ApplicationStreams', o, gen(IApplicationStream(x, o) for x in split(value)))
+                    elif prop_name == 'DATAGRAM':
+                        handle, text = chop(value)
                         self._CallEventHandler('ApplicationDatagram', o, IApplicationStream(handle, o), text)
-                    elif PropName == 'SENDING':
-                        self._CallEventHandler('ApplicationSending', o, tuple([IApplicationStream(x.split('=')[0], o) for x in esplit(Value)]))
-                    elif PropName == 'RECEIVED':
-                        self._CallEventHandler('ApplicationReceiving', o, tuple([IApplicationStream(x.split('=')[0], o) for x in esplit(Value)]))
-                elif ObjectType == 'GROUP':
-                    o = Group(ObjectId, self)
-                    if PropName == 'VISIBLE':
-                        self._CallEventHandler('GroupVisible', o, (Value == 'TRUE'))
-                    elif PropName == 'EXPANDED':
-                        self._CallEventHandler('GroupExpanded', o, (Value == 'TRUE'))
-                    elif PropName == 'USERS':
-                        self._CallEventHandler('GroupUsers', o, tuple([IUser(x, self) for x in esplit(Value, ', ')]))
-                elif ObjectType == 'SMS':
-                    o = SmsMessage(ObjectId, self)
-                    if PropName == 'STATUS':
-                        self._CallEventHandler('SmsMessageStatusChanged', o, str(Value))
-                    elif PropName == 'TARGET_STATUSES':
-                        for t in esplit(Value, ', '):
+                    elif prop_name == 'SENDING':
+                        self._CallEventHandler('ApplicationSending', o, gen(IApplicationStream(x.split('=')[0], o) for x in split(value)))
+                    elif prop_name == 'RECEIVED':
+                        self._CallEventHandler('ApplicationReceiving', o, gen(IApplicationStream(x.split('=')[0], o) for x in split(value)))
+                elif object_type == 'GROUP':
+                    o = Group(object_id, self)
+                    if prop_name == 'VISIBLE':
+                        self._CallEventHandler('GroupVisible', o, (value == 'TRUE'))
+                    elif prop_name == 'EXPANDED':
+                        self._CallEventHandler('GroupExpanded', o, (value == 'TRUE'))
+                    elif prop_name == 'USERS':
+                        self._CallEventHandler('GroupUsers', o, gen(IUser(x, self) for x in split(value, ', ')))
+                elif object_type == 'SMS':
+                    o = SmsMessage(object_id, self)
+                    if prop_name == 'STATUS':
+                        self._CallEventHandler('SmsMessageStatusChanged', o, str(value))
+                    elif prop_name == 'TARGET_STATUSES':
+                        for t in split(value, ', '):
                             number, status = t.split('=')
                             self._CallEventHandler('SmsTargetStatusChanged', ISmsTarget((number, o)), str(status))
-                elif ObjectType == 'FILETRANSFER':
-                    o = FileTransfer(ObjectId, self)
-                    if PropName == 'STATUS':
-                        self._CallEventHandler('FileTransferStatusChanged', o, str(Value))
-                elif ObjectType == 'VOICEMAIL':
-                    o = Voicemail(ObjectId, self)
-                    if PropName == 'STATUS':
-                        self._CallEventHandler('VoicemailStatus', o, str(Value))
+                elif object_type == 'FILETRANSFER':
+                    o = FileTransfer(object_id, self)
+                    if prop_name == 'STATUS':
+                        self._CallEventHandler('FileTransferStatusChanged', o, str(value))
+                elif object_type == 'VOICEMAIL':
+                    o = Voicemail(object_id, self)
+                    if prop_name == 'STATUS':
+                        self._CallEventHandler('VoicemailStatus', o, str(value))
             elif a in ('PROFILE', 'PRIVILEGE'):
-                ObjectType, ObjectId, PropName, Value = [a, ''] + chop(b)
-                self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
+                object_type, object_id, prop_name, value = [a, ''] + chop(b)
+                self._CacheDict[str(object_type), str(object_id), str(prop_name)] = value
             elif a in ('CURRENTUSERHANDLE', 'USERSTATUS', 'CONNSTATUS', 'PREDICTIVE_DIALER_COUNTRY', 'SILENT_MODE', 'AUDIO_IN', 'AUDIO_OUT', 'RINGER', 'MUTE', 'AUTOAWAY', 'WINDOWSTATE'):
-                ObjectType, ObjectId, PropName, Value = [a, '', '', b]
-                self._CacheDict[str(ObjectType), str(ObjectId), str(PropName)] = Value
-                if ObjectType == 'MUTE':
-                    self._CallEventHandler('Mute', Value == 'TRUE')
-                elif ObjectType == 'CONNSTATUS':
-                    self._CallEventHandler('ConnectionStatus', str(Value))
-                elif ObjectType == 'USERSTATUS':
-                    self._CallEventHandler('UserStatus', str(Value))
-                elif ObjectType == 'AUTOAWAY':
-                    self._CallEventHandler('AutoAway', (Value == 'ON'))
-                elif ObjectType == 'WINDOWSTATE':
-                    self._CallEventHandler('ClientWindowState', str(Value))
-                elif ObjectType == 'SILENT_MODE':
-                    self._CallEventHandler('SilentModeStatusChanged', (Value == 'ON'))
+                object_type, object_id, prop_name, value = [a, '', '', b]
+                self._CacheDict[str(object_type), str(object_id), str(prop_name)] = value
+                if object_type == 'MUTE':
+                    self._CallEventHandler('Mute', value == 'TRUE')
+                elif object_type == 'CONNSTATUS':
+                    self._CallEventHandler('ConnectionStatus', str(value))
+                elif object_type == 'USERSTATUS':
+                    self._CallEventHandler('UserStatus', str(value))
+                elif object_type == 'AUTOAWAY':
+                    self._CallEventHandler('AutoAway', (value == 'ON'))
+                elif object_type == 'WINDOWSTATE':
+                    self._CallEventHandler('ClientWindowState', str(value))
+                elif object_type == 'SILENT_MODE':
+                    self._CallEventHandler('SilentModeStatusChanged', (value == 'ON'))
             elif a == 'CALLHISTORYCHANGED':
                 self._CallEventHandler('CallHistory')
             elif a == 'IMHISTORYCHANGED':
                 self._CallEventHandler('MessageHistory', '') # XXX: Arg is Skypename, which one?
             elif a == 'CONTACTS':
-                PropName, Value = chop(b)
-                if PropName == 'FOCUSED':
-                    self._CallEventHandler('ContactsFocused', str(Value))
+                prop_name, value = chop(b)
+                if prop_name == 'FOCUSED':
+                    self._CallEventHandler('ContactsFocused', str(value))
             elif a == 'DELETED':
-                PropName, Value = chop(b)
-                if PropName == 'GROUP':
-                    self._CallEventHandler('GroupDeleted', int(Value))
+                prop_name, value = chop(b)
+                if prop_name == 'GROUP':
+                    self._CallEventHandler('GroupDeleted', int(value))
             elif a == 'EVENT':
-                ObjectId, PropName, Value = chop(b, 2)
-                if PropName == 'CLICKED':
-                    self._CallEventHandler('PluginEventClicked', PluginEvent(ObjectId, self))
+                object_id, prop_name, value = chop(b, 2)
+                if prop_name == 'CLICKED':
+                    self._CallEventHandler('PluginEventClicked', PluginEvent(object_id, self))
             elif a == 'MENU_ITEM':
-                ObjectId, PropName, Value = chop(b, 2)
-                if PropName == 'CLICKED':
-                    i = Value.rfind('CONTEXT ')
+                object_id, prop_name, value = chop(b, 2)
+                if prop_name == 'CLICKED':
+                    i = value.rfind('CONTEXT ')
                     if i >= 0:
-                        context = chop(Value[i+8:])[0]
+                        context = chop(value[i+8:])[0]
                         users = ()
                         context_id = u''
                         if context in (pluginContextContact, pluginContextCall, pluginContextChat):
-                            users = tuple([User(x, self) for x in esplit(Value[:i-1], ', ')])
+                            users = gen(User(x, self) for x in split(value[:i-1], ', '))
                         if context in (pluginContextCall, pluginContextChat):
-                            j = Value.rfind('CONTEXT_ID ')
+                            j = value.rfind('CONTEXT_ID ')
                             if j >= 0:
-                                context_id = str(chop(Value[j+11:])[0])
+                                context_id = str(chop(value[j+11:])[0])
                                 if context == pluginContextCall:
                                     context_id = int(context_id)
-                        self._CallEventHandler('PluginMenuItemClicked', PluginMenuItem(ObjectId, self), users, str(context), context_id)
+                        self._CallEventHandler('PluginMenuItemClicked', PluginMenuItem(object_id, self), users, str(context), context_id)
             elif a == 'WALLPAPER':
                 self._CallEventHandler('WallpaperChanged', unicode2path(b))
-        elif mode == 'rece':
-            self._CallEventHandler('Reply', arg)
-        elif mode == 'send':
-            self._CallEventHandler('Command', arg)
-        elif mode == 'attach':
-            self._CallEventHandler('AttachmentStatus', str(arg))
-            if arg == apiAttachRefused:
+        elif Mode == 'rece':
+            self._CallEventHandler('Reply', Arg)
+        elif Mode == 'send':
+            self._CallEventHandler('Command', Arg)
+        elif Mode == 'attach':
+            self._CallEventHandler('AttachmentStatus', str(Arg))
+            if Arg == apiAttachRefused:
                 raise SkypeAPIError('Skype connection refused')
 
-    def _DoCommand(self, cmd, reply=''):
-        command = Command(-1, cmd, reply, True, self.Timeout)
+    def _DoCommand(self, Cmd, ExpectedReply=''):
+        command = Command(-1, Cmd, ExpectedReply, True, self.Timeout)
         self.SendCommand(command)
         a, b = chop(command.Reply)
         if a == 'ERROR':
@@ -378,24 +380,24 @@ class Skype(EventHandlingBase):
         if Set is None: # Get
             if Cache and self._Cache and h in self._CacheDict:
                 return self._CacheDict[h]
-            Value = self._DoCommand('GET %s' % jarg, jarg)
+            value = self._DoCommand('GET %s' % jarg, jarg)
             while arg:
                 try:
-                    a, b = chop(Value)
+                    a, b = chop(value)
                 except ValueError:
                     break
                 if a.lower() != arg[0].lower():
                     break
                 del arg[0]
-                Value = b
+                value = b
             if Cache and self._Cache:
-                self._CacheDict[h] = Value
-            return Value
+                self._CacheDict[h] = value
+            return value
         else: # Set
-            Value = tounicode(Set)
-            self._DoCommand('SET %s %s' % (jarg, Value), jarg)
+            value = tounicode(Set)
+            self._DoCommand('SET %s %s' % (jarg, value), jarg)
             if Cache and self._Cache:
-                self._CacheDict[h] = Value
+                self._CacheDict[h] = value
 
     def _Alter(self, ObjectType, ObjectId, AlterName, Args=None, Reply=None):
         com = 'ALTER %s %s %s' % (str(ObjectType), str(ObjectId), str(AlterName))
@@ -420,7 +422,7 @@ class Skype(EventHandlingBase):
         com = 'SEARCH %s' % ObjectType
         if Args is not None:
             com = '%s %s' % (com, Args)
-        return tuple(esplit(chop(self._DoCommand(com))[-1], ', '))
+        return tuple(split(chop(self._DoCommand(com))[-1], ', '))
 
     def ApiSecurityContextEnabled(self, Context):
         '''Queries if an API security context for Internet Explorer is enabled.
@@ -432,7 +434,7 @@ class Skype(EventHandlingBase):
 
         @warning: This functionality isn't supported by Skype4Py.
         '''
-        self._API.ApiSecurityContextEnabled(Context)
+        self._API.security_context_enabled(Context)
 
     def Application(self, Name):
         '''Queries an application object.
@@ -444,11 +446,11 @@ class Skype(EventHandlingBase):
         '''
         return Application(Name, self)
 
-    def _AsyncSearchUsersReplyHandler(self, command):
-        if command in self._AsyncSearchUsersCommands:
-            self._AsyncSearchUsersCommands.remove(command)
-            self._CallEventHandler('AsyncSearchUsersFinished', command.Id,
-                tuple([User(x, self) for x in esplit(chop(command.Reply)[-1], ', ')]))
+    def _AsyncSearchUsersReplyHandler(self, Command):
+        if Command in self._AsyncSearchUsersCommands:
+            self._AsyncSearchUsersCommands.remove(Command)
+            self._CallEventHandler('AsyncSearchUsersFinished', Command.Id,
+                gen(User(x, self) for x in split(chop(Command.Reply)[-1], ', ')))
             if len(self._AsyncSearchUsersCommands) == 0:
                 self.UnregisterEventHandler('Reply', self._AsyncSearchUsersReplyHandler)
                 del self._AsyncSearchUsersCommands
@@ -481,8 +483,8 @@ class Skype(EventHandlingBase):
         @type Wait: bool
         '''
         try:
-            self._API.Protocol = Protocol
-            self._API.Attach(self.Timeout, Wait)
+            self._API.protocol = Protocol
+            self._API.attach(self.Timeout, Wait)
         except SkypeAPIError:
             self.ResetCache()
             raise
@@ -507,11 +509,11 @@ class Skype(EventHandlingBase):
         @return: Call objects.
         @rtype: tuple of L{Call}
         '''
-        return tuple([Call(x, self) for x in self._Search('CALLS', Target)])
+        return gen(Call(x, self) for x in self._Search('CALLS', Target))
 
-    def __ChangeUserStatus_UserStatus_Handler(self, status):
-        if status.upper() == self.__ChangeUserStatus_Status:
-            self.__ChangeUserStatus_Event.set()
+    def _ChangeUserStatus_UserStatus(self, Status):
+        if Status.upper() == self._ChangeUserStatus_Status:
+            self._ChangeUserStatus_Event.set()
 
     def ChangeUserStatus(self, Status):
         '''Changes the online status for the current user.
@@ -524,13 +526,13 @@ class Skype(EventHandlingBase):
         '''
         if self.CurrentUserStatus.upper() == Status.upper():
             return
-        self.__ChangeUserStatus_Event = threading.Event()
-        self.__ChangeUserStatus_Status = Status.upper()
-        self.RegisterEventHandler('UserStatus', self.__ChangeUserStatus_UserStatus_Handler)
+        self._ChangeUserStatus_Event = threading.Event()
+        self._ChangeUserStatus_Status = Status.upper()
+        self.RegisterEventHandler('UserStatus', self._ChangeUserStatus_UserStatus)
         self.CurrentUserStatus = Status
-        self.__ChangeUserStatus_Event.wait()
-        self.UnregisterEventHandler('UserStatus', self.__ChangeUserStatus_UserStatus_Handler)
-        del self.__ChangeUserStatus_Event, self.__ChangeUserStatus_Status
+        self._ChangeUserStatus_Event.wait()
+        self.UnregisterEventHandler('UserStatus', self._ChangeUserStatus_UserStatus)
+        del self._ChangeUserStatus_Event, self._ChangeUserStatus_Status
 
     def Chat(self, Name=''):
         '''Queries a chat object.
@@ -565,11 +567,11 @@ class Skype(EventHandlingBase):
         '''
         self._DoCommand('CLEAR VOICEMAILHISTORY')
 
-    def Command(self, command, Reply=u'', Block=False, Timeout=30000, Id=-1):
+    def Command(self, Command, Reply=u'', Block=False, Timeout=30000, Id=-1):
         '''Creates an API command object.
 
-        @param command: Command string.
-        @type command: unicode
+        @param Command: Command string.
+        @type Command: unicode
         @param Reply: Expected reply. By default any reply is accepted (except errors
         which raise an L{SkypeError} exception).
         @type Reply: unicode
@@ -583,7 +585,8 @@ class Skype(EventHandlingBase):
         @rtype: L{Command}
         @see: L{SendCommand}
         '''
-        return Command(Id, command, Reply, Block, Timeout)
+        from API import Command as COMMAND
+        return COMMAND(Id, Command, Reply, Block, Timeout)
 
     def Conference(self, Id=0):
         '''Queries a call conference object.
@@ -665,12 +668,12 @@ class Skype(EventHandlingBase):
         @type Context: unicode
         @warning: This functionality isn't supported by Skype4Py.
         '''
-        self._API.EnableApiSecurityContext(Context)
+        self._API.enable_security_context(Context)
 
     def FindChatUsingBlob(self, Blob):
         '''Returns existing chat using given blob.
 
-        @param Blob: A blob indentifying the chat.
+        @param Blob: A blob identifying the chat.
         @type Blob: str
         @return: A chat object
         @rtype: L{Chat}
@@ -711,7 +714,7 @@ class Skype(EventHandlingBase):
         @return: Chat message objects.
         @rtype: tuple of L{ChatMessage}
         '''
-        return tuple([ChatMessage(x, self) for x in self._Search('CHATMESSAGES', Target)])
+        return gen(ChatMessage(x, self) for x in self._Search('CHATMESSAGES', Target))
 
     def PlaceCall(self, *Targets):
         '''Places a call to a single user or creates a conference call.
@@ -739,7 +742,7 @@ class Skype(EventHandlingBase):
 
         @param Name: Privilege name, currently one of 'SKYPEOUT', 'SKYPEIN', 'VOICEMAIL'.
         @type Name: str
-        @return: True if the priviledge is available, False otherwise.
+        @return: True if the privilege is available, False otherwise.
         @rtype: bool
         '''
         return (self._Property('PRIVILEGE', '', Name.upper()) == 'TRUE')
@@ -791,16 +794,16 @@ class Skype(EventHandlingBase):
         @return: Found users.
         @rtype: tuple of L{User}
         '''
-        return tuple([User(x, self) for x in self._Search('USERS', tounicode(Target))])
+        return gen(User(x, self) for x in self._Search('USERS', tounicode(Target)))
 
-    def SendCommand(self, command):
+    def SendCommand(self, Command):
         '''Sends an API command.
 
-        @param command: Command to send. Use L{Command} method to create a command.
-        @type command: L{Command}
+        @param Command: Command to send. Use L{Command} method to create a command.
+        @type Command: L{Command}
         '''
         try:
-            self._API.SendCommand(command)
+            self._API.send_command(Command)
         except SkypeAPIError:
             self.ResetCache()
             raise
@@ -844,7 +847,7 @@ class Skype(EventHandlingBase):
         @return: A voicemail object.
         @rtype: L{Voicemail}
         '''
-        if self._API.Protocol >= 6:
+        if self._API.protocol >= 6:
             self._DoCommand('CALLVOICEMAIL %s' % Username)
         else:
             self._DoCommand('VOICEMAIL %s' % Username)
@@ -886,7 +889,7 @@ class Skype(EventHandlingBase):
         return o
 
     def _GetActiveCalls(self):
-        return tuple([Call(x, self) for x in self._Search('ACTIVECALLS')])
+        return gen(Call(x, self) for x in self._Search('ACTIVECALLS'))
 
     ActiveCalls = property(_GetActiveCalls,
     doc='''Queries a list of active calls.
@@ -895,7 +898,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetActiveChats(self):
-        return tuple([Chat(x, self) for x in self._Search('ACTIVECHATS')])
+        return gen(Chat(x, self) for x in self._Search('ACTIVECHATS'))
 
     ActiveChats = property(_GetActiveChats,
     doc='''Queries a list of active chats.
@@ -904,7 +907,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetActiveFileTransfers(self):
-        return tuple([FileTransfer(x, self) for x in self._Search('ACTIVEFILETRANSFERS')])
+        return gen(FileTransfer(x, self) for x in self._Search('ACTIVEFILETRANSFERS'))
 
     ActiveFileTransfers = property(_GetActiveFileTransfers,
     doc='''Queries currently active file transfers.
@@ -913,10 +916,10 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetApiDebugLevel(self):
-        return self._API.DebugLevel
+        return self._API.debug_level
 
-    def _SetApiDebugLevel(self, value):
-        self._API.SetDebugLevel(int(value))
+    def _SetApiDebugLevel(self, Value):
+        self._API.set_debug_level(int(Value))
 
     ApiDebugLevel = property(_GetApiDebugLevel, _SetApiDebugLevel,
     doc='''Queries/sets the debug level of the underlying API. Currently there are
@@ -937,7 +940,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetAttachmentStatus(self):
-        return self._API.AttachmentStatus
+        return self._API.attachment_status
 
     AttachmentStatus = property(_GetAttachmentStatus,
     doc='''Queries the attachment status of the Skype client.
@@ -946,7 +949,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetBookmarkedChats(self):
-        return tuple([Chat(x, self) for x in self._Search('BOOKMARKEDCHATS')])
+        return gen(Chat(x, self) for x in self._Search('BOOKMARKEDCHATS'))
 
     BookmarkedChats = property(_GetBookmarkedChats,
     doc='''Queries a list of bookmarked chats.
@@ -957,8 +960,8 @@ class Skype(EventHandlingBase):
     def _GetCache(self):
         return self._Cache
 
-    def _SetCache(self, value):
-        self._Cache = bool(value)
+    def _SetCache(self, Value):
+        self._Cache = bool(Value)
 
     Cache = property(_GetCache, _SetCache,
     doc='''Queries/sets the status of internal cache. The internal API cache is used
@@ -968,7 +971,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetChats(self):
-        return tuple([Chat(x, self) for x in self._Search('CHATS')])
+        return gen(Chat(x, self) for x in self._Search('CHATS'))
 
     Chats = property(_GetChats,
     doc='''Queries a list of chats.
@@ -988,7 +991,7 @@ class Skype(EventHandlingBase):
     def _GetCommandId(self):
         return True
 
-    def _SetCommandId(self, value):
+    def _SetCommandId(self, Value):
         pass
 
     CommandId = property(_GetCommandId, _SetCommandId,
@@ -1001,14 +1004,12 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetConferences(self):
-        confs = []
         for c in self.Calls():
             cid = c.ConferenceId
             if cid > 0 and cid not in [x.Id for x in confs]:
-                confs.append(Conference(cid, self))
-        return tuple(confs)
+                yield Conference(cid, self)
 
-    Conferences = property(_GetConferences,
+    Conferences = property(lambda self: gen(self._GetConferences()),
     doc='''Queries a list of call conferences.
 
     @type: tuple of L{Conference}
@@ -1062,8 +1063,8 @@ class Skype(EventHandlingBase):
     def _GetCurrentUserStatus(self):
         return str(self.Variable('USERSTATUS'))
 
-    def _SetCurrentUserStatus(self, value):
-        self.Variable('USERSTATUS', str(value))
+    def _SetCurrentUserStatus(self, Value):
+        self.Variable('USERSTATUS', str(Value))
 
     CurrentUserStatus = property(_GetCurrentUserStatus, _SetCurrentUserStatus,
     doc='''Queries/sets the online status of the current user.
@@ -1072,7 +1073,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetCustomGroups(self):
-        return tuple([Group(x, self) for x in self._Search('GROUPS', 'CUSTOM')])
+        return gen(Group(x, self) for x in self._Search('GROUPS', 'CUSTOM'))
 
     CustomGroups = property(_GetCustomGroups,
     doc='''Queries the list of custom contact groups. Custom groups are contact groups defined by the user.
@@ -1081,7 +1082,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetFileTransfers(self):
-        return tuple([FileTransfer(x, self) for x in self._Search('FILETRANSFERS')])
+        return gen(FileTransfer(x, self) for x in self._Search('FILETRANSFERS'))
 
     FileTransfers = property(_GetFileTransfers,
     doc='''Queries all file transfers.
@@ -1092,7 +1093,7 @@ class Skype(EventHandlingBase):
     def _GetFocusedContacts(self):
         # we have to use _DoCommand() directly because for unknown reason the API returns
         # "CONTACTS FOCUSED" instead of "CONTACTS_FOCUSED" (note the space instead of "_")
-        return tuple([User(x, self) for x in esplit(chop(self._DoCommand('GET CONTACTS_FOCUSED', 'CONTACTS FOCUSED'), 2)[-1])])
+        return gen(User(x, self) for x in split(chop(self._DoCommand('GET CONTACTS_FOCUSED', 'CONTACTS FOCUSED'), 2)[-1]))
 
     FocusedContacts = property(_GetFocusedContacts,
     doc='''Queries a list of contacts selected in the contacts list.
@@ -1100,17 +1101,20 @@ class Skype(EventHandlingBase):
     @type: tuple of L{User}
     ''')
 
-    def _SetFriendlyName(self, FriendlyName):
-        self._API.SetFriendlyName(unicode(FriendlyName))
+    def _GetFriendlyName(self):
+        return self._API.friendly_name
 
-    FriendlyName = property(fset=_SetFriendlyName,
-    doc='''Sets a "friendly" name for an application.
+    def _SetFriendlyName(self, Value):
+        self._API.set_friendly_name(tounicode(Value))
+
+    FriendlyName = property(_GetFriendlyName, _SetFriendlyName,
+    doc='''Queries/sets a "friendly" name for an application.
 
     @type: unicode
     ''')
 
     def _GetFriends(self):
-        return tuple([User(x, self) for x in self._Search('FRIENDS')])
+        return gen(User(x, self) for x in self._Search('FRIENDS'))
 
     Friends = property(_GetFriends,
     doc='''Queries the users in a contact list.
@@ -1119,7 +1123,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetGroups(self):
-        return tuple([Group(x, self) for x in self._Search('GROUPS', 'ALL')])
+        return gen(Group(x, self) for x in self._Search('GROUPS', 'ALL'))
 
     Groups = property(_GetGroups,
     doc='''Queries the list of all contact groups.
@@ -1128,7 +1132,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetHardwiredGroups(self):
-        return tuple([Group(x, self) for x in self._Search('GROUPS', 'HARDWIRED')])
+        return gen(Group(x, self) for x in self._Search('GROUPS', 'HARDWIRED'))
 
     HardwiredGroups = property(_GetHardwiredGroups,
     doc='''Queries the list of hardwired contact groups. Hardwired groups are "smart" contact groups,
@@ -1138,7 +1142,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetMissedCalls(self):
-        return tuple([Call(x, self) for x in self._Search('MISSEDCALLS')])
+        return gen(Call(x, self) for x in self._Search('MISSEDCALLS'))
 
     MissedCalls = property(_GetMissedCalls,
     doc='''Queries a list of missed calls.
@@ -1147,7 +1151,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetMissedChats(self):
-        return tuple([Chat(x, self) for x in self._Search('MISSEDCHATS')])
+        return gen(Chat(x, self) for x in self._Search('MISSEDCHATS'))
 
     MissedChats = property(_GetMissedChats,
     doc='''Queries a list of missed chats.
@@ -1156,7 +1160,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetMissedMessages(self):
-        return tuple([ChatMessage(x, self) for x in self._Search('MISSEDCHATMESSAGES')])
+        return gen(ChatMessage(x, self) for x in self._Search('MISSEDCHATMESSAGES'))
 
     MissedMessages = property(_GetMissedMessages,
     doc='''Queries a list of missed chat messages.
@@ -1165,7 +1169,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetMissedSmss(self):
-        return tuple([SmsMessage(x, self) for x in self._Search('MISSEDSMSS')])
+        return gen(SmsMessage(x, self) for x in self._Search('MISSEDSMSS'))
 
     MissedSmss = property(_GetMissedSmss,
     doc='''Requests a list of all missed SMS messages.
@@ -1174,7 +1178,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetMissedVoicemails(self):
-        return tuple([Voicemail(x, self) for x in self._Search('MISSEDVOICEMAILS')])
+        return gen(Voicemail(x, self) for x in self._Search('MISSEDVOICEMAILS'))
 
     MissedVoicemails = property(_GetMissedVoicemails,
     doc='''Requests a list of missed voicemails.
@@ -1185,8 +1189,8 @@ class Skype(EventHandlingBase):
     def _GetMute(self):
         return self.Variable('MUTE') == 'ON'
 
-    def _SetMute(self, value):
-        self.Variable('MUTE', cndexp(value, 'ON', 'OFF'))
+    def _SetMute(self, Value):
+        self.Variable('MUTE', cndexp(Value, 'ON', 'OFF'))
 
     Mute = property(_GetMute, _SetMute,
     doc='''Queries/sets the mute status of the Skype client.
@@ -1207,11 +1211,11 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetProtocol(self):
-        return self._API.Protocol
+        return self._API.protocol
 
-    def _SetProtocol(self, value):
-        self._DoCommand('PROTOCOL %s' % value)
-        self._API.Protocol = int(value)
+    def _SetProtocol(self, Value):
+        self._DoCommand('PROTOCOL %s' % Value)
+        self._API.protocol = int(Value)
 
     Protocol = property(_GetProtocol, _SetProtocol,
     doc='''Queries/sets the protocol version used by the Skype client.
@@ -1220,7 +1224,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetRecentChats(self):
-        return tuple([Chat(x, self) for x in self._Search('RECENTCHATS')])
+        return gen(Chat(x, self) for x in self._Search('RECENTCHATS'))
 
     RecentChats = property(_GetRecentChats,
     doc='''Queries a list of recent chats.
@@ -1240,8 +1244,8 @@ class Skype(EventHandlingBase):
     def _GetSilentMode(self):
         return self._Property('SILENT_MODE', '', '', Cache=False) == 'ON'
 
-    def _SetSilentMode(self, value):
-        self._Property('SILENT_MODE', '', '', cndexp(value, 'ON', 'OFF'), Cache=False)
+    def _SetSilentMode(self, Value):
+        self._Property('SILENT_MODE', '', '', cndexp(Value, 'ON', 'OFF'), Cache=False)
 
     SilentMode = property(_GetSilentMode, _SetSilentMode,
     doc='''Returns/sets Skype silent mode status.
@@ -1250,7 +1254,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetSmss(self):
-        return tuple([SmsMessage(x, self) for x in self._Search('SMSS')])
+        return gen(SmsMessage(x, self) for x in self._Search('SMSS'))
 
     Smss = property(_GetSmss,
     doc='''Requests a list of all SMS messages.
@@ -1261,19 +1265,29 @@ class Skype(EventHandlingBase):
     def _GetTimeout(self):
         return self._Timeout
 
-    def _SetTimeout(self, value):
-        self._Timeout = int(value)
+    def _SetTimeout(self, Value):
+        if not instance(Value, (int, long, float)):
+            raise TypeError('%s: wrong type, expected float (seconds), int or long (milliseconds)' %
+                repr(type(Value)))
+        self._Timeout = Value
 
     Timeout = property(_GetTimeout, _SetTimeout,
-    doc='''Queries/sets the wait timeout value in milliseconds. This timeout value applies to every
-    command sent to the Skype API. If a response is not received during the timeout period, an
-    L{SkypeAPIError} exception is raised.
+    doc='''Queries/sets the wait timeout value. This timeout value applies to every command sent
+    to the Skype API and to attachment requests (see L{Attach}). If a response is not received
+    during the timeout period, an L{SkypeAPIError} exception is raised.
+    
+    The units depend on the type. For float it is the number of seconds, for int or long
+    it is the number of milliseconds. Floats are commonly used in Python modules to express
+    timeouts (see time.sleep() for a basic example). Milliseconds are supported for backward
+    compatibility. Skype4Py support for real float timeouts was introduced in version 1.0.31.2.
 
-    @type: int
+    The default value is 30000 milliseconds (int).
+
+    @type: float, int or long
     ''')
 
     def _GetUsersWaitingAuthorization(self):
-        return tuple([User(x, self) for x in self._Search('USERSWAITINGMYAUTHORIZATION')])
+        return gen(User(x, self) for x in self._Search('USERSWAITINGMYAUTHORIZATION'))
 
     UsersWaitingAuthorization = property(_GetUsersWaitingAuthorization,
     doc='''Queries the list of users waiting for authorization.
@@ -1291,7 +1305,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetVoicemails(self):
-        return tuple([Voicemail(x, self) for x in self._Search('VOICEMAILS')])
+        return gen(Voicemail(x, self) for x in self._Search('VOICEMAILS'))
 
     Voicemails = property(_GetVoicemails,
     doc='''Queries a list of voicemails.

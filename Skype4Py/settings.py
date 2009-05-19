@@ -1,8 +1,9 @@
 '''Skype settings.
 '''
 
-import weakref
 import sys
+import weakref
+
 from utils import *
 
 
@@ -100,8 +101,8 @@ class Settings(object):
     def _GetAEC(self):
         return (self._Skype.Variable('AEC') == 'ON')
 
-    def _SetAEC(self, value):
-        self._Skype.Variable('AEC', cndexp(value, 'ON', 'OFF'))
+    def _SetAEC(self, Value):
+        self._Skype.Variable('AEC', cndexp(Value, 'ON', 'OFF'))
 
     AEC = property(_GetAEC, _SetAEC,
     doc='''Automatic echo cancellation state.
@@ -114,8 +115,8 @@ class Settings(object):
     def _GetAGC(self):
         return (self._Skype.Variable('AGC') == 'ON')
 
-    def _SetAGC(self, value):
-        self._Skype.Variable('AGC', cndexp(value, 'ON', 'OFF'))
+    def _SetAGC(self, Value):
+        self._Skype.Variable('AGC', cndexp(Value, 'ON', 'OFF'))
 
     AGC = property(_GetAGC, _SetAGC,
     doc='''Automatic gain control state.
@@ -128,8 +129,8 @@ class Settings(object):
     def _GetAudioIn(self):
         return self._Skype.Variable('AUDIO_IN')
 
-    def _SetAudioIn(self, value):
-        self._Skype.Variable('AUDIO_IN', value)
+    def _SetAudioIn(self, Value):
+        self._Skype.Variable('AUDIO_IN', Value)
 
     AudioIn = property(_GetAudioIn, _SetAudioIn,
     doc='''Name of an audio input device.
@@ -140,8 +141,8 @@ class Settings(object):
     def _GetAudioOut(self):
         return self._Skype.Variable('AUDIO_OUT')
 
-    def _SetAudioOut(self, value):
-        self._Skype.Variable('AUDIO_OUT', value)
+    def _SetAudioOut(self, Value):
+        self._Skype.Variable('AUDIO_OUT', Value)
 
     AudioOut = property(_GetAudioOut, _SetAudioOut,
     doc='''Name of an audio output device.
@@ -152,8 +153,8 @@ class Settings(object):
     def _GetAutoAway(self):
         return (self._Skype.Variable('AUTOAWAY') == 'ON')
 
-    def _SetAutoAway(self, value):
-        self._Skype.Variable('AUTOAWAY', cndexp(value, 'ON', 'OFF'))
+    def _SetAutoAway(self, Value):
+        self._Skype.Variable('AUTOAWAY', cndexp(Value, 'ON', 'OFF'))
 
     AutoAway = property(_GetAutoAway, _SetAutoAway,
     doc='''Auto away status.
@@ -164,8 +165,8 @@ class Settings(object):
     def _GetLanguage(self):
         return str(self._Skype.Variable('UI_LANGUAGE'))
 
-    def _SetLanguage(self, value):
-        self._Skype.Variable('UI_LANGUAGE', value)
+    def _SetLanguage(self, Value):
+        self._Skype.Variable('UI_LANGUAGE', Value)
 
     Language = property(_GetLanguage, _SetLanguage,
     doc='''Language of the Skype client as an ISO code.
@@ -176,8 +177,8 @@ class Settings(object):
     def _GetPCSpeaker(self):
         return (self._Skype.Variable('PCSPEAKER') == 'ON')
 
-    def _SetPCSpeaker(self, value):
-        self._Skype.Variable('PCSPEAKER', cndexp(value, 'ON', 'OFF'))
+    def _SetPCSpeaker(self, Value):
+        self._Skype.Variable('PCSPEAKER', cndexp(Value, 'ON', 'OFF'))
 
     PCSpeaker = property(_GetPCSpeaker, _SetPCSpeaker,
     doc='''PCSpeaker status.
@@ -188,8 +189,8 @@ class Settings(object):
     def _GetRinger(self):
         return self._Skype.Variable('RINGER')
 
-    def _SetRinger(self, value):
-        self._Skype.Variable('RINGER', value)
+    def _SetRinger(self, Value):
+        self._Skype.Variable('RINGER', Value)
 
     Ringer = property(_GetRinger, _SetRinger,
     doc='''Name of a ringer device.
@@ -200,8 +201,8 @@ class Settings(object):
     def _GetVideoIn(self):
         return self._Skype.Variable('VIDEO_IN')
 
-    def _SetVideoIn(self, value):
-        self._Skype.Variable('VIDEO_IN', value)
+    def _SetVideoIn(self, Value):
+        self._Skype.Variable('VIDEO_IN', Value)
 
     VideoIn = property(_GetVideoIn, _SetVideoIn,
     doc='''Name of a video input device.

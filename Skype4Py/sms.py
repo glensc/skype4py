@@ -86,8 +86,8 @@ class SmsMessage(Cached):
     def _GetBody(self):
         return self._Property('BODY')
 
-    def _SetBody(self, value):
-        self._Property('BODY', value)
+    def _SetBody(self, Value):
+        self._Property('BODY', Value)
 
     Body = property(_GetBody, _SetBody,
     doc='''Text of this SMS message.
@@ -96,7 +96,7 @@ class SmsMessage(Cached):
     ''')
 
     def _GetChunks(self):
-        return tuple([SmsChunk((x, self)) for x in range(int(chop(self._Property('CHUNKING', Cache=False))[0]))])
+        return gen(SmsChunk((x, self)) for x in range(int(chop(self._Property('CHUNKING', Cache=False))[0])))
 
     Chunks = property(_GetChunks,
     doc='''Chunks of this SMS message. More than one if this is a multi-part message.
@@ -196,8 +196,8 @@ class SmsMessage(Cached):
     def _GetReplyToNumber(self):
         return str(self._Property('REPLY_TO_NUMBER'))
 
-    def _SetReplyToNumber(self, value):
-        self._Property('REPLY_TO_NUMBER', value)
+    def _SetReplyToNumber(self, Value):
+        self._Property('REPLY_TO_NUMBER', Value)
 
     ReplyToNumber = property(_GetReplyToNumber, _SetReplyToNumber,
     doc='''Reply-to number for this SMS message.
@@ -205,8 +205,8 @@ class SmsMessage(Cached):
     @type: str
     ''')
 
-    def _SetSeen(self, value):
-        self._Property('SEEN', cndexp(value, 'TRUE', 'FALSE'))
+    def _SetSeen(self, Value):
+        self._Property('SEEN', cndexp(Value, 'TRUE', 'FALSE'))
 
     Seen = property(fset=_SetSeen,
     doc='''Read status of the SMS message.
@@ -224,10 +224,10 @@ class SmsMessage(Cached):
     ''')
 
     def _GetTargetNumbers(self):
-        return tuple([str(x) for x in esplit(self._Property('TARGET_NUMBERS'), ', ')])
+        return gen(str(x) for x in split(self._Property('TARGET_NUMBERS'), ', '))
 
-    def _SetTargetNumbers(self, value):
-        self._Property('TARGET_NUMBERS', ', '.join(value))
+    def _SetTargetNumbers(self, Value):
+        self._Property('TARGET_NUMBERS', ', '.join(Value))
 
     TargetNumbers = property(_GetTargetNumbers, _SetTargetNumbers,
     doc='''Target phone numbers.
@@ -236,7 +236,7 @@ class SmsMessage(Cached):
     ''')
 
     def _GetTargets(self):
-        return tuple([SmsTarget((x, self)) for x in esplit(self._Property('TARGET_NUMBERS'), ', ')])
+        return gen(SmsTarget((x, self)) for x in split(self._Property('TARGET_NUMBERS'), ', '))
 
     Targets = property(_GetTargets,
     doc='''Target objects.
@@ -295,7 +295,7 @@ class SmsTarget(Cached):
     ''')
 
     def _GetStatus(self):
-        for t in esplit(self._Message._Property('TARGET_STATUSES'), ', '):
+        for t in split(self._Message._Property('TARGET_STATUSES'), ', '):
             number, status = t.split('=')
             if number == self._Number:
                 return str(status)

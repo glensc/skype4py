@@ -1,9 +1,10 @@
 '''APP2APP protocol.
 '''
 
+import threading
+
 from utils import *
 from user import *
-import threading
 
 
 class Application(Cached):
@@ -23,12 +24,12 @@ class Application(Cached):
     def _Property(self, PropName, Set=None):
         return self._Skype._Property('APPLICATION', self._Name, PropName, Set)
 
-    def __Connect_app_streams(self, App, Streams):
+    def _Connect_ApplicationStreams(self, App, Streams):
         if App == self:
-            s = [x for x in Streams if x.PartnerHandle == self.__Connect_username]
+            s = [x for x in Streams if x.PartnerHandle == self._Connect_Username]
             if s:
-                self.__Connect_stream[0] = s[0]
-                self.__Connect_event.set()
+                self._Connect_Stream[0] = s[0]
+                self._Connect_Event.set()
 
     def Connect(self, Username, WaitConnected=False):
         '''Connects application to user.
@@ -42,18 +43,18 @@ class Application(Cached):
         @rtype: L{ApplicationStream} or None
         '''
         if WaitConnected:
-            self.__Connect_event = threading.Event()
-            self.__Connect_stream = [None]
-            self.__Connect_username = Username
-            self.__Connect_app_streams(self, self.Streams)
-            self._Skype.RegisterEventHandler('ApplicationStreams', self.__Connect_app_streams)
+            self._Connect_Event = threading.Event()
+            self._Connect_Stream = [None]
+            self._Connect_Username = Username
+            self._Connect_ApplicationStreams(self, self.Streams)
+            self._Skype.RegisterEventHandler('ApplicationStreams', self._Connect_ApplicationStreams)
             self._Alter('CONNECT', Username)
-            self.__Connect_event.wait()
-            self._Skype.UnregisterEventHandler('ApplicationStreams', self.__Connect_app_streams)
+            self._Connect_Event.wait()
+            self._Skype.UnregisterEventHandler('ApplicationStreams', self._Connect_ApplicationStreams)
             try:
-                return self.__Connect_stream[0]
+                return self._Connect_Stream[0]
             finally:
-                del self.__Connect_stream, self.__Connect_event, self.__Connect_username
+                del self._Connect_Stream, self._Connect_Event, self._Connect_Username
         else:
             self._Alter('CONNECT', Username)
 
@@ -81,7 +82,7 @@ class Application(Cached):
             s.SendDatagram(Text)
 
     def _GetConnectableUsers(self):
-        return tuple([User(x, self._Skype) for x in esplit(self._Property('CONNECTABLE'))])
+        return gen(User(x, self._Skype) for x in split(self._Property('CONNECTABLE')))
 
     ConnectableUsers = property(_GetConnectableUsers,
     doc='''All connectable users.
@@ -90,7 +91,7 @@ class Application(Cached):
     ''')
 
     def _GetConnectingUsers(self):
-        return tuple([User(x, self._Skype) for x in esplit(self._Property('CONNECTING'))])
+        return gen(User(x, self._Skype) for x in split(self._Property('CONNECTING')))
 
     ConnectingUsers = property(_GetConnectingUsers,
     doc='''All users connecting at the moment.
@@ -108,7 +109,7 @@ class Application(Cached):
     ''')
 
     def _GetReceivedStreams(self):
-        return tuple([ApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('RECEIVED'))])
+        return gen(ApplicationStream(x.split('=')[0], self) for x in split(self._Property('RECEIVED')))
 
     ReceivedStreams = property(_GetReceivedStreams,
     doc='''All streams that received data and can be read.
@@ -117,7 +118,7 @@ class Application(Cached):
     ''')
 
     def _GetSendingStreams(self):
-        return tuple([ApplicationStream(x.split('=')[0], self) for x in esplit(self._Property('SENDING'))])
+        return gen(ApplicationStream(x.split('=')[0], self) for x in split(self._Property('SENDING')))
 
     SendingStreams = property(_GetSendingStreams,
     doc='''All streams that send data and at the moment.
@@ -126,7 +127,7 @@ class Application(Cached):
     ''')
 
     def _GetStreams(self):
-        return tuple([ApplicationStream(x, self) for x in esplit(self._Property('STREAMS'))])
+        return gen(ApplicationStream(x, self) for x in split(self._Property('STREAMS')))
 
     Streams = property(_GetStreams,
     doc='''All currently connected application streams.
@@ -202,17 +203,17 @@ class ApplicationStream(Cached):
     @type: unicode
     ''')
 
-    def __GetDataLength_GetStreamLength(self, Type):
-        for s in esplit(self._Application._Property(Type)):
+    def _GetDataLength_GetStreamLength(self, Type):
+        for s in split(self._Application._Property(Type)):
             h, i = s.split('=')
             if h == self._Handle:
                 return int(i)
 
     def _GetDataLength(self):
-        i = self.__GetDataLength_GetStreamLength('SENDING')
+        i = self._GetDataLength_GetStreamLength('SENDING')
         if i is not None:
             return i
-        i = self.__GetDataLength_GetStreamLength('RECEIVED')
+        i = self._GetDataLength_GetStreamLength('RECEIVED')
         if i is not None:
             return i
         return 0

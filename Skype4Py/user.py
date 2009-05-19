@@ -50,7 +50,7 @@ class User(Cached):
     ''')
 
     def _GetAliases(self):
-        return tuple([str(x) for x in esplit(self._Property('ALIASES'))])
+        return gen(str(x) for x in split(self._Property('ALIASES')))
 
     Aliases = property(_GetAliases,
     doc='''Aliases of the user.
@@ -74,8 +74,8 @@ class User(Cached):
     def _GetBuddyStatus(self):
         return int(self._Property('BUDDYSTATUS'))
 
-    def _SetBuddyStatus(self, value):
-        self._Property('BUDDYSTATUS', int(value), Cache=False)
+    def _SetBuddyStatus(self, Value):
+        self._Property('BUDDYSTATUS', int(Value), Cache=False)
 
     BuddyStatus = property(_GetBuddyStatus, _SetBuddyStatus,
     doc='''Buddy status of the user.
@@ -131,8 +131,8 @@ class User(Cached):
     def _GetDisplayName(self):
         return self._Property('DISPLAYNAME')
 
-    def _SetDisplayName(self, value):
-        self._Property('DISPLAYNAME', value)
+    def _SetDisplayName(self, Value):
+        self._Property('DISPLAYNAME', Value)
 
     DisplayName = property(_GetDisplayName, _SetDisplayName,
     doc='''Display name of the user.
@@ -179,8 +179,8 @@ class User(Cached):
     def _GetIsAuthorized(self):
         return (self._Property('ISAUTHORIZED') == 'TRUE')
 
-    def _SetIsAuthorized(self, value):
-        self._Property('ISAUTHORIZED', cndexp(value, 'TRUE', 'FALSE'))
+    def _SetIsAuthorized(self, Value):
+        self._Property('ISAUTHORIZED', cndexp(Value, 'TRUE', 'FALSE'))
 
     IsAuthorized = property(_GetIsAuthorized, _SetIsAuthorized,
     doc='''Tells if the user is authorized to contact us.
@@ -191,8 +191,8 @@ class User(Cached):
     def _GetIsBlocked(self):
         return (self._Property('ISBLOCKED') == 'TRUE')
 
-    def _SetIsBlocked(self, value):
-        self._Property('ISBLOCKED', cndexp(value, 'TRUE', 'FALSE'))
+    def _SetIsBlocked(self, Value):
+        self._Property('ISBLOCKED', cndexp(Value, 'TRUE', 'FALSE'))
 
     IsBlocked = property(_GetIsBlocked, _SetIsBlocked,
     doc='''Tells whether this user is blocked or not.
@@ -378,8 +378,8 @@ class User(Cached):
     def _GetSpeedDial(self):
         return self._Property('SPEEDDIAL')
 
-    def _SetSpeedDial(self, value):
-        self._Property('SPEEDDIAL', value)
+    def _SetSpeedDial(self, Value):
+        self._Property('SPEEDDIAL', Value)
 
     SpeedDial = property(_GetSpeedDial, _SetSpeedDial,
     doc='''Speed-dial code assigned to the user.
@@ -460,8 +460,8 @@ class Group(Cached):
     def _GetDisplayName(self):
         return self._Property('DISPLAYNAME')
 
-    def _SetDisplayName(self, value):
-        self._Property('DISPLAYNAME', value)
+    def _SetDisplayName(self, Value):
+        self._Property('DISPLAYNAME', Value)
 
     DisplayName = property(_GetDisplayName, _SetDisplayName,
     doc='''Display name of the group.
@@ -497,7 +497,7 @@ class Group(Cached):
     ''')
 
     def _GetOnlineUsers(self):
-        return tuple([x for x in self.Users if x.OnlineStatus == olsOnline])
+        return gen(x for x in self.Users if x.OnlineStatus == olsOnline)
 
     OnlineUsers = property(_GetOnlineUsers,
     doc='''Users of the group that are online
@@ -515,7 +515,7 @@ class Group(Cached):
     ''')
 
     def _GetUsers(self):
-        return tuple([User(x, self._Skype) for x in esplit(self._Property('USERS', Cache=False), ', ')])
+        return gen(User(x, self._Skype) for x in split(self._Property('USERS', Cache=False), ', '))
 
     Users = property(_GetUsers,
     doc='''Users in this group.

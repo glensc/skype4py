@@ -1,8 +1,9 @@
 '''File transfers.
 '''
 
-from utils import *
 import os
+
+from utils import *
 
 
 class FileTransfer(Cached):
