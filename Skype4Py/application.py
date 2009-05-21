@@ -1,5 +1,7 @@
 '''APP2APP protocol.
 '''
+__docformat__ = 'restructuredtext en'
+
 
 import threading
 
@@ -8,7 +10,7 @@ from user import *
 
 
 class Application(Cached):
-    '''Represents an application in APP2APP protocol. Use L{Skype.Application<skype.Skype.Application>} to instatinate.
+    '''Represents an application in APP2APP protocol. Use `skype.Skype.Application` to instantiate.
     '''
 
     def __repr__(self):
@@ -34,13 +36,15 @@ class Application(Cached):
     def Connect(self, Username, WaitConnected=False):
         '''Connects application to user.
 
-        @param Username: Name of the user to connect to.
-        @type Username: str
-        @param WaitConnected: If True, causes the method to wait untill the connection is established.
-        @type WaitConnected: bool
-        @return: If C{WaitConnected} is True, returns the stream which can be used to send the data.
-        Otherwise returns None.
-        @rtype: L{ApplicationStream} or None
+        :Parameters:
+          Username : str
+            Name of the user to connect to.
+          WaitConnected : bool
+            If True, causes the method to wait until the connection is established.
+
+        :return: If ``WaitConnected`` is True, returns the stream which can be used to send the
+                 data. Otherwise returns None.
+        :rtype: `ApplicationStream` or None
         '''
         if WaitConnected:
             self._Connect_Event = threading.Event()
@@ -71,10 +75,12 @@ class Application(Cached):
     def SendDatagram(self, Text, Streams=None):
         '''Sends datagram to application streams.
 
-        @param Text: Text to send.
-        @type Text: unicode
-        @param Streams: Streams to send the datagram to or None if all currently connected streams should be used.
-        @type Streams: sequence of L{ApplicationStream}
+        :Parameters:
+          Text : unicode
+            Text to send.
+          Streams : sequence of `ApplicationStream`
+            Streams to send the datagram to or None if all currently connected streams should be
+            used.
         '''
         if Streams is None:
             Streams = self.Streams
@@ -85,9 +91,9 @@ class Application(Cached):
         return gen(User(x, self._Skype) for x in split(self._Property('CONNECTABLE')))
 
     ConnectableUsers = property(_GetConnectableUsers,
-    doc='''All connectable users.
+    doc='''All connectible users.
 
-    @type: tuple of L{User}
+    :type: tuple of `User`
     ''')
 
     def _GetConnectingUsers(self):
@@ -96,7 +102,7 @@ class Application(Cached):
     ConnectingUsers = property(_GetConnectingUsers,
     doc='''All users connecting at the moment.
 
-    @type: tuple of L{User}
+    :type: tuple of `User`
     ''')
 
     def _GetName(self):
@@ -105,7 +111,7 @@ class Application(Cached):
     Name = property(_GetName,
     doc='''Name of the application.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetReceivedStreams(self):
@@ -114,7 +120,7 @@ class Application(Cached):
     ReceivedStreams = property(_GetReceivedStreams,
     doc='''All streams that received data and can be read.
 
-    @type: tuple of L{ApplicationStream}
+    :type: tuple of `ApplicationStream`
     ''')
 
     def _GetSendingStreams(self):
@@ -123,7 +129,7 @@ class Application(Cached):
     SendingStreams = property(_GetSendingStreams,
     doc='''All streams that send data and at the moment.
 
-    @type: tuple of L{ApplicationStream}
+    :type: tuple of `ApplicationStream`
     ''')
 
     def _GetStreams(self):
@@ -132,7 +138,7 @@ class Application(Cached):
     Streams = property(_GetStreams,
     doc='''All currently connected application streams.
 
-    @type: tuple of L{ApplicationStream}
+    :type: tuple of `ApplicationStream`
     ''')
 
 
@@ -160,8 +166,8 @@ class ApplicationStream(Cached):
     def Read(self):
         '''Reads data from stream.
 
-        @return: Read data or an empty string if none were available.
-        @rtype: unicode
+        :return: Read data or an empty string if none were available.
+        :rtype: unicode
         '''
         return self._Application._Alter('READ', self._Handle)
 
@@ -170,16 +176,18 @@ class ApplicationStream(Cached):
     def SendDatagram(self, Text):
         '''Sends datagram to stream.
 
-        @param Text: Datagram to send.
-        @type Text: unicode
+        :Parameters:
+          Text : unicode
+            Datagram to send.
         '''
         self._Application._Alter('DATAGRAM', '%s %s' % (self._Handle, tounicode(Text)))
 
     def Write(self, Text):
         '''Writes data to stream.
 
-        @param Text: Data to send.
-        @type Text: unicode
+        :Parameters:
+          Text : unicode
+            Data to send.
         '''
         self._Application._Alter('WRITE', '%s %s' % (self._Handle, tounicode(Text)))
 
@@ -191,16 +199,16 @@ class ApplicationStream(Cached):
     Application = property(_GetApplication,
     doc='''Application this stream belongs to.
 
-    @type: L{Application}
+    :type: `Application`
     ''')
 
     def _GetApplicationName(self):
         return self._Application.Name
 
     ApplicationName = property(_GetApplicationName,
-    doc='''Name of the application this stream belongs to. Same as C{ApplicationStream.Application.Name}.
+    doc='''Name of the application this stream belongs to. Same as ``ApplicationStream.Application.Name``.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetDataLength_GetStreamLength(self, Type):
@@ -221,7 +229,7 @@ class ApplicationStream(Cached):
     DataLength = property(_GetDataLength,
     doc='''Number of bytes awaiting in the read buffer.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetHandle(self):
@@ -230,7 +238,7 @@ class ApplicationStream(Cached):
     Handle = property(_GetHandle,
     doc='''Stream handle in u'<Skypename>:<n>' format.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetPartnerHandle(self):
@@ -239,5 +247,5 @@ class ApplicationStream(Cached):
     PartnerHandle = property(_GetPartnerHandle,
     doc='''Skypename of the user this stream is connected to.
 
-    @type: str
+    :type: str
     ''')

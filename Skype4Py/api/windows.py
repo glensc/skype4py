@@ -1,17 +1,18 @@
 '''
-Low level Skype for Windows interface implemented
-using Windows messaging. Uses direct WinAPI calls
-through ctypes module.
+Low level *Skype for Windows* interface implemented using *Windows messaging*.
+Uses direct *WinAPI* calls through *ctypes* module.
 
-This module handles the options that you can pass to L{Skype.__init__<skype.Skype.__init__>}
+This module handles the options that you can pass to `Skype.__init__`
 for Windows machines.
 
 No options are currently supported.
 '''
+__docformat__ = 'restructuredtext en'
 
+
+import sys
 import threading
 import time
-import weakref
 from ctypes import *
 
 from Skype4Py.api import Command, SkypeAPIBase, timeout2float
@@ -25,6 +26,9 @@ __all__ = ['SkypeAPI']
 try:
     WNDPROC = WINFUNCTYPE(c_long, c_int, c_uint, c_int, c_int)
 except NameError:
+    # Proceed only if our setup.py is not running.
+    if not getattr(sys, 'skype4py_setup', False):
+        raise
     # This will allow importing of this module on non-Windows machines. It won't work
     # of course but this will allow building documentation on any platform.
     WNDPROC = c_void_p
@@ -70,8 +74,7 @@ HWND_BROADCAST = 0xFFFF
 class SkypeAPI(SkypeAPIBase):
     def __init__(self, opts):
         SkypeAPIBase.__init__(self, opts)
-        if opts:
-            raise TypeError('Unexpected parameter(s): %s' % ', '.join(opts.keys()))
+        self.finalize_opts(opts)
         self.window_class = None
         self.hwnd = None
         self.skype = None

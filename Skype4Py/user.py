@@ -1,5 +1,7 @@
 '''Users and groups.
 '''
+__docformat__ = 'restructuredtext en'
+
 
 from utils import *
 from enums import *
@@ -22,21 +24,24 @@ class User(Cached):
     def SaveAvatarToFile(self, Filename, AvatarId=1):
         '''Saves user avatar to a file.
 
-        @param Filename: Destination path.
-        @type Filename: str
-        @param AvatarId: Avatar Id.
-        @type AvatarId: int
+        :Parameters:
+          Filename : str
+            Destination path.
+          AvatarId : int
+            Avatar Id.
         '''
         s = 'USER %s AVATAR %s %s' % (self.Handle, AvatarId, path2unicode(Filename))
         self._Skype._DoCommand('GET %s' % s, s)
 
     def SetBuddyStatusPendingAuthorization(self, Text=u''):
-        '''Sets the BuddyStaus property to L{budPendingAuthorization<enums.budPendingAuthorization>}
-        additionaly specifying the authorization text.
-        
-        @param Text: The authorization text.
-        @type Text: unicode
-        @see: L{BuddyStatus}
+        '''Sets the BuddyStaus property to `enums.budPendingAuthorization`
+        additionally specifying the authorization text.
+
+        :Parameters:
+          Text : unicode
+            The authorization text.
+
+        :see: `BuddyStatus`
         '''
         self._Property('BUDDYSTATUS', '%d %s' % (budPendingAuthorization, tounicode(Text)), Cache=False)
 
@@ -46,7 +51,7 @@ class User(Cached):
     About = property(_GetAbout,
     doc='''About text of the user.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetAliases(self):
@@ -55,7 +60,7 @@ class User(Cached):
     Aliases = property(_GetAliases,
     doc='''Aliases of the user.
 
-    @type: tuple of str
+    :type: tuple of str
     ''')
 
     def _GetBirthday(self):
@@ -68,7 +73,7 @@ class User(Cached):
     Birthday = property(_GetBirthday,
     doc='''Birthday of the user.
 
-    @type: datetime.date
+    :type: datetime.date
     ''')
 
     def _GetBuddyStatus(self):
@@ -80,7 +85,7 @@ class User(Cached):
     BuddyStatus = property(_GetBuddyStatus, _SetBuddyStatus,
     doc='''Buddy status of the user.
 
-    @type: L{Buddy status<enums.budUnknown>}
+    :type: `enums`.bud*
     ''')
 
     def _GetCanLeaveVoicemail(self):
@@ -89,7 +94,7 @@ class User(Cached):
     CanLeaveVoicemail = property(_GetCanLeaveVoicemail,
     doc='''Tells if it is possible to send voicemail to the user.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetCity(self):
@@ -98,7 +103,7 @@ class User(Cached):
     City = property(_GetCity,
     doc='''City of the user.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetCountry(self):
@@ -111,7 +116,7 @@ class User(Cached):
     Country = property(_GetCountry,
     doc='''Country of the user.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetCountryCode(self):
@@ -125,7 +130,7 @@ class User(Cached):
     CountryCode = property(_GetCountryCode,
     doc='''ISO country code of the user.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetDisplayName(self):
@@ -137,7 +142,7 @@ class User(Cached):
     DisplayName = property(_GetDisplayName, _SetDisplayName,
     doc='''Display name of the user.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetHandle(self):
@@ -146,7 +151,7 @@ class User(Cached):
     Handle = property(_GetHandle,
     doc='''Skypename of the user.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetFullName(self):
@@ -155,7 +160,7 @@ class User(Cached):
     FullName = property(_GetFullName,
     doc='''Full name of the user.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetHasCallEquipment(self):
@@ -164,16 +169,16 @@ class User(Cached):
     HasCallEquipment = property(_GetHasCallEquipment,
     doc='''Tells if the user has call equipment.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetHomepage(self):
-        return str(self._Property('HOMEPAGE'))
+        return self._Property('HOMEPAGE')
 
     Homepage = property(_GetHomepage,
     doc='''Homepage URL of the user.
 
-    @type: str
+    :type: unicode
     ''')
 
     def _GetIsAuthorized(self):
@@ -185,7 +190,7 @@ class User(Cached):
     IsAuthorized = property(_GetIsAuthorized, _SetIsAuthorized,
     doc='''Tells if the user is authorized to contact us.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetIsBlocked(self):
@@ -197,7 +202,7 @@ class User(Cached):
     IsBlocked = property(_GetIsBlocked, _SetIsBlocked,
     doc='''Tells whether this user is blocked or not.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetIsCallForwardActive(self):
@@ -206,7 +211,7 @@ class User(Cached):
     IsCallForwardActive = property(_GetIsCallForwardActive,
     doc='''Tells whether the user has Call Forwarding activated or not.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetIsSkypeOutContact(self):
@@ -215,7 +220,7 @@ class User(Cached):
     IsSkypeOutContact = property(_GetIsSkypeOutContact,
     doc='''Tells whether a user is a SkypeOut contact.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetIsVideoCapable(self):
@@ -224,7 +229,7 @@ class User(Cached):
     IsVideoCapable = property(_GetIsVideoCapable,
     doc='''Tells if the user has video capability.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetIsVoicemailCapable(self):
@@ -233,7 +238,7 @@ class User(Cached):
     IsVoicemailCapable = property(_GetIsVoicemailCapable,
     doc='''Tells if the user has voicemail capability.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetLanguage(self):
@@ -246,7 +251,7 @@ class User(Cached):
     Language = property(_GetLanguage,
     doc='''The language of the user.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetLanguageCode(self):
@@ -260,7 +265,7 @@ class User(Cached):
     LanguageCode = property(_GetLanguageCode,
     doc='''The ISO language code of the user.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetLastOnline(self):
@@ -269,8 +274,9 @@ class User(Cached):
     LastOnline = property(_GetLastOnline,
     doc='''The time when a user was last online as a timestamp.
 
-    @type: float
-    @see: L{LastOnlineDatetime}
+    :type: float
+
+    :see: `LastOnlineDatetime`
     ''')
 
     def _GetLastOnlineDatetime(self):
@@ -280,8 +286,9 @@ class User(Cached):
     LastOnlineDatetime = property(_GetLastOnlineDatetime,
     doc='''The time when a user was last online as a datetime.
 
-    @type: datetime.datetime
-    @see: L{LastOnline}
+    :type: datetime.datetime
+
+    :see: `LastOnline`
     ''')
 
     def _GetMoodText(self):
@@ -290,7 +297,7 @@ class User(Cached):
     MoodText = property(_GetMoodText,
     doc='''Mood text of the user.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetNumberOfAuthBuddies(self):
@@ -299,7 +306,7 @@ class User(Cached):
     NumberOfAuthBuddies = property(_GetNumberOfAuthBuddies,
     doc='''Number of authenticated buddies in user's contact list.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetOnlineStatus(self):
@@ -308,7 +315,7 @@ class User(Cached):
     OnlineStatus = property(_GetOnlineStatus,
     doc='''Online status of the user.
 
-    @type: L{Online status<enums.olsUnknown>}
+    :type: `enums`.ols*
     ''')
 
     def _GetPhoneHome(self):
@@ -317,7 +324,7 @@ class User(Cached):
     PhoneHome = property(_GetPhoneHome,
     doc='''Home telephone number of the user.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetPhoneMobile(self):
@@ -326,7 +333,7 @@ class User(Cached):
     PhoneMobile = property(_GetPhoneMobile,
     doc='''Mobile telephone number of the user.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetPhoneOffice(self):
@@ -335,7 +342,7 @@ class User(Cached):
     PhoneOffice = property(_GetPhoneOffice,
     doc='''Office telephone number of the user.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetProvince(self):
@@ -344,7 +351,7 @@ class User(Cached):
     Province = property(_GetProvince,
     doc='''Province of the user.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetReceivedAuthRequest(self):
@@ -353,17 +360,18 @@ class User(Cached):
     ReceivedAuthRequest = property(_GetReceivedAuthRequest,
     doc='''Text message for authorization request. Available only when user asks for authorization.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetRichMoodText(self):
         return self._Property('RICH_MOOD_TEXT')
 
     RichMoodText = property(_GetRichMoodText,
-    doc='''Advanced version of L{MoodText}.
+    doc='''Advanced version of `MoodText`.
 
-    @type: unicode
-    @see: U{https://developer.skype.com/Docs/ApiDoc/SET_PROFILE_RICH_MOOD_TEXT}
+    :type: unicode
+
+    :see: https://developer.skype.com/Docs/ApiDoc/SET_PROFILE_RICH_MOOD_TEXT
     ''')
 
     def _GetSex(self):
@@ -372,7 +380,7 @@ class User(Cached):
     Sex = property(_GetSex,
     doc='''Sex of the user.
 
-    @type: L{User sex<enums.usexUnknown>}
+    :type: `enums`.usex*
     ''')
 
     def _GetSpeedDial(self):
@@ -384,7 +392,7 @@ class User(Cached):
     SpeedDial = property(_GetSpeedDial, _SetSpeedDial,
     doc='''Speed-dial code assigned to the user.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetTimezone(self):
@@ -393,7 +401,7 @@ class User(Cached):
     Timezone = property(_GetTimezone,
     doc='''Timezone of the user in minutes from GMT.
 
-    @type: int
+    :type: int
     ''')
 
 
@@ -422,8 +430,9 @@ class Group(Cached):
     def AddUser(self, Username):
         '''Adds new a user to the group.
 
-        @param Username: Skypename of the new user.
-        @type Username: str
+        :Parameters:
+          Username : str
+            Skypename of the new user.
         '''
         self._Alter('ADDUSER', Username)
 
@@ -435,16 +444,18 @@ class Group(Cached):
     def RemoveUser(self, Username):
         '''Removes a user from the group.
 
-        @param Username: Skypename of the user.
-        @type Username: str
+        :Parameters:
+          Username : str
+            Skypename of the user.
         '''
         self._Alter('REMOVEUSER', Username)
 
     def Share(self, MessageText=''):
         '''Shares a contact group.
 
-        @param MessageText: Message text for group members.
-        @type MessageText: unicode
+        :Parameters:
+          MessageText : unicode
+            Message text for group members.
         '''
         self._Alter('SHARE', MessageText)
 
@@ -454,7 +465,7 @@ class Group(Cached):
     CustomGroupId = property(_GetCustomGroupId,
     doc='''Persistent group ID. The custom group ID is a persistent value that does not change.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetDisplayName(self):
@@ -466,7 +477,7 @@ class Group(Cached):
     DisplayName = property(_GetDisplayName, _SetDisplayName,
     doc='''Display name of the group.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetId(self):
@@ -475,7 +486,7 @@ class Group(Cached):
     Id = property(_GetId,
     doc='''Group Id.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetIsExpanded(self):
@@ -484,7 +495,7 @@ class Group(Cached):
     IsExpanded = property(_GetIsExpanded,
     doc='''Tells if the group is expanded in the client.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetIsVisible(self):
@@ -493,7 +504,7 @@ class Group(Cached):
     IsVisible = property(_GetIsVisible,
     doc='''Tells if the group is visible in the client.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetOnlineUsers(self):
@@ -502,7 +513,7 @@ class Group(Cached):
     OnlineUsers = property(_GetOnlineUsers,
     doc='''Users of the group that are online
 
-    @type: tuple of L{User}
+    :type: tuple of `User`
     ''')
 
     def _GetType(self):
@@ -511,7 +522,7 @@ class Group(Cached):
     Type = property(_GetType,
     doc='''Group type.
 
-    @type: L{Group type<enums.grpUnknown>}
+    :type: `enums`.grp*
     ''')
 
     def _GetUsers(self):
@@ -520,5 +531,5 @@ class Group(Cached):
     Users = property(_GetUsers,
     doc='''Users in this group.
 
-    @type: tuple of L{User}
+    :type: tuple of `User`
     ''')

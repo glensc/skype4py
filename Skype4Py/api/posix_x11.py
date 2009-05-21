@@ -1,13 +1,14 @@
 '''
-Low level Skype for Linux interface implemented
-using XWindows messaging. Uses direct Xlib calls
-through ctypes module.
+Low level *Skype for Linux* interface implemented using *XWindows messaging*.
+Uses direct *Xlib* calls through *ctypes* module.
 
-This module handles the options that you can pass to L{Skype.__init__<skype.Skype.__init__>}
-for Linux machines when the transport is set to X11.
+This module handles the options that you can pass to `Skype.__init__`
+for Linux machines when the transport is set to *X11*.
 
 No further options are currently supported.
 '''
+__docformat__ = 'restructuredtext en'
+
 
 import sys
 import threading
@@ -132,7 +133,7 @@ class XEvent(Union):
 XEventP = POINTER(XEvent)
 
 
-if hasattr(sys, 'setup'):
+if getattr(sys, 'skype4py_setup', False):
     # we get here if we're building docs; to let the module import without
     # exceptions, we emulate the X11 library using a class:
     class X(object):
@@ -198,10 +199,7 @@ x11.XInitThreads()
 class SkypeAPI(SkypeAPIBase):
     def __init__(self, opts):
         SkypeAPIBase.__init__(self, opts)
-
-        # check options
-        if opts:
-            raise TypeError('Unexpected parameter(s): %s' % ', '.join(opts.keys()))
+        self.finalize_opts(opts)
 
         # init Xlib display
         self.disp = x11.XOpenDisplay(None)

@@ -1,5 +1,7 @@
 '''File transfers.
 '''
+__docformat__ = 'restructuredtext en'
+
 
 import os
 
@@ -29,7 +31,7 @@ class FileTransfer(Cached):
     BytesPerSecond = property(_GetBytesPerSecond,
     doc='''Transfer speed in bytes per second.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetBytesTransferred(self):
@@ -38,7 +40,7 @@ class FileTransfer(Cached):
     BytesTransferred = property(_GetBytesTransferred,
     doc='''Number of bytes transferred.
 
-    @type: long
+    :type: long
     ''')
 
     def _GetFailureReason(self):
@@ -47,7 +49,7 @@ class FileTransfer(Cached):
     FailureReason = property(_GetFailureReason,
     doc='''Transfer failure reason.
 
-    @type: L{File transfer failure reason<enums.fileTransferFailureReasonSenderNotAuthorized>}
+    :type: `enums`.fileTransferFailureReason*
     ''')
 
     def _GetFileName(self):
@@ -56,7 +58,7 @@ class FileTransfer(Cached):
     FileName = property(_GetFileName,
     doc='''Name of the transferred file.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetFilePath(self):
@@ -65,7 +67,7 @@ class FileTransfer(Cached):
     FilePath = property(_GetFilePath,
     doc='''Full path to the transferred file.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetFileSize(self):
@@ -74,7 +76,7 @@ class FileTransfer(Cached):
     FileSize = property(_GetFileSize,
     doc='''Size of the transferred file in bytes.
 
-    @type: long
+    :type: long
     ''')
 
     def _GetFinishDatetime(self):
@@ -84,7 +86,7 @@ class FileTransfer(Cached):
     FinishDatetime = property(_GetFinishDatetime,
     doc='''File transfer end date and time.
 
-    @type: datetime.datetime
+    :type: datetime.datetime
     ''')
 
     def _GetFinishTime(self):
@@ -93,7 +95,7 @@ class FileTransfer(Cached):
     FinishTime = property(_GetFinishTime,
     doc='''File transfer end timestamp.
 
-    @type: float
+    :type: float
     ''')
 
     def _GetId(self):
@@ -102,7 +104,7 @@ class FileTransfer(Cached):
     Id = property(_GetId,
     doc='''Unique file transfer Id.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetPartnerDisplayName(self):
@@ -111,7 +113,7 @@ class FileTransfer(Cached):
     PartnerDisplayName = property(_GetPartnerDisplayName,
     doc='''File transfer partner DisplayName.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetPartnerHandle(self):
@@ -120,7 +122,7 @@ class FileTransfer(Cached):
     PartnerHandle = property(_GetPartnerHandle,
     doc='''File transfer partner Skypename.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetStartDatetime(self):
@@ -130,7 +132,7 @@ class FileTransfer(Cached):
     StartDatetime = property(_GetStartDatetime,
     doc='''File transfer start date and time.
 
-    @type: datetime.datetime
+    :type: datetime.datetime
     ''')
 
     def _GetStartTime(self):
@@ -139,7 +141,7 @@ class FileTransfer(Cached):
     StartTime = property(_GetStartTime,
     doc='''File transfer start timestamp.
 
-    @type: float
+    :type: float
     ''')
 
     def _GetStatus(self):
@@ -148,7 +150,7 @@ class FileTransfer(Cached):
     Status = property(_GetStatus,
     doc='''File transfer status.
 
-    @type: L{File transfer status<enums.fileTransferStatusNew>}
+    :type: `enums`.fileTransferStatus*
     ''')
 
     def _GetType(self):
@@ -157,5 +159,5 @@ class FileTransfer(Cached):
     Type = property(_GetType,
     doc='''File transfer type.
 
-    @type: L{File transfer type<enums.fileTransferTypeIncoming>}
+    :type: `enums`.fileTransferType*
     ''')

@@ -1,5 +1,7 @@
 '''Skype client user interface control.
 '''
+__docformat__ = 'restructuredtext en'
+
 
 import weakref
 
@@ -9,44 +11,49 @@ from utils import *
 
 
 class Client(object):
-    '''Represents a Skype client. Access using L{Skype.Client<skype.Skype.Client>}.
+    '''Represents a Skype client. Access using `skype.Skype.Client`.
     '''
 
     def __init__(self, Skype):
         '''__init__.
 
-        @param Skype: Skype
-        @type Skype: L{Skype}
+        :Parameters:
+          Skype : `Skype`
+            Skype
         '''
         self._SkypeRef = weakref.ref(Skype)
 
     def ButtonPressed(self, Key):
         '''This command sends a button pressed notification event.
 
-        @param Key: Button key (0-9, A-Z, #, *, UP, DOWN, YES, NO, SKYPE, PAGEUP, PAGEDOWN).
-        @type Key: str
+        :Parameters:
+          Key : str
+            Button key [0-9, A-Z, #, \*, UP, DOWN, YES, NO, SKYPE, PAGEUP, PAGEDOWN].
         '''
         self._Skype._DoCommand('BTN_PRESSED %s' % Key)
 
     def ButtonReleased(self, Key):
         '''This command sends a button released notification event.
 
-        @param Key: Button key (0-9, A-Z, #, *, UP, DOWN, YES, NO, SKYPE, PAGEUP, PAGEDOWN).
-        @type Key: str
+        :Parameters:
+          Key : str
+            Button key [0-9, A-Z, #, \*, UP, DOWN, YES, NO, SKYPE, PAGEUP, PAGEDOWN].
         '''
         self._Skype._DoCommand('BTN_RELEASED %s' % Key)
 
     def CreateEvent(self, EventId, Caption, Hint):
         '''Creates a custom event displayed in Skype client's events pane.
 
-        @param EventId: Unique identifier for the event.
-        @type EventId: unicode
-        @param Caption: Caption text.
-        @type Caption: unicode
-        @param Hint: Hint text. Shown when mouse hoovers over the event.
-        @type Hint: unicode
-        @return: Event object.
-        @rtype: L{PluginEvent}
+        :Parameters:
+          EventId : unicode
+            Unique identifier for the event.
+          Caption : unicode
+            Caption text.
+          Hint : unicode
+            Hint text. Shown when mouse hoovers over the event.
+
+        :return: Event object.
+        :rtype: `PluginEvent`
         '''
         self._Skype._DoCommand('CREATE EVENT %s CAPTION %s HINT %s' % (tounicode(EventId),
             quote(tounicode(Caption)), quote(tounicode(Hint))))
@@ -56,26 +63,27 @@ class Client(object):
                        ContactType=pluginContactTypeAll, MultipleContacts=False):
         '''Creates custom menu item in Skype client's "Do More" menus.
 
-        @param MenuItemId: Unique identifier for the menu item.
-        @type MenuItemId: unicode
-        @param PluginContext: Menu item context. Allows to choose in which client windows will
-        the menu item appear.
-        @type PluginContext: L{Plug-in context<enums.pluginContextUnknown>}
-        @param CaptionText: Caption text.
-        @type CaptionText: unicode
-        @param HintText: Hint text (optional). Shown when mouse hoovers over the menu item.
-        @type HintText: unicode
-        @param IconPath: Path to the icon (optional).
-        @type IconPath: unicode
-        @param Enabled: Initial state of the menu item. True by default.
-        @type Enabled: bool
-        @param ContactType: In case of L{pluginContextContact<enums.pluginContextContact>} tells which contacts
-        the menu item should appear for. Defaults to L{pluginContactTypeAll<enums.pluginContactTypeAll>}.
-        @type ContactType: L{Plug-in contact type<enums.pluginContactTypeUnknown>}
-        @param MultipleContacts: Set to True if multiple contacts should be allowed (defaults to False).
-        @type MultipleContacts: bool
-        @return: Menu item object.
-        @rtype: L{PluginMenuItem}
+        :Parameters:
+          MenuItemId : unicode
+            Unique identifier for the menu item.
+          PluginContext : `enums`.pluginContext*
+            Menu item context. Allows to choose in which client windows will the menu item appear.
+          CaptionText : unicode
+            Caption text.
+          HintText : unicode
+            Hint text (optional). Shown when mouse hoovers over the menu item.
+          IconPath : unicode
+            Path to the icon (optional).
+          Enabled : bool
+            Initial state of the menu item. True by default.
+          ContactType : `enums`.pluginContactType*
+            In case of `enums.pluginContextContact` tells which contacts the menu item should appear
+            for. Defaults to `enums.pluginContactTypeAll`.
+          MultipleContacts : bool
+            Set to True if multiple contacts should be allowed (defaults to False).
+
+        :return: Menu item object.
+        :rtype: `PluginMenuItem`
         '''
         com = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s ENABLED %s' % (tounicode(MenuItemId), PluginContext,
             quote(tounicode(CaptionText)), cndexp(Enabled, 'true', 'false'))
@@ -103,16 +111,18 @@ class Client(object):
     def OpenAddContactDialog(self, Username=''):
         '''Opens "Add a Contact" dialog.
 
-        @param Username: Optional Skypename of the contact.
-        @type Username: str
+        :Parameters:
+          Username : str
+            Optional Skypename of the contact.
         '''
         self.OpenDialog('ADDAFRIEND', Username)
 
     def OpenAuthorizationDialog(self, Username):
         '''Opens authorization dialog.
 
-        @param Username: Skypename of the user to authenticate.
-        @type Username: str
+        :Parameters:
+          Username : str
+            Skypename of the user to authenticate.
         '''
         self.OpenDialog('AUTHORIZATION', Username)
 
@@ -140,10 +150,11 @@ class Client(object):
         '''Open dialog. Use this method to open dialogs added in newer Skype versions if there is no
         dedicated method in Skype4Py.
 
-        @param Name: Dialog name.
-        @type Name: str
-        @param Params: One or more optional parameters.
-        @type Params: unicode
+        :Parameters:
+          Name : str
+            Dialog name.
+          Params : unicode
+            One or more optional parameters.
         '''
         self._Skype._DoCommand('OPEN %s %s' % (Name, tounicode(' '.join(Params))))
 
@@ -155,10 +166,11 @@ class Client(object):
     def OpenFileTransferDialog(self, Username, Folder):
         '''Opens file transfer dialog.
 
-        @param Username: Skypename of the user.
-        @type Username: str
-        @param Folder: Path to initial directory.
-        @type Folder: str
+        :Parameters:
+          Username : str
+            Skypename of the user.
+          Folder : str
+            Path to initial directory.
         '''
         self.OpenDialog('FILETRANSFER', Username, 'IN %s' % path2unicode(Folder))
 
@@ -180,20 +192,22 @@ class Client(object):
     def OpenMessageDialog(self, Username, Text=u''):
         '''Opens "Send an IM Message" dialog.
 
-        @param Username: Message target.
-        @type Username: str
-        @param Text: Message text.
-        @type Text: unicode
+        :Parameters:
+          Username : str
+            Message target.
+          Text : unicode
+            Message text.
         '''
         self.OpenDialog('IM', Username, tounicode(Text))
 
     def OpenOptionsDialog(self, Page=''):
         '''Opens options dialog.
 
-        @param Page: Page name to open.
-        @type Page: str
-        
-        @note: See https://developer.skype.com/Docs/ApiDoc/OPEN_OPTIONS for known Page values.
+        :Parameters:
+          Page : str
+            Page name to open.
+
+        :see: See https://developer.skype.com/Docs/ApiDoc/OPEN_OPTIONS for known Page values.
         '''
         self.OpenDialog('OPTIONS', Page)
 
@@ -210,24 +224,27 @@ class Client(object):
     def OpenSendContactsDialog(self, Username=''):
         '''Opens send contacts dialog.
 
-        @param Username: Optional Skypename of the user.
-        @type Username: str
+        :Parameters:
+          Username : str
+            Optional Skypename of the user.
         '''
         self.OpenDialog('SENDCONTACTS', Username)
 
     def OpenSmsDialog(self, SmsId):
         '''Opens SMS window
 
-        @param SmsId: SMS message Id.
-        @type SmsId: int
+        :Parameters:
+          SmsId : int
+            SMS message Id.
         '''
         self.OpenDialog('SMS', SmsId)
 
     def OpenUserInfoDialog(self, Username):
         '''Opens user information dialog.
 
-        @param Username: Skypename of the user.
-        @type Username: str
+        :Parameters:
+          Username : str
+            Skypename of the user.
         '''
         self.OpenDialog('USERINFO', Username)
 
@@ -244,10 +261,11 @@ class Client(object):
     def Start(self, Minimized=False, Nosplash=False):
         '''Starts Skype application.
 
-        @param Minimized: If True, Skype is started minized in system tray.
-        @type Minimized: bool
-        @param Nosplash: If True, no splash screen is displayed upon startup.
-        @type Nosplash: bool
+        :Parameters:
+          Minimized : bool
+            If True, Skype is started minimized in system tray.
+          Nosplash : bool
+            If True, no splash screen is displayed upon startup.
         '''
         self._Skype._API.startup(Minimized, Nosplash)
 
@@ -265,7 +283,7 @@ class Client(object):
     IsRunning = property(_GetIsRunning,
     doc='''Tells if Skype client is running.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetWallpaper(self):
@@ -277,7 +295,7 @@ class Client(object):
     Wallpaper = property(_GetWallpaper, _SetWallpaper,
     doc='''Path to client wallpaper bitmap.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetWindowState(self):
@@ -289,7 +307,7 @@ class Client(object):
     WindowState = property(_GetWindowState, _SetWindowState,
     doc='''Client window state.
 
-    @type: L{Window state<enums.wndUnknown>}
+    :type: `enums`.wnd*
     ''')
 
 
@@ -315,7 +333,7 @@ class PluginEvent(Cached):
     Id = property(_GetId,
     doc='''Unique event Id.
 
-    @type: unicode
+    :type: unicode
     ''')
 
 
@@ -357,7 +375,7 @@ class PluginMenuItem(Cached):
     Caption = property(_GetCaption, _SetCaption,
     doc='''Menu item caption text.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetEnabled(self):
@@ -370,7 +388,7 @@ class PluginMenuItem(Cached):
     doc='''Defines whether the menu item is enabled when a user launches Skype. If no value is defined,
     the menu item will be enabled.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetHint(self):
@@ -382,7 +400,7 @@ class PluginMenuItem(Cached):
     Hint = property(_GetHint, _SetHint,
     doc='''Menu item hint text.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetId(self):
@@ -391,5 +409,5 @@ class PluginMenuItem(Cached):
     Id = property(_GetId,
     doc='''Unique menu item Id.
 
-    @type: unicode
+    :type: unicode
     ''')

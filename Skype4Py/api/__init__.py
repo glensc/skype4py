@@ -2,11 +2,15 @@
 Low-level Skype API definitions.
 
 This module imports one of the:
-  - L{Skype4Py.api.darwin}
-  - L{Skype4Py.api.posix}
-  - L{Skype4Py.api.windows}
+
+- `Skype4Py.api.darwin`
+- `Skype4Py.api.posix`
+- `Skype4Py.api.windows`
+
 submodules based on the current platform.
 '''
+__docformat__ = 'restructuredtext en'
+
 
 import sys
 import threading
@@ -20,44 +24,53 @@ __all__ = ['Command', 'SkypeAPIBase', 'timeout2float', 'SkypeAPI']
 
 
 class Command(object):
-    '''Represents an API command. Use L{Skype.Command<skype.Skype.Command>} to instatinate.
+    '''Represents an API command. Use `Skype.Command` to instantiate.
 
-    To send a command to Skype, use L{Skype.SendCommand<skype.Skype.SendCommand>}.
+    To send a command to Skype, use `Skype.SendCommand`.
     '''
 
     def __init__(self, Id, Command, Expected=u'', Blocking=False, Timeout=30000):
-        '''Use L{Skype.Command<skype.Skype.Command>} to instatinate the object instead.
+        '''Use `Skype.Command` to instantiate the object instead.
         '''
 
         self.Blocking = Blocking
-        '''If set to True, L{Skype.SendCommand<skype.Skype.SendCommand>} will block until the reply is received.
-        @type: bool'''
+        '''If set to True, `Skype.SendCommand` will block until the reply is received.
+        
+        :type: bool'''
 
         self.Command = tounicode(Command)
         '''Command string.
-        @type: unicode'''
+        
+        :type: unicode'''
 
         self.Expected = tounicode(Expected)
         '''Expected reply.
-        @type: unicode'''
+        
+        :type: unicode'''
 
         self.Id = Id
         '''Command Id.
-        @type: int'''
+        
+        :type: int'''
 
         self.Reply = u''
         '''Reply after the command has been sent and Skype has replied.
-        @type: unicode'''
+        
+        :type: unicode'''
 
         self.Timeout = Timeout
-        '''Timeout in milliseconds if Blocking=True.
-        @type: int'''
+        '''Timeout in milliseconds if Blocking == True.
+        
+        :type: int'''
 
     def __repr__(self):
         return '<%s with Id=%s, Command=%s, Blocking=%s, Reply=%s>' % \
             (object.__repr__(self)[1:-1], self.Id, repr(self.Command), self.Blocking, repr(self.Reply))
 
     def timeout2float(self):
+        '''A wrapper for `api.timeout2float` function. Returns the converted
+        `Timeout` property.
+        '''
         return timeout2float(self.Timeout)
 
 
@@ -75,6 +88,10 @@ class SkypeAPIBase(threading.Thread):
 
     def _not_implemented(self):
         raise SkypeAPIError('Function not implemented')
+        
+    def finalize_opts(self, opts):
+        if opts:
+            raise TypeError('Unexpected option(s): %s' % ', '.join(opts.keys()))
 
     def register_handler(self, handler):
         for h in self.handlers:
@@ -163,13 +180,28 @@ class SkypeAPIBase(threading.Thread):
 
 
 def timeout2float(timeout):
+    '''Converts a timeout expressed in milliseconds or seconds into a timeout expressed
+    in seconds using a floating point number.
+    
+    :Parameters:
+      timeout : int, long or float
+        The input timeout. Assumed to be expressed in number of
+        milliseconds if the type is int or long. For float, assumed
+        to be a number of seconds.
+    
+    :return: The timeout expressed in number of seconds.
+    :rtype: float
+    '''
     if isinstance(timeout, float):
         return timeout
     return timeout / 1000.0
 
 
 # Select appropriate low-level Skype API module
-if sys.platform.startswith('win'):
+if getattr(sys, 'skype4py_setup', False):
+    # dummy
+    SkypeAPI = lambda **Options: None
+elif sys.platform.startswith('win'):
     from windows import SkypeAPI
 elif sys.platform == 'darwin':
     from darwin import SkypeAPI

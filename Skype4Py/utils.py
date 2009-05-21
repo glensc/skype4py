@@ -1,5 +1,7 @@
 '''Utility functions and classes used internally by Skype4Py.
 '''
+__docformat__ = 'restructuredtext en'
+
 
 import sys
 import weakref
@@ -25,8 +27,9 @@ def use_generators(yes=True):
     
     New in 1.0.31.1.
 
-    @param yes: True/False enables/disables the generator objects.
-    @type yes: bool
+    :Parameters:
+      yes : bool
+        True/False enables/disables the generator objects.
     '''
     global generators_enabled
     generators_enabled = yes
@@ -34,13 +37,16 @@ def use_generators(yes=True):
 
 def gen(genobj, fallback=tuple):
     '''Takes a generator object and returns it unchanged if generators were
-    enabled using L{use_generators}. Otherwise falls back to the type passed
+    enabled using `use_generators`. Otherwise falls back to the type passed
     using fallback argument, which is a tuple by default.
 
-    @param genobj: Generator object to be processed.
-    @type genobj: generator object
-    @param fallback: Fallback collection type, normally a list or tuple.
-    @return: Unchanged generator or converted to the fallback type.
+    :Parameters:
+      genobj : generator object
+        Generator object to be processed.
+      fallback
+        Fallback collection type, normally a list or tuple.
+
+    :return: Unchanged generator or converted to the fallback type.
     '''
     global generators_enabled
     if generators_enabled:
@@ -51,11 +57,13 @@ def gen(genobj, fallback=tuple):
 def tounicode(s):
     '''Converts a string to a unicode string. Accepts two types or arguments. An UTF-8 encoded
     byte string or a unicode string (in the latter case, no conversion is performed).
-    
-    @param s: String to convert to unicode.
-    @type s: str or unicode
-    @return: A unicode string being the result of the conversion.
-    @rtype: unicode
+
+    :Parameters:
+      s : str or unicode
+        String to convert to unicode.
+
+    :return: A unicode string being the result of the conversion.
+    :rtype: unicode
     '''
     if isinstance(s, unicode):
         return s
@@ -64,22 +72,26 @@ def tounicode(s):
     
 def path2unicode(path):
     '''Decodes a file/directory path from the current file system encoding to unicode.
-    
-    @param path: Encoded path.
-    @type path: str
-    @return: Decoded path.
-    @rtype: unicode
+
+    :Parameters:
+      path : str
+        Encoded path.
+
+    :return: Decoded path.
+    :rtype: unicode
     '''
     return path.decode(sys.getfilesystemencoding())
     
 
 def unicode2path(path):
     '''Encodes a file/directory path from unicode to the current file system encoding.
-    
-    @param path: Decoded path.
-    @type path: unicode
-    @return: Encoded path.
-    @rtype: str
+
+    :Parameters:
+      path : unicode
+        Decoded path.
+
+    :return: Encoded path.
+    :rtype: str
     '''
     return path.encode(sys.getfilesystemencoding())
 
@@ -89,15 +101,17 @@ def chop(s, n=1, d=None):
     The returned list is guaranteed to be n+1 long. If too little words are found in the string,
     a ValueError exception is raised.
 
-    @param s: String to chop from.
-    @type s: str or unicode
-    @param n: Number of words to chop.
-    @type n: int
-    @param d: Optional delimiter. Any white-char by default.
-    @type d: str or unicode
-    @return: A list of n first words from the string followed by the rest of the string
-    (C{[w1, w2, ..., wn, rest_of_string]}).
-    @rtype: list of: str or unicode
+    :Parameters:
+      s : str or unicode
+        String to chop from.
+      n : int
+        Number of words to chop.
+      d : str or unicode
+        Optional delimiter. Any white-char by default.
+
+    :return: A list of n first words from the string followed by the rest of the string (``[w1, w2,
+             ..., wn, rest_of_string]``).
+    :rtype: list of: str or unicode
     '''
 
     spl = s.split(d, n)
@@ -112,10 +126,12 @@ def args2dict(s):
     '''Converts a string or comma-separated 'ARG="a value"' or 'ARG=value2' strings
     into a dictionary.
 
-    @param s: Input string.
-    @type s: str or unicode
-    @return: C{{'ARG': 'value'}} dictionary.
-    @rtype: dict
+    :Parameters:
+      s : str or unicode
+        Input string.
+
+    :return: ``{'ARG': 'value'}`` dictionary.
+    :rtype: dict
     '''
 
     d = {}
@@ -155,13 +171,15 @@ def args2dict(s):
 def quote(s, always=False):
     '''Adds double-quotes to string if it contains spaces.
 
-    @param s: String to add double-quotes to.
-    @type s: str or unicode
-    @param always: If True, adds quotes even if the input string contains no spaces.
-    @type always: bool
-    @return: If the given string contains spaces or <always> is True, returns the string enclosed
-    in double-quotes. Otherwise returns the string unchanged.
-    @rtype: str or unicode
+    :Parameters:
+      s : str or unicode
+        String to add double-quotes to.
+      always : bool
+        If True, adds quotes even if the input string contains no spaces.
+
+    :return: If the given string contains spaces or <always> is True, returns the string enclosed in
+             double-quotes. Otherwise returns the string unchanged.
+    :rtype: str or unicode
     '''
 
     if always or ' ' in s:
@@ -172,14 +190,17 @@ def quote(s, always=False):
 def split(s, d=None):
     '''Splits a string.
 
-    @param s: String to split.
-    @type s: str or unicode
-    @param d: Optional delimiter. Any white-char by default.
-    @type d: str or unicode
-    @return: A list of words or C{[]} if the string was empty.
-    @rtype: list of str or unicode
-    @note: This function works like C{s.split(d)} except that it always returns an
-    empty list instead of C{['']} for empty strings.
+    :Parameters:
+      s : str or unicode
+        String to split.
+      d : str or unicode
+        Optional delimiter. Any white-char by default.
+
+    :return: A list of words or ``[]`` if the string was empty.
+    :rtype: list of str or unicode
+
+    :note: This function works like ``s.split(d)`` except that it always returns an empty list
+           instead of ``['']`` for empty strings.
     '''
 
     if s:
@@ -190,14 +211,16 @@ def split(s, d=None):
 def cndexp(condition, truevalue, falsevalue):
     '''Simulates a conditional expression known from C or Python 2.5.
 
-    @param condition: Tells what should be returned.
-    @type condition: any
-    @param truevalue: Value returned if condition evaluates to True.
-    @type truevalue: any
-    @param falsevalue: Value returned if condition evaluates to False.
-    @type falsevalue: any
-    @return: Either truevalue or falsevalue depending on condition.
-    @rtype: same as type of truevalue or falsevalue
+    :Parameters:
+      condition : any
+        Tells what should be returned.
+      truevalue : any
+        Value returned if condition evaluates to True.
+      falsevalue : any
+        Value returned if condition evaluates to False.
+
+    :return: Either truevalue or falsevalue depending on condition.
+    :rtype: same as type of truevalue or falsevalue
     '''
 
     if condition:
@@ -213,10 +236,11 @@ class WeakMethod(object):
     def __init__(self, method, callback=None):
         '''__init__.
 
-        @param method: Method to be referenced.
-        @type method: method
-        @param callback: Callback to be called when the method is garbage collected.
-        @type callback: callable
+        :Parameters:
+          method : method
+            Method to be referenced.
+          callback : callable
+            Callback to be called when the method is garbage collected.
         '''
         self.im_func = method.im_func
         try:
@@ -255,12 +279,14 @@ def WeakCallableRef(c, callback=None):
     In contrast to weakref.ref() works on all kinds of callables.
     Usage is same as weakref.ref().
 
-    @param c: A callable that the weak reference should point to.
-    @type c: callable
-    @param callback: Callback called when the callable is garbage collected (freed).
-    @type callback: callable
-    @return: A weak callable reference.
-    @rtype: weakref
+    :Parameters:
+      c : callable
+        A callable that the weak reference should point to.
+      callback : callable
+        Callback called when the callable is garbage collected (freed).
+
+    :return: A weak callable reference.
+    :rtype: weakref
     '''
 
     try:
@@ -273,8 +299,9 @@ class EventHandlingThread(threading.Thread):
     def __init__(self, name=None):
         '''__init__.
 
-        @param name: name
-        @type name: unicode
+        :Parameters:
+          name : unicode
+            name
         '''
         threading.Thread.__init__(self, name='%s event handler' % name)
         self.setDaemon(False)
@@ -284,12 +311,13 @@ class EventHandlingThread(threading.Thread):
     def enqueue(self, target, args, kwargs):
         '''enqueue.
 
-        @param target: Callable to be called.
-        @type target: callable
-        @param args: Positional arguments for the callable.
-        @type args: tuple
-        @param kwargs: Keyword arguments for the callable.
-        @type kwargs: dict
+        :Parameters:
+          target : callable
+            Callable to be called.
+          args : tuple
+            Positional arguments for the callable.
+          kwargs : dict
+            Keyword arguments for the callable.
         '''
         self.queue.append((target, args, kwargs))
 
@@ -313,99 +341,111 @@ class EventHandlingBase(object):
     '''This class is used as a base by all classes implementing event handlers.
 
     Look at known subclasses (above in epydoc) to see which classes will allow you to
-    attach your own callables (event handlers) to certain events occuring in them.
+    attach your own callables (event handlers) to certain events occurring in them.
 
     Read the respective classes documentations to learn what events are provided by them. The
     events are always defined in a class whose name consist of the name of the class it provides
-    events for followed by C{Events}). For example class L{Skype} provides events defined in
-    L{SkypeEvents}. The events class is always defined in the same module as the main class.
+    events for followed by ``Events``). For example class `Skype` provides events defined in
+    `SkypeEvents`. The events class is always defined in the same module as the main class.
 
     The events class tells you what events you can assign your event handlers to, when do they
     occur and what arguments lists should your event handlers accept.
 
     There are three ways of attaching an event handler to an event.
 
-      1. C{Events} object.
+    1. ``Events`` object.
 
-         Use this method if you need to attach many event handlers to many events.
+       Use this method if you need to attach many event handlers to many events.
 
-         Write your event handlers as methods of a class. The superclass of your class
-         is not important for Skype4Py, it will just look for methods with appropriate names.
-         The names of the methods and their arguments lists can be found in respective events
-         classes (see above).
+       Write your event handlers as methods of a class. The superclass of your class
+       is not important for Skype4Py, it will just look for methods with appropriate names.
+       The names of the methods and their arguments lists can be found in respective events
+       classes (see above).
 
-         Pass an instance of this class as the C{Events} argument to the constructor of
-         a class whose events you are interested in. For example::
+       Pass an instance of this class as the ``Events`` argument to the constructor of
+       a class whose events you are interested in. For example:
 
-             import Skype4Py
+       .. python::
 
-             class MySkypeEvents:
-                 def UserStatus(self, Status):
-                     print 'The status of the user changed'
+           import Skype4Py
 
-             skype = Skype4Py.Skype(Events=MySkypeEvents())
+           class MySkypeEvents:
+               def UserStatus(self, Status):
+                   print 'The status of the user changed'
 
-         The C{UserStatus} method will be called when the status of the user currently logged
-         into Skype is changed.
+           skype = Skype4Py.Skype(Events=MySkypeEvents())
 
-      2. C{On...} properties.
+       The ``UserStatus`` method will be called when the status of the user currently logged
+       into Skype is changed.
 
-         This method lets you use any callables as event handlers. Simply assign them to C{On...}
-         properties (where "C{...}" is the name of the event) of the object whose events you are
-         interested in. For example::
+    2. ``On...`` properties.
 
-             import Skype4Py
+       This method lets you use any callables as event handlers. Simply assign them to ``On...``
+       properties (where "``...``" is the name of the event) of the object whose events you are
+       interested in. For example:
+       
+       .. python::
 
-             def user_status(Status):
-                 print 'The status of the user changed'
+           import Skype4Py
 
-             skype = Skype4Py.Skype()
-             skype.OnUserStatus = user_status
+           def user_status(Status):
+               print 'The status of the user changed'
 
-         The C{user_status} function will be called when the status of the user currently logged
-         into Skype is changed.
+           skype = Skype4Py.Skype()
+           skype.OnUserStatus = user_status
 
-         The names of the events and their arguments lists should be taken from respective events
-         classes (see above). Note that there is no C{self} argument (which can be seen in the events
-         classes) simply because our event handler is a function, not a method.
+       The ``user_status`` function will be called when the status of the user currently logged
+       into Skype is changed.
 
-      3. C{RegisterEventHandler} / C{UnregisterEventHandler} methods.
+       The names of the events and their arguments lists should be taken from respective events
+       classes (see above). Note that there is no ``self`` argument (which can be seen in the events
+       classes) simply because our event handler is a function, not a method.
 
-         This method, like the second one, also lets you use any callables as event handlers. However,
-         it additionally lets you assign many event handlers to a single event.
+    3. ``RegisterEventHandler`` / ``UnregisterEventHandler`` methods.
 
-         In this case, you use L{RegisterEventHandler} and L{UnregisterEventHandler} methods
-         of the object whose events you are interested in. For example::
+       This method, like the second one, also lets you use any callables as event handlers. However,
+       it additionally lets you assign many event handlers to a single event.
 
-             import Skype4Py
+       In this case, you use `RegisterEventHandler` and `UnregisterEventHandler` methods
+       of the object whose events you are interested in. For example:
+       
+       .. python::
 
-             def user_status(Status):
-                 print 'The status of the user changed'
+           import Skype4Py
 
-             skype = Skype4Py.Skype()
-             skype.RegisterEventHandler('UserStatus', user_status)
+           def user_status(Status):
+               print 'The status of the user changed'
 
-         The C{user_status} function will be called when the status of the user currently logged
-         into Skype is changed.
+           skype = Skype4Py.Skype()
+           skype.RegisterEventHandler('UserStatus', user_status)
 
-         The names of the events and their arguments lists should be taken from respective events
-         classes (see above). Note that there is no C{self} argument (which can be seen in the events
-         classes) simply because our event handler is a function, not a method.
-         
-         All handlers attached to a single event will be called serially in the order they were
-         attached.
+       The ``user_status`` function will be called when the status of the user currently logged
+       into Skype is changed.
 
-    B{Important notes!}
+       The names of the events and their arguments lists should be taken from respective events
+       classes (see above). Note that there is no ``self`` argument (which can be seen in the events
+       classes) simply because our event handler is a function, not a method.
+       
+       All handlers attached to a single event will be called serially in the order they were
+       attached.
+
+    **Multithreading warning.**
 
     The event handlers are always called on a separate thread. At any given time, there is at most
     one handling thread per event type. This means that when a lot of events of the same type are
-    generated at once, their handlers will be called in serial. Handling of events of different types
-    may happen simultaneously.
+    generated at once, their handlers will be called in serial on one thread. Handling of events
+    of different types may happen simultaneously on many threads.
+    
+    **Object owning note.**
 
-    In case of second and third method, only weak references to the event handlers are stored. This
-    means that you must make sure that Skype4Py is not the only one having a reference to the callable
-    or else it will be garbage collected and silently removed from Skype4Py's handlers list. On the
-    other hand, it frees you from worrying about cyclic references.
+    In the first method, a reference to the events object is stored. However, in the second and
+    third method, only weak references to the event handlers are maintained. This means that you
+    must make sure that Skype4Py is not the only one having a reference to the callable or else
+    it will be garbage collected and silently removed from Skype4Py's handlers list. On the other
+    hand, it frees you from worrying about cyclic references.
+    
+    Skype4Py uses its own mechanism for weak references to callables (`WeakCallableRef`) which
+    properly handles weak references to all types of Python callables.
     '''
 
     _EventNames = []
@@ -422,9 +462,17 @@ class EventHandlingBase(object):
             self._EventHandlers[event] = []
 
     def _CallEventHandler(self, Event, *Args, **KwArgs):
-        '''Calls all event handlers defined for given Event (str), additional parameters
+        '''Calls all event handlers defined for given Event, additional parameters
         will be passed unchanged to event handlers, all event handlers are fired on
         separate threads.
+        
+        :Parameters:
+          Event : str
+            Name of the event.
+          Args
+            Positional arguments for the event handlers.
+          KwArgs
+            Keyword arguments for the event handlers.
         '''
         # get list of relevant handlers
         handlers = dict([(x, x()) for x in self._EventHandlers[Event]])
@@ -467,13 +515,16 @@ class EventHandlingBase(object):
     def RegisterEventHandler(self, Event, Target):
         '''Registers any callable as an event handler.
 
-        @param Event: Name of the event. For event names, see the respective C{...Events} class.
-        @type Event: str
-        @param Target: Callable to register as the event handler.
-        @type Target: callable
-        @return: True is callable was successfully registered, False if it was already registered.
-        @rtype: bool
-        @see: L{EventHandlingBase}
+        :Parameters:
+          Event : str
+            Name of the event. For event names, see the respective ``...Events`` class.
+          Target : callable
+            Callable to register as the event handler.
+
+        :return: True is callable was successfully registered, False if it was already registered.
+        :rtype: bool
+
+        :see: `EventHandlingBase`
         '''
 
         if not callable(Target):
@@ -493,13 +544,17 @@ class EventHandlingBase(object):
     def UnregisterEventHandler(self, Event, Target):
         '''Unregisters a previously registered event handler (a callable).
 
-        @param Event: Name of the event. For event names, see the respective C{...Events} class.
-        @type Event: str
-        @param Target: Callable to unregister.
-        @type Target: callable
-        @return: True if callable was successfully unregistered, False if it wasn't registered first.
-        @rtype: bool
-        @see: L{EventHandlingBase}
+        :Parameters:
+          Event : str
+            Name of the event. For event names, see the respective ``...Events`` class.
+          Target : callable
+            Callable to unregister.
+
+        :return: True if callable was successfully unregistered, False if it wasn't registered
+                 first.
+        :rtype: bool
+
+        :see: `EventHandlingBase`
         '''
 
         if not callable(Target):
@@ -535,8 +590,13 @@ class EventHandlingBase(object):
             pass
 
     def _SetEventHandlerObj(self, Obj):
-        '''Registers an object (Obj) as event handler, object should contain methods with names
-        corresponding to event names, only one obj is allowed at a time.
+        '''Registers an object as events handler, object should contain methods with names
+        corresponding to event names, only one object may be registered at a time. A reference
+        to the object will be kept until it is unregistered.
+        
+        :Parameters:
+          Obj
+            Object to register. If None, unregisters the currently registered object.
         '''
         self._EventHandlerObj = Obj
 
@@ -548,7 +608,13 @@ class EventHandlingBase(object):
 
     @classmethod
     def _AddEvents(cls, Class):
-        '''Adds events to class based on 'Class' attributes.'''
+        '''Adds events to class based on the attributes of the given class.
+        
+        :Parameters:
+          Class : class
+            An `...Events` class whose methods define events that may occur in the
+            instances of the current class.
+        '''
         for event in dir(Class):
             if not event.startswith('_'):
                 setattr(cls, 'On%s' % event, cls.__AddEvents_make_event(event))
@@ -562,8 +628,8 @@ class Cached(object):
     Trying to create two objects with same Id yields the same object. Uses weak references
     to allow the objects to be deleted normally.
 
-    @warning: C{__init__()} is always called, don't use it to prevent initializing an already
-    initialized object. Use C{_Init()} instead, it is called only once.
+    :warning: ``__init__()`` is always called, don't use it to prevent initializing an already
+              initialized object. Use ``_Init()`` instead, it is called only once.
     '''
     _Cache = weakref.WeakValueDictionary()
 

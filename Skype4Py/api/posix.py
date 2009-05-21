@@ -1,24 +1,26 @@
 '''
-Low level Skype for Linux interface.
+Low level *Skype for Linux* interface.
 
-This module handles the options that you can pass to L{Skype.__init__<skype.Skype.__init__>} for Linux machines.
+This module handles the options that you can pass to `Skype.__init__` for Linux machines.
 The options include:
 
-@newfield option: Option, Options
+- ``Transport`` (str) - A channel used to communicate with the Skype client.
+  Currently supported values are:
+  
+  - ``'x11'``
 
-@option: C{Transport} (str) - A transport is a channel used to communicate with Skype client. Currently supported values are:
-  - C{'x11'}
+    Uses *X11* (*Xlib*) messaging. This is the default if no transport is specified.
 
-  Uses X11 (Xlib) messaging. This is the default if no transport is specified.
+    Look into `api.posix_x11` module for additional options.
 
-  Look into L{Skype4Py.api.posix_x11} for additional options.
+  - ``'dbus'``
 
-  - C{'dbus'}
+    Uses *DBus* (*python-dbus*).
 
-  Uses DBus (python-dbus).
-
-  Look into L{Skype4Py.api.posix_dbus} for additional options.
+    Look into `api.posix_dbus` for additional options.
 '''
+__docformat__ = 'restructuredtext en'
+
 
 from Skype4Py.errors import SkypeAPIError
 

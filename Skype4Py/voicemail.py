@@ -1,5 +1,7 @@
 '''Voicemails.
 '''
+__docformat__ = 'restructuredtext en'
+
 
 from utils import *
 from enums import *
@@ -25,15 +27,17 @@ class Voicemail(Cached):
     def CaptureMicDevice(self, DeviceType=None, Set=None):
         '''Queries or sets the mic capture device.
 
-        @param DeviceType: Mic capture device type or None.
-        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>} or None
-        @param Set: Value the device should be set to or None.
-        @type Set: unicode, int or None
-        @return: If DeviceType and Set are None, returns a dictionary of device types and their
-        values. Dictionary contains only those device types, whose values were set. If the
-        DeviceType is not None but Set is None, returns the current value of the device or
-        None if the device wasn't set. If Set is not None, sets a new value for the device.
-        @rtype: unicode, dict or None
+        :Parameters:
+          DeviceType : `enums`.callIoDeviceType* or None
+            Mic capture device type or None.
+          Set : unicode, int or None
+            Value the device should be set to or None.
+
+        :return: If DeviceType and Set are None, returns a dictionary of device types and their
+                 values. Dictionary contains only those device types, whose values were set. If the
+                 DeviceType is not None but Set is None, returns the current value of the device or
+                 None if the device wasn't set. If Set is not None, sets a new value for the device.
+        :rtype: unicode, dict or None
         '''
         if Set is None: # get
             args = args2dict(self._Property('CAPTURE_MIC', Cache=False))
@@ -61,15 +65,17 @@ class Voicemail(Cached):
     def InputDevice(self, DeviceType=None, Set=None):
         '''Queries or sets the sound input device.
 
-        @param DeviceType: Sound input device type or None.
-        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>} or None
-        @param Set: Value the device should be set to or None.
-        @type Set: unicode, int or None
-        @return: If DeviceType and Set are None, returns a dictionary of device types and their
-        values. Dictionary contains only those device types, whose values were set. If the
-        DeviceType is not None but Set is None, returns the current value of the device or
-        None if the device wasn't set. If Set is not None, sets a new value for the device.
-        @rtype: unicode, dict or None
+        :Parameters:
+          DeviceType : `enums`.callIoDeviceType* or None
+            Sound input device type or None.
+          Set : unicode, int or None
+            Value the device should be set to or None.
+
+        :return: If DeviceType and Set are None, returns a dictionary of device types and their
+                 values. Dictionary contains only those device types, whose values were set. If the
+                 DeviceType is not None but Set is None, returns the current value of the device or
+                 None if the device wasn't set. If Set is not None, sets a new value for the device.
+        :rtype: unicode, dict or None
         '''
         if Set is None: # get
             args = args2dict(self._Property('INPUT', Cache=False))
@@ -92,15 +98,17 @@ class Voicemail(Cached):
     def OutputDevice(self, DeviceType=None, Set=None):
         '''Queries or sets the sound output device.
 
-        @param DeviceType: Sound output device type or None.
-        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>} or None
-        @param Set: Value the device should be set to or None.
-        @type Set: unicode, int or None
-        @return: If DeviceType and Set are None, returns a dictionary of device types and their
-        values. Dictionary contains only those device types, whose values were set. If the
-        DeviceType is not None but Set is None, returns the current value of the device or
-        None if the device wasn't set. If Set is not None, sets a new value for the device.
-        @rtype: unicode, dict or None
+        :Parameters:
+          DeviceType : `enums`.callIoDeviceType* or None
+            Sound output device type or None.
+          Set : unicode, int or None
+            Value the device should be set to or None.
+
+        :return: If DeviceType and Set are None, returns a dictionary of device types and their
+                 values. Dictionary contains only those device types, whose values were set. If the
+                 DeviceType is not None but Set is None, returns the current value of the device or
+                 None if the device wasn't set. If Set is not None, sets a new value for the device.
+        :rtype: unicode, dict or None
         '''
         if Set is None: # get
             args = args2dict(self._Property('OUTPUT', Cache=False))
@@ -121,7 +129,8 @@ class Voicemail(Cached):
         # Note. Due to a bug in Skype (tested using 3.8.0.115) the reply from
         # [ALTER VOICEMAIL <id> SETUNPLAYED] is [ALTER VOICEMAIL <id> DELETE]
         # causing the _Alter method to fail. Therefore we have to use a direct
-        # _DoCommand instead.
+        # _DoCommand instead. For the event of this being fixed, we don't
+        # check for the "SETUNPLAYED"/"DELETE" part of the response.
         
         #self._Alter('SETUNPLAYED')
         self._Skype._DoCommand('ALTER VOICEMAIL %d SETUNPLAYED' % self._Id,
@@ -163,7 +172,7 @@ class Voicemail(Cached):
     AllowedDuration = property(_GetAllowedDuration,
     doc='''Maximum voicemail duration in seconds allowed to leave to partner
 
-    @type: int
+    :type: int
     ''')
 
     def _GetDatetime(self):
@@ -173,7 +182,7 @@ class Voicemail(Cached):
     Datetime = property(_GetDatetime,
     doc='''Timestamp of this voicemail expressed using datetime.
 
-    @type: datetime.datetime
+    :type: datetime.datetime
     ''')
 
     def _GetDuration(self):
@@ -182,16 +191,16 @@ class Voicemail(Cached):
     Duration = property(_GetDuration,
     doc='''Actual voicemail duration in seconds.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetFailureReason(self):
         return str(self._Property('FAILUREREASON'))
 
     FailureReason = property(_GetFailureReason,
-    doc='''Voicemail failure reason. Read if L{Status} == L{vmsFailed<enums.vmsFailed>}.
+    doc='''Voicemail failure reason. Read if `Status` == `enums.vmsFailed`.
 
-    @type: L{Voicemail failure reason<enums.vmrUnknown>}
+    :type: `enums`.vmr*
     ''')
 
     def _GetId(self):
@@ -200,7 +209,7 @@ class Voicemail(Cached):
     Id = property(_GetId,
     doc='''Unique voicemail Id.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetPartnerDisplayName(self):
@@ -209,7 +218,7 @@ class Voicemail(Cached):
     PartnerDisplayName = property(_GetPartnerDisplayName,
     doc='''DisplayName for voicemail sender (for incoming) or recipient (for outgoing).
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetPartnerHandle(self):
@@ -218,7 +227,7 @@ class Voicemail(Cached):
     PartnerHandle = property(_GetPartnerHandle,
     doc='''Skypename for voicemail sender (for incoming) or recipient (for outgoing).
 
-    @type: str
+    :type: str
     ''')
 
     def _GetStatus(self):
@@ -227,7 +236,7 @@ class Voicemail(Cached):
     Status = property(_GetStatus,
     doc='''Voicemail status.
 
-    @type: L{Voicemail status<enums.vmsUnknown>}
+    :type: `enums`.vms*
     ''')
 
     def _GetTimestamp(self):
@@ -236,7 +245,7 @@ class Voicemail(Cached):
     Timestamp = property(_GetTimestamp,
     doc='''Timestamp of this voicemail.
 
-    @type: float
+    :type: float
     ''')
 
     def _GetType(self):
@@ -245,5 +254,5 @@ class Voicemail(Cached):
     Type = property(_GetType,
     doc='''Voicemail type.
 
-    @type: L{Voicemail type<enums.vmtUnknown>}
+    :type: `enums`.vmt*
     ''')

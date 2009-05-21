@@ -1,5 +1,7 @@
 '''Calls, conferences.
 '''
+__docformat__ = 'restructuredtext en'
+
 
 from utils import *
 from enums import *
@@ -30,27 +32,31 @@ class Call(Cached):
     def CanTransfer(self, Target):
         '''Queries if a call can be transferred to a contact or phone number.
 
-        @param Target: Skypename or phone number the call is to be transfered to.
-        @type Target: str
-        @return: True if call can be transfered, False otherwise.
-        @rtype: bool
+        :Parameters:
+          Target : str
+            Skypename or phone number the call is to be transferred to.
+
+        :return: True if call can be transferred, False otherwise.
+        :rtype: bool
         '''
         return self._Property('CAN_TRANSFER %s' % Target) == 'TRUE'
 
     def CaptureMicDevice(self, DeviceType=None, Set=None):
         '''Queries or sets the mic capture device.
 
-        @param DeviceType: Mic capture device type or None.
-        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>} or None
-        @param Set: Value the device should be set to or None.
-        @type Set: unicode, int or None
-        @return: If DeviceType and Set are None, returns a dictionary of device types and their
-        values. Dictionary contains only those device types, whose values were set. If the
-        DeviceType is not None but Set is None, returns the current value of the device or
-        None if the device wasn't set. If Set is not None, sets a new value for the device.
-        @rtype: unicode, dict or None
+        :Parameters:
+          DeviceType : `enums`.callIoDeviceType* or None
+            Mic capture device type or None.
+          Set : unicode, int or None
+            Value the device should be set to or None.
 
-        @note: This command functions for active calls only.
+        :return: If DeviceType and Set are None, returns a dictionary of device types and their
+                 values. Dictionary contains only those device types, whose values were set. If the
+                 DeviceType is not None but Set is None, returns the current value of the device or
+                 None if the device wasn't set. If Set is not None, sets a new value for the device.
+        :rtype: unicode, dict or None
+
+        :note: This command functions for active calls only.
         '''
         if Set is None: # get
             args = args2dict(self._Property('CAPTURE_MIC', Cache=False))
@@ -83,17 +89,19 @@ class Call(Cached):
     def InputDevice(self, DeviceType=None, Set=None):
         '''Queries or sets the sound input device.
 
-        @param DeviceType: Sound input device type or None.
-        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>} or None
-        @param Set: Value the device should be set to or None.
-        @type Set: unicode, int or None
-        @return: If DeviceType and Set are None, returns a dictionary of device types and their
-        values. Dictionary contains only those device types, whose values were set. If the
-        DeviceType is not None but Set is None, returns the current value of the device or
-        None if the device wasn't set. If Set is not None, sets a new value for the device.
-        @rtype: unicode, dict or None
+        :Parameters:
+          DeviceType : `enums`.callIoDeviceType* or None
+            Sound input device type or None.
+          Set : unicode, int or None
+            Value the device should be set to or None.
 
-        @note: This command functions for active calls only.
+        :return: If DeviceType and Set are None, returns a dictionary of device types and their
+                 values. Dictionary contains only those device types, whose values were set. If the
+                 DeviceType is not None but Set is None, returns the current value of the device or
+                 None if the device wasn't set. If Set is not None, sets a new value for the device.
+        :rtype: unicode, dict or None
+
+        :note: This command functions for active calls only.
         '''
         if Set is None: # get
             args = args2dict(self._Property('INPUT', Cache=False))
@@ -111,10 +119,12 @@ class Call(Cached):
     def Join(self, Id):
         '''Joins with another call to form a conference.
 
-        @param Id: Call Id of the other call to join to the conference.
-        @type Id: int
-        @return: Conference object.
-        @rtype: L{Conference}
+        :Parameters:
+          Id : int
+            Call Id of the other call to join to the conference.
+
+        :return: Conference object.
+        :rtype: `Conference`
         '''
         reply = self._Skype._DoCommand('SET CALL %s JOIN_CONFERENCE %s' % (self._Id, Id),
             'CALL %s CONF_ID' % self._Id)
@@ -128,17 +138,19 @@ class Call(Cached):
     def OutputDevice(self, DeviceType=None, Set=None):
         '''Queries or sets the sound output device.
 
-        @param DeviceType: Sound output device type or None.
-        @type DeviceType: L{Call IO device type<enums.callIoDeviceTypeUnknown>} or None
-        @param Set: Value the device should be set to or None.
-        @type Set: unicode, int or None
-        @return: If DeviceType and Set are None, returns a dictionary of device types and their
-        values. Dictionary contains only those device types, whose values were set. If the
-        DeviceType is not None but Set is None, returns the current value of the device or
-        None if the device wasn't set. If Set is not None, sets a new value for the device.
-        @rtype: unicode, dict or None
-        
-        @note: This command functions for active calls only.
+        :Parameters:
+          DeviceType : `enums`.callIoDeviceType* or None
+            Sound output device type or None.
+          Set : unicode, int or None
+            Value the device should be set to or None.
+
+        :return: If DeviceType and Set are None, returns a dictionary of device types and their
+                 values. Dictionary contains only those device types, whose values were set. If the
+                 DeviceType is not None but Set is None, returns the current value of the device or
+                 None if the device wasn't set. If Set is not None, sets a new value for the device.
+        :rtype: unicode, dict or None
+
+        :note: This command functions for active calls only.
         '''
         if Set is None: # get
             args = args2dict(self._Property('OUTPUT', Cache=False))
@@ -186,12 +198,13 @@ class Call(Cached):
     def Transfer(self, *Targets):
         '''Transfers a call to one or more contacts or phone numbers.
 
-        @param Targets: one or more phone numbers or Skypenames the call is beeing transferred to.
-        @type Targets: str
-        @see: L{CanTransfer}
+        :Parameters:
+          Targets : str
+            one or more phone numbers or Skypenames the call is being transferred to.
 
-        @note: You can transfer an incoming call to a group by specifying more than one
-        target, first one of the group to answer will get the call.
+        :note: You can transfer an incoming call to a group by specifying more than one target,
+               first one of the group to answer will get the call.
+        :see: `CanTransfer`
         '''
         self._Alter('TRANSFER', ', '.join(Targets))
 
@@ -201,7 +214,7 @@ class Call(Cached):
     ConferenceId = property(_GetConferenceId,
     doc='''ConferenceId.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetDatetime(self):
@@ -211,19 +224,20 @@ class Call(Cached):
     Datetime = property(_GetDatetime,
     doc='''Date and time of the call.
 
-    @type: datetime.datetime
-    @see: L{Timestamp}
+    :type: datetime.datetime
+
+    :see: `Timestamp`
     ''')
 
     def _SetDTMF(self, Value):
         self._Alter('DTMF', Value)
 
     DTMF = property(fset=_SetDTMF,
-    doc='''Set this property to send DTMF codes. Permitted symbols are: {0..9,#,*}. 
+    doc='''Set this property to send DTMF codes. Permitted symbols are: [0..9, #, \*]. 
 
-    @type: str
+    :type: str
 
-    @note: This command functions for active calls only.
+    :note: This command functions for active calls only.
     ''')
 
     def _GetDuration(self):
@@ -232,16 +246,16 @@ class Call(Cached):
     Duration = property(_GetDuration,
     doc='''Duration of the call in seconds.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetFailureReason(self):
         return int(self._Property('FAILUREREASON'))
 
     FailureReason = property(_GetFailureReason,
-    doc='''Call failure reason. Read if L{Status} == L{clsFailed<enums.clsFailed>}.
+    doc='''Call failure reason. Read if `Status` == `enums.clsFailed`.
 
-    @type: L{Call failure reason<enums.cfrUnknown>}
+    :type: `enums`.cfr*
     ''')
 
     def _GetForwardedBy(self):
@@ -250,7 +264,7 @@ class Call(Cached):
     ForwardedBy = property(_GetForwardedBy,
     doc='''Skypename of the user who forwarded a call.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetId(self):
@@ -259,7 +273,7 @@ class Call(Cached):
     Id = property(_GetId,
     doc='''Call Id.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetInputStatus(self):
@@ -268,7 +282,7 @@ class Call(Cached):
     InputStatus = property(_GetInputStatus,
     doc='''True if call voice input is enabled.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetParticipants(self):
@@ -278,7 +292,7 @@ class Call(Cached):
     Participants = property(_GetParticipants,
     doc='''Participants of a conference call not hosted by the user.
 
-    @type: tuple of L{Participant}
+    :type: tuple of `Participant`
     ''')
 
     def _GetPartnerDisplayName(self):
@@ -287,7 +301,7 @@ class Call(Cached):
     PartnerDisplayName = property(_GetPartnerDisplayName,
     doc='''The DisplayName of the remote caller.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetPartnerHandle(self):
@@ -296,7 +310,7 @@ class Call(Cached):
     PartnerHandle = property(_GetPartnerHandle,
     doc='''The Skypename of the remote caller.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetPstnNumber(self):
@@ -305,7 +319,7 @@ class Call(Cached):
     PstnNumber = property(_GetPstnNumber,
     doc='''PSTN number of the call.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetPstnStatus(self):
@@ -314,18 +328,19 @@ class Call(Cached):
     PstnStatus = property(_GetPstnStatus,
     doc='''PSTN number status.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetRate(self):
         return int(self._Property('RATE'))
 
     Rate = property(_GetRate,
-    doc='''Call rate. Expressed using L{RatePrecision}. If you're just interested in the call rate
-    expressed in current currency, use L{RateValue} instead.
+    doc='''Call rate. Expressed using `RatePrecision`. If you're just interested in the call rate
+    expressed in current currency, use `RateValue` instead.
 
-    @type: int
-    @see: L{RateCurrency}, L{RatePrecision}, L{RateToText}, L{RateValue}
+    :type: int
+
+    :see: `RateCurrency`, `RatePrecision`, `RateToText`, `RateValue`
     ''')
 
     def _GetRateCurrency(self):
@@ -334,8 +349,9 @@ class Call(Cached):
     RateCurrency = property(_GetRateCurrency,
     doc='''Call rate currency.
 
-    @type: unicode
-    @see: L{Rate}, L{RatePrecision}, L{RateToText}, L{RateValue}
+    :type: unicode
+
+    :see: `Rate`, `RatePrecision`, `RateToText`, `RateValue`
     ''')
 
     def _GetRatePrecision(self):
@@ -344,8 +360,9 @@ class Call(Cached):
     RatePrecision = property(_GetRatePrecision,
     doc='''Call rate precision. Expressed as a number of times the call rate has to be divided by 10.
 
-    @type: int
-    @see: L{Rate}, L{RateCurrency}, L{RateToText}, L{RateValue}
+    :type: int
+
+    :see: `Rate`, `RateCurrency`, `RateToText`, `RateValue`
     ''')
 
     def _GetRateToText(self):
@@ -354,8 +371,9 @@ class Call(Cached):
     RateToText = property(_GetRateToText,
     doc='''Returns the call rate as a text with currency and properly formatted value.
 
-    @type: unicode
-    @see: L{Rate}, L{RateCurrency}, L{RatePrecision}, L{RateValue}
+    :type: unicode
+
+    :see: `Rate`, `RateCurrency`, `RatePrecision`, `RateValue`
     ''')
 
     def _GetRateValue(self):
@@ -366,8 +384,9 @@ class Call(Cached):
     RateValue = property(_GetRateValue,
     doc='''Call rate value. Expressed in current currency.
 
-    @type: float
-    @see: L{Rate}, L{RateCurrency}, L{RatePrecision}, L{RateToText}
+    :type: float
+
+    :see: `Rate`, `RateCurrency`, `RatePrecision`, `RateToText`
     ''')
 
     def _GetSeen(self):
@@ -379,9 +398,9 @@ class Call(Cached):
     Seen = property(_GetSeen, _SetSeen,
     doc='''Queries/sets the seen status of the call. True if the call was seen, False otherwise.
 
-    @type: bool
-    
-    @note: You cannot alter the call seen status from seen to unseen.
+    :type: bool
+
+    :note: You cannot alter the call seen status from seen to unseen.
     ''')
 
     def _GetStatus(self):
@@ -393,7 +412,7 @@ class Call(Cached):
     Status = property(_GetStatus, _SetStatus,
     doc='''The call status.
 
-    @type: L{Call status<enums.clsUnknown>}
+    :type: `enums`.cls*
     ''')
 
     def _GetSubject(self):
@@ -402,7 +421,7 @@ class Call(Cached):
     Subject = property(_GetSubject,
     doc='''Call subject.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetTargetIdentify(self):
@@ -411,7 +430,7 @@ class Call(Cached):
     TargetIdentify = property(_GetTargetIdentify,
     doc='''Target number for incoming SkypeIn calls.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetTimestamp(self):
@@ -420,17 +439,18 @@ class Call(Cached):
     Timestamp = property(_GetTimestamp,
     doc='''Call date and time expressed as a timestamp.
 
-    @type: float
-    @see: L{Datetime}
+    :type: float
+
+    :see: `Datetime`
     ''')
 
     def _GetTransferActive(self):
         return self._Property('TRANSFER_ACTIVE') == 'TRUE'
 
     TransferActive = property(_GetTransferActive,
-    doc='''Returns True if the call has been transfered.
+    doc='''Returns True if the call has been transferred.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetTransferredBy(self):
@@ -439,7 +459,7 @@ class Call(Cached):
     TransferredBy = property(_GetTransferredBy,
     doc='''Returns the Skypename of the user who transferred the call.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetTransferredTo(self):
@@ -448,7 +468,7 @@ class Call(Cached):
     TransferredTo = property(_GetTransferredTo,
     doc='''Returns the Skypename of the user or phone number the call has been transferred to.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetTransferStatus(self):
@@ -457,7 +477,7 @@ class Call(Cached):
     TransferStatus = property(_GetTransferStatus,
     doc='''Returns the call transfer status.
 
-    @type: L{Call status<enums.clsUnknown>}
+    :type: `enums`.cls*
     ''')
 
     def _GetType(self):
@@ -466,7 +486,7 @@ class Call(Cached):
     Type = property(_GetType,
     doc='''Call type.
 
-    @type: L{Call type<enums.cltUnknown>}
+    :type: `enums`.clt*
     ''')
 
     def _GetVideoReceiveStatus(self):
@@ -475,7 +495,7 @@ class Call(Cached):
     VideoReceiveStatus = property(_GetVideoReceiveStatus,
     doc='''Call video receive status.
 
-    @type: L{Call video send status<enums.vssUnknown>}
+    :type: `enums`.vss*
     ''')
 
     def _GetVideoSendStatus(self):
@@ -484,7 +504,7 @@ class Call(Cached):
     VideoSendStatus = property(_GetVideoSendStatus,
     doc='''Call video send status.
 
-    @type: L{Call video send status<enums.vssUnknown>}
+    :type: `enums`.vss*
     ''')
 
     def _GetVideoStatus(self):
@@ -493,7 +513,7 @@ class Call(Cached):
     VideoStatus = property(_GetVideoStatus,
     doc='''Call video status.
 
-    @type: L{Call video status<enums.cvsUnknown>}
+    :type: `enums`.cvs*
     ''')
 
     def _GetVmAllowedDuration(self):
@@ -502,7 +522,7 @@ class Call(Cached):
     VmAllowedDuration = property(_GetVmAllowedDuration,
     doc='''Returns the permitted duration of a voicemail in seconds.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetVmDuration(self):
@@ -511,7 +531,7 @@ class Call(Cached):
     VmDuration = property(_GetVmDuration,
     doc='''Returns the duration of a voicemail.
 
-    @type: int
+    :type: int
     ''')
 
 
@@ -538,7 +558,7 @@ class Participant(Cached):
     CallStatus = property(_GetCallStatus,
     doc='''Call status of a participant in a conference call.
 
-    @type: L{Call status<enums.clsUnknown>}
+    :type: `enums`.cls*
     ''')
 
     def _GetCallType(self):
@@ -547,7 +567,7 @@ class Participant(Cached):
     CallType = property(_GetCallType,
     doc='''Call type in a conference call.
 
-    @type: L{Call type<enums.cltUnknown>}
+    :type: `enums`.clt*
     ''')
 
     def _GetDisplayName(self):
@@ -556,7 +576,7 @@ class Participant(Cached):
     DisplayName = property(_GetDisplayName,
     doc='''DisplayName of a participant in a conference call.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetHandle(self):
@@ -565,7 +585,7 @@ class Participant(Cached):
     Handle = property(_GetHandle,
     doc='''Skypename of a participant in a conference call.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetId(self):
@@ -574,7 +594,7 @@ class Participant(Cached):
     Id = property(_GetId,
     doc='''Call Id.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetIdx(self):
@@ -583,7 +603,7 @@ class Participant(Cached):
     Idx = property(_GetIdx,
     doc='''Call participant index.
 
-    @type: int
+    :type: int
     ''')
 
 
@@ -599,19 +619,22 @@ class Conference(Cached):
         self._Id = int(Id)
 
     def Finish(self):
-        '''Finishes a conference so all active calls have the status L{clsFinished<enums.clsFinished>}.
+        '''Finishes a conference so all active calls have the status
+        `enums.clsFinished`.
         '''
         for c in self._GetCalls():
             c.Finish()
 
     def Hold(self):
-        '''Places all calls in a conference on hold so all active calls have the status L{clsLocalHold<enums.clsLocalHold>}.
+        '''Places all calls in a conference on hold so all active calls
+        have the status `enums.clsLocalHold`.
         '''
         for c in self._GetCalls():
             c.Hold()
 
     def Resume(self):
-        '''Resumes a conference that was placed on hold so all active calls have the status L{clsInProgress<enums.clsInProgress>}.
+        '''Resumes a conference that was placed on hold so all active calls
+        have the status `enums.clsInProgress`.
         '''
         for c in self._GetCalls():
             c.Resume()
@@ -622,7 +645,7 @@ class Conference(Cached):
     ActiveCalls = property(_GetActiveCalls,
     doc='''Active calls with the same conference ID.
 
-    @type: tuple of L{Call}
+    :type: tuple of `Call`
     ''')
 
     def _GetCalls(self):
@@ -631,7 +654,7 @@ class Conference(Cached):
     Calls = property(_GetCalls,
     doc='''Calls with the same conference ID.
 
-    @type: tuple of L{Call}
+    :type: tuple of `Call`
     ''')
 
     def _GetId(self):
@@ -640,5 +663,5 @@ class Conference(Cached):
     Id = property(_GetId,
     doc='''Id of a conference.
 
-    @type: int
+    :type: int
     ''')

@@ -1,14 +1,18 @@
 '''
 Skype4Py constants.
 
-  1. B{Usage.}
+**Warning!** Remember that all constants defined here are available at
+the `Skype4Py` package level and should be accessed from there.
 
-    All constants are available at the C{Skype4Py} package level. Example::
+Example:
+   
+.. python::
 
-        import Skype4Py
+    import Skype4Py
 
-        status = Skype4Py.apiAttachUnknown
+    status = Skype4Py.apiAttachSuccess
 '''
+__docformat__ = 'restructuredtext en'
 
 
 #{ Attachment status

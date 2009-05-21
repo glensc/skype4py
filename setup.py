@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-Skype4Py
+Skype4Py distutils script.
 
 Copyright (c) 2007-2009, Arkadiusz Wahlig
 
@@ -23,7 +23,7 @@ if path:
 
 
 # So that the Skype4Py library may know that the setup is running.
-sys.setup = True
+sys.skype4py_setup = True
 
 
 # Import Skype4Py version from the uninstalled package.
@@ -145,7 +145,7 @@ setup(name='Skype4Py',
       url='https://developer.skype.com/wiki/Skype4Py',
       download_url='http://downloads.sourceforge.net/skype4py/Skype4Py-%s.tar.gz' % __version__,
       license='BSD License',
-      platforms=['Windows 2000/XP/Vista', 'Linux', 'MacOS X'],
+      platforms=['Windows', 'Linux', 'MacOS X'],
       packages=['Skype4Py', 'Skype4Py.api', 'Skype4Py.lang'],
       package_data={'Skype4Py': ['LICENSE']},
       provides=['Skype4Py'],

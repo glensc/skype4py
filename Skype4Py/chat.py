@@ -1,5 +1,7 @@
 '''Chats.
 '''
+__docformat__ = 'restructuredtext en'
+
 
 from utils import *
 from user import *
@@ -31,8 +33,9 @@ class Chat(Cached):
     def AddMembers(self, *Members):
         '''Adds new members to the chat.
 
-        @param Members: One or more users to add.
-        @type Members: L{User}
+        :Parameters:
+          Members : `User`
+            One or more users to add.
         '''
         self._Alter('ADDMEMBERS', ', '.join([x.Handle for x in Members]))
 
@@ -54,8 +57,9 @@ class Chat(Cached):
     def EnterPassword(self, Password):
         '''Enters chat password.
 
-        @param Password: Password
-        @type Password: unicode
+        :Parameters:
+          Password : unicode
+            Password
         '''
         self._Alter('ENTERPASSWORD', tounicode(Password))
 
@@ -67,16 +71,18 @@ class Chat(Cached):
     def Kick(self, Handle):
         '''Kicks a member from chat.
 
-        @param Handle: Skype username.
-        @type Handle: str
+        :Parameters:
+          Handle : str
+            Skype username.
         '''
         self._Alter('KICK', Handle)
 
     def KickBan(self, Handle):
         '''Kicks and bans a member from chat.
 
-        @param Handle: Skype username.
-        @type Handle: str
+        :Parameters:
+          Handle : str
+            Skype username.
         '''
         self._Alter('KICKBAN', Handle)
 
@@ -93,10 +99,12 @@ class Chat(Cached):
     def SendMessage(self, MessageText):
         '''Sends a chat message.
 
-        @param MessageText: Message text
-        @type MessageText: unicode
-        @return: Message object
-        @rtype: L{ChatMessage}
+        :Parameters:
+          MessageText : unicode
+            Message text
+
+        :return: Message object
+        :rtype: `ChatMessage`
         '''
         return ChatMessage(chop(self._Skype._DoCommand('CHATMESSAGE %s %s' % (self._Name,
             tounicode(MessageText))), 2)[1], self._Skype)
@@ -104,10 +112,11 @@ class Chat(Cached):
     def SetPassword(self, Password, Hint=''):
         '''Sets the chat password.
 
-        @param Password: Password
-        @type Password: unicode
-        @param Hint: Password hint
-        @type Hint: unicode
+        :Parameters:
+          Password : unicode
+            Password
+          Hint : unicode
+            Password hint
         '''
         if ' ' in Password:
             raise ValueError('Password mut be one word')
@@ -124,7 +133,7 @@ class Chat(Cached):
     ActiveMembers = property(_GetActiveMembers,
     doc='''Active members of a chat.
 
-    @type: tuple of L{User}
+    :type: tuple of `User`
     ''')
 
     def _GetActivityDatetime(self):
@@ -134,7 +143,7 @@ class Chat(Cached):
     ActivityDatetime = property(_GetActivityDatetime,
     doc='''Returns chat activity timestamp as datetime.
 
-    @type: datetime.datetime
+    :type: datetime.datetime
     ''')
 
     def _GetActivityTimestamp(self):
@@ -143,8 +152,9 @@ class Chat(Cached):
     ActivityTimestamp = property(_GetActivityTimestamp,
     doc='''Returns chat activity timestamp.
 
-    @type: float
-    @see: L{ActivityDatetime}
+    :type: float
+
+    :see: `ActivityDatetime`
     ''')
 
     def _GetAdder(self):
@@ -153,7 +163,7 @@ class Chat(Cached):
     Adder = property(_GetAdder,
     doc='''Returns the user that added current user to the chat.
 
-    @type: L{User}
+    :type: `User`
     ''')
 
     def _SetAlertString(self, Value):
@@ -163,7 +173,7 @@ class Chat(Cached):
     doc='''Chat alert string. Only messages containing words from this string will cause a
     notification to pop up on the screen.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetApplicants(self):
@@ -172,7 +182,7 @@ class Chat(Cached):
     Applicants = property(_GetApplicants,
     doc='''Chat applicants.
 
-    @type: tuple of L{User}
+    :type: tuple of `User`
     ''')
 
     def _GetBlob(self):
@@ -181,7 +191,7 @@ class Chat(Cached):
     Blob = property(_GetBlob,
     doc='''Chat blob.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetBookmarked(self):
@@ -190,7 +200,7 @@ class Chat(Cached):
     Bookmarked = property(_GetBookmarked,
     doc='''Tells if this chat is bookmarked.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetDatetime(self):
@@ -200,7 +210,7 @@ class Chat(Cached):
     Datetime = property(_GetDatetime,
     doc='''Chat timestamp as datetime.
 
-    @type: datetime.datetime
+    :type: datetime.datetime
     ''')
 
     def _GetDescription(self):
@@ -212,7 +222,7 @@ class Chat(Cached):
     Description = property(_GetDescription, _SetDescription,
     doc='''Chat description.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetDialogPartner(self):
@@ -221,7 +231,7 @@ class Chat(Cached):
     DialogPartner = property(_GetDialogPartner,
     doc='''Skypename of the chat dialog partner.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetFriendlyName(self):
@@ -230,7 +240,7 @@ class Chat(Cached):
     FriendlyName = property(_GetFriendlyName,
     doc='''Friendly name of the chat.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetGuideLines(self):
@@ -242,7 +252,7 @@ class Chat(Cached):
     GuideLines = property(_GetGuideLines, _SetGuideLines,
     doc='''Chat guidelines.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetMemberObjects(self):
@@ -251,7 +261,7 @@ class Chat(Cached):
     MemberObjects = property(_GetMemberObjects,
     doc='''Chat members as member objects.
 
-    @type: tuple of L{ChatMember}
+    :type: tuple of `ChatMember`
     ''')
 
     def _GetMembers(self):
@@ -260,7 +270,7 @@ class Chat(Cached):
     Members = property(_GetMembers,
     doc='''Chat members.
 
-    @type: tuple of L{User}
+    :type: tuple of `User`
     ''')
 
     def _GetMessages(self):
@@ -269,7 +279,7 @@ class Chat(Cached):
     Messages = property(_GetMessages,
     doc='''All chat messages.
 
-    @type: tuple of L{ChatMessage}
+    :type: tuple of `ChatMessage`
     ''')
 
     def _GetMyRole(self):
@@ -278,7 +288,7 @@ class Chat(Cached):
     MyRole = property(_GetMyRole,
     doc='''My chat role in a public chat.
 
-    @type: L{Chat member role<enums.chatMemberRoleUnknown>}
+    :type: `enums`.chatMemberRole*
     ''')
 
     def _GetMyStatus(self):
@@ -287,7 +297,7 @@ class Chat(Cached):
     MyStatus = property(_GetMyStatus,
     doc='''My status in a public chat.
 
-    @type: L{My chat status<enums.chatStatusUnknown>}
+    :type: `enums`.chatStatus*
     ''')
 
     def _GetName(self):
@@ -296,7 +306,7 @@ class Chat(Cached):
     Name = property(_GetName,
     doc='''Chat name as used by Skype to identify this chat.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetOptions(self):
@@ -308,7 +318,7 @@ class Chat(Cached):
     Options = property(_GetOptions, _SetOptions,
     doc='''Chat options. A mask.
 
-    @type: L{Chat options<enums.chatOptionJoiningEnabled>}
+    :type: `enums`.chatOption*
     ''')
 
     def _GetPasswordHint(self):
@@ -317,7 +327,7 @@ class Chat(Cached):
     PasswordHint = property(_GetPasswordHint,
     doc='''Chat password hint.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetPosters(self):
@@ -326,7 +336,7 @@ class Chat(Cached):
     Posters = property(_GetPosters,
     doc='''Users who have posted messages to this chat.
 
-    @type: tuple of L{User}
+    :type: tuple of `User`
     ''')
 
     def _GetRecentMessages(self):
@@ -335,7 +345,7 @@ class Chat(Cached):
     RecentMessages = property(_GetRecentMessages,
     doc='''Most recent chat messages.
 
-    @type: tuple of L{ChatMessage}
+    :type: tuple of `ChatMessage`
     ''')
 
     def _GetStatus(self):
@@ -344,7 +354,7 @@ class Chat(Cached):
     Status = property(_GetStatus,
     doc='''Status.
 
-    @type: L{Chat status<enums.chsUnknown>}
+    :type: `enums`.chs*
     ''')
 
     def _GetTimestamp(self):
@@ -353,8 +363,9 @@ class Chat(Cached):
     Timestamp = property(_GetTimestamp,
     doc='''Chat timestamp.
 
-    @type: float
-    @see: L{Datetime}
+    :type: float
+
+    :see: `Datetime`
     ''')
 
     # Note. When TOPICXML is set, the value is stripped of XML tags and updated in TOPIC.
@@ -377,7 +388,7 @@ class Chat(Cached):
     Topic = property(_GetTopic, _SetTopic,
     doc='''Chat topic.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetTopicXML(self):
@@ -389,7 +400,7 @@ class Chat(Cached):
     TopicXML = property(_GetTopicXML, _SetTopicXML,
     doc='''Chat topic in XML format.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetType(self):
@@ -398,7 +409,7 @@ class Chat(Cached):
     Type = property(_GetType,
     doc='''Chat type.
 
-    @type: L{Chat type<enums.chatTypeUnknown>}
+    :type: `enums`.chatType*
     ''')
 
 
@@ -430,7 +441,7 @@ class ChatMessage(Cached):
     Body = property(_GetBody, _SetBody,
     doc='''Chat message body.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetChat(self):
@@ -439,7 +450,7 @@ class ChatMessage(Cached):
     Chat = property(_GetChat,
     doc='''Chat this message was posted on.
 
-    @type: L{Chat}
+    :type: `Chat`
     ''')
 
     def _GetChatName(self):
@@ -448,7 +459,7 @@ class ChatMessage(Cached):
     ChatName = property(_GetChatName,
     doc='''Name of the chat this message was posted on.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetDatetime(self):
@@ -458,7 +469,7 @@ class ChatMessage(Cached):
     Datetime = property(_GetDatetime,
     doc='''Chat message timestamp as datetime.
 
-    @type: datetime.datetime
+    :type: datetime.datetime
     ''')
 
     def _GetEditedBy(self):
@@ -467,7 +478,7 @@ class ChatMessage(Cached):
     EditedBy = property(_GetEditedBy,
     doc='''Skypename of the user who edited this message.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetEditedDatetime(self):
@@ -477,7 +488,7 @@ class ChatMessage(Cached):
     EditedDatetime = property(_GetEditedDatetime,
     doc='''Message editing timestamp as datetime.
 
-    @type: datetime.datetime
+    :type: datetime.datetime
     ''')
 
     def _GetEditedTimestamp(self):
@@ -486,7 +497,7 @@ class ChatMessage(Cached):
     EditedTimestamp = property(_GetEditedTimestamp,
     doc='''Message editing timestamp.
 
-    @type: float
+    :type: float
     ''')
 
     def _GetFromDisplayName(self):
@@ -495,7 +506,7 @@ class ChatMessage(Cached):
     FromDisplayName = property(_GetFromDisplayName,
     doc='''DisplayName of the message sender.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetFromHandle(self):
@@ -504,7 +515,7 @@ class ChatMessage(Cached):
     FromHandle = property(_GetFromHandle,
     doc='''Skypename of the message sender.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetId(self):
@@ -513,7 +524,7 @@ class ChatMessage(Cached):
     Id = property(_GetId,
     doc='''Chat message Id.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetIsEditable(self):
@@ -522,7 +533,7 @@ class ChatMessage(Cached):
     IsEditable = property(_GetIsEditable,
     doc='''Tells if message body is editable.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetLeaveReason(self):
@@ -531,7 +542,7 @@ class ChatMessage(Cached):
     LeaveReason = property(_GetLeaveReason,
     doc='''LeaveReason.
 
-    @type: L{Chat leave reason<enums.leaUnknown>}
+    :type: `enums`.lea*
     ''')
 
     def _SetSeen(self, Value):
@@ -545,8 +556,9 @@ class ChatMessage(Cached):
     Seen = property(fset=_SetSeen,
     doc='''Marks a missed chat message as seen.
 
-    @type: bool
-    @deprecated: Extremely unpythonic, use L{MarkAsSeen} instead.
+    :type: bool
+
+    :deprecated: Extremely unpythonic, use `MarkAsSeen` instead.
     ''')
 
     def _GetSender(self):
@@ -555,16 +567,16 @@ class ChatMessage(Cached):
     Sender = property(_GetSender,
     doc='''Sender of the chat message.
 
-    @type: L{User}
+    :type: `User`
     ''')
 
     def _GetStatus(self):
         return str(self._Property('STATUS'))
 
     Status = property(_GetStatus,
-    doc='''Status of the chat messsage.
+    doc='''Status of the chat message.
 
-    @type: L{Chat message status<enums.cmsUnknown>}
+    :type: `enums`.cms*
     ''')
 
     def _GetTimestamp(self):
@@ -573,8 +585,9 @@ class ChatMessage(Cached):
     Timestamp = property(_GetTimestamp,
     doc='''Chat message timestamp.
 
-    @type: float
-    @see: L{Datetime}
+    :type: float
+
+    :see: `Datetime`
     ''')
 
     def _GetType(self):
@@ -583,7 +596,7 @@ class ChatMessage(Cached):
     Type = property(_GetType,
     doc='''Type of chat message.
 
-    @type: L{Chat message type<enums.cmeUnknown>}
+    :type: `enums`.cme*
     ''')
 
     def _GetUsers(self):
@@ -592,7 +605,7 @@ class ChatMessage(Cached):
     Users = property(_GetUsers,
     doc='''Users added to the chat.
 
-    @type: tuple of L{User}
+    :type: tuple of `User`
     ''')
 
 
@@ -616,10 +629,12 @@ class ChatMember(Cached):
     def CanSetRoleTo(self, Role):
         '''Checks if the new role can be applied to the member.
 
-        @param Role: New chat member role.
-        @type Role: L{Chat member role<enums.chatMemberRoleUnknown>}
-        @return: True if the new role can be applied, False otherwise.
-        @rtype: bool
+        :Parameters:
+          Role : `enums`.chatMemberRole*
+            New chat member role.
+
+        :return: True if the new role can be applied, False otherwise.
+        :rtype: bool
         '''
         return (self._Alter('CANSETROLETO', Role) == 'TRUE')
 
@@ -629,7 +644,7 @@ class ChatMember(Cached):
     Chat = property(_GetChat,
     doc='''Chat this member belongs to.
 
-    @type: L{Chat}
+    :type: `Chat`
     ''')
 
     def _GetHandle(self):
@@ -638,7 +653,7 @@ class ChatMember(Cached):
     Handle = property(_GetHandle,
     doc='''Member Skypename.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetId(self):
@@ -647,7 +662,7 @@ class ChatMember(Cached):
     Id = property(_GetId,
     doc='''Chat member Id.
 
-    @type: int
+    :type: int
     ''')
 
     def _GetIsActive(self):
@@ -656,7 +671,7 @@ class ChatMember(Cached):
     IsActive = property(_GetIsActive,
     doc='''Member activity status.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetRole(self):
@@ -668,5 +683,5 @@ class ChatMember(Cached):
     Role = property(_GetRole, _SetRole,
     doc='''Chat Member role.
 
-    @type: L{Chat member role<enums.chatMemberRoleUnknown>}
+    :type: `enums`.chatMemberRole*
     ''')

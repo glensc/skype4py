@@ -1,24 +1,26 @@
 '''
-Low level Skype for Linux interface implemented
-using python-dbus package.
+Low level *Skype for Linux* interface implemented using *python-dbus* package.
 
-This module handles the options that you can pass to L{Skype.__init__<skype.Skype.__init__>}
-for Linux machines when the transport is set to DBus. See below.
+This module handles the options that you can pass to `Skype.__init__`
+for Linux machines when the transport is set to *DBus*. See below.
 
-@newfield option: Option, Options
+- ``Bus`` (``dbus.Bus``) - DBus bus object as returned by python-dbus package.
+  If not specified, private session bus is created and used. See also the
+  ``MainLoop`` option.
+  
+- ``MainLoop`` - DBus mainloop object. Use only without specifying the ``Bus``
+  option (if you need, pass the mainloop object to the bus constructor). If
+  neither ``Bus`` or ``MainLoop`` are specified, glib mainloop is used. In such
+  case, the mainloop is automatically run on a separate thread upon attaching
+  to the Skype client. If you want to use glib mainloop but you want to run the
+  loop yourself (for example because your GUI toolkit does it for you, like
+  *PyGTK* does), pass the ``dbus.mainloop.glib.DBusGMainLoop`` object as the
+  ``MainLoop`` option.
 
-@option: C{Bus} DBus bus object as returned by python-dbus package.
-If not specified, private session bus is created and used. See also C{MainLoop}.
-@option: C{MainLoop} DBus mainloop object. Use only without specifying the C{Bus}
-(if you use C{Bus}, pass the mainloop to the bus constructor). If neither C{Bus} or
-C{MainLoop} is specified, glib mainloop is used. In such case, the mainloop is
-also run on a separate thread upon attaching to Skype. If you want to use glib
-mainloop but you want to run the loop yourself (for example because your GUI toolkit
-does it for you), pass C{dbus.mainloop.glib.DBusGMainLoop()} object as C{MainLoop}
-parameter.
-
-@requires: Skype for Linux 2.0 (beta) or newer.
+:requires: Skype for Linux 2.0 (beta) or newer.
 '''
+__docformat__ = 'restructuredtext en'
+
 
 import sys
 import threading
@@ -34,7 +36,7 @@ from Skype4Py.utils import cndexp
 __all__ = ['SkypeAPI']
 
 
-if hasattr(sys, 'setup'):
+if getattr(sys, 'skype4py_setup', False):
     # we get here if we're building docs; to let the module import without
     # exceptions, we emulate the dbus module using a class:
     class dbus(object):
@@ -83,8 +85,7 @@ class SkypeAPI(SkypeAPIBase):
         if self.bus is None:
             from dbus import SessionBus
             self.bus = SessionBus(private=True, mainloop=mainloop)
-        if opts:
-            raise TypeError('Unexpected parameter(s): %s' % ', '.join(opts.keys()))
+        self.finalize_opts(opts)
 
     def run(self):
         self.dprint('thread started')

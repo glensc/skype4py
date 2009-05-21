@@ -1,5 +1,7 @@
-'''Skype settings.
+'''Skype client settings.
 '''
+__docformat__ = 'restructuredtext en'
+
 
 import sys
 import weakref
@@ -8,25 +10,28 @@ from utils import *
 
 
 class Settings(object):
-    '''Represents Skype settings. Access using L{Skype.Settings<skype.Skype.Settings>}.
+    '''Represents Skype settings. Access using `skype.Skype.Settings`.
     '''
 
     def __init__(self, Skype):
         '''__init__.
 
-        @param Skype: Skype
-        @type Skype: L{Skype}
+        :Parameters:
+          Skype : `Skype`
+            Skype
         '''
         self._SkypeRef = weakref.ref(Skype)
 
     def Avatar(self, Id=1, Set=None):
         '''Sets user avatar picture from file.
 
-        @param Id: Optional avatar Id.
-        @type Id: int
-        @param Set: New avatar file name.
-        @type Set: str
-        @deprecated: Use L{LoadAvatarFromFile} instead.
+        :Parameters:
+          Id : int
+            Optional avatar Id.
+          Set : str
+            New avatar file name.
+
+        :deprecated: Use `LoadAvatarFromFile` instead.
         '''
         from warnings import warn
         warn('Settings.Avatar: Use Settings.LoadAvatarFromFile instead.', DeprecationWarning, stacklevel=2)
@@ -37,10 +42,11 @@ class Settings(object):
     def LoadAvatarFromFile(self, Filename, AvatarId=1):
         '''Loads user avatar picture from file.
 
-        @param Filename: Name of the avatar file.
-        @type Filename: str
-        @param AvatarId: Optional avatar Id.
-        @type AvatarId: int
+        :Parameters:
+          Filename : str
+            Name of the avatar file.
+          AvatarId : int
+            Optional avatar Id.
         '''
         s = 'AVATAR %s %s' % (AvatarId, path2unicode(Filename))
         self._Skype._DoCommand('SET %s' % s, s)
@@ -53,12 +59,14 @@ class Settings(object):
     def RingTone(self, Id=1, Set=None):
         '''Returns/sets a ringtone.
 
-        @param Id: Ringtone Id
-        @type Id: int
-        @param Set: Path to new ringtone or None if the current path should be queried.
-        @type Set: str
-        @return: Current path if Set=None, None otherwise.
-        @rtype: unicode or None
+        :Parameters:
+          Id : int
+            Ringtone Id
+          Set : str
+            Path to new ringtone or None if the current path should be queried.
+
+        :return: Current path if Set=None, None otherwise.
+        :rtype: unicode or None
         '''
         if Set is None:
             return self._Skype._Property('RINGTONE', Id)
@@ -67,13 +75,15 @@ class Settings(object):
     def RingToneStatus(self, Id=1, Set=None):
         '''Enables/disables a ringtone.
 
-        @param Id: Ringtone Id
-        @type Id: int
-        @param Set: True/False if the ringtone should be enabled/disabled or None if the current
-        status should be queried.
-        @type Set: bool
-        @return: Current status if Set=None, None otherwise.
-        @rtype: bool
+        :Parameters:
+          Id : int
+            Ringtone Id
+          Set : bool
+            True/False if the ringtone should be enabled/disabled or None if the current status
+            should be queried.
+
+        :return: Current status if Set=None, None otherwise.
+        :rtype: bool
         '''
         if Set is None:
             return (self._Skype._Property('RINGTONE', Id, 'STATUS') == 'ON')
@@ -82,10 +92,11 @@ class Settings(object):
     def SaveAvatarToFile(self, Filename, AvatarId=1):
         '''Saves user avatar picture to file.
 
-        @param Filename: Destination path.
-        @type Filename: str
-        @param AvatarId: Avatar Id
-        @type AvatarId: int
+        :Parameters:
+          Filename : str
+            Destination path.
+          AvatarId : int
+            Avatar Id
         '''
         s = 'AVATAR %s %s' % (AvatarId, path2unicode(Filename))
         self._Skype._DoCommand('GET %s' % s, s)
@@ -107,9 +118,10 @@ class Settings(object):
     AEC = property(_GetAEC, _SetAEC,
     doc='''Automatic echo cancellation state.
 
-    @type: bool
-    @warning: Starting with Skype for Windows 3.6, this property has no effect.
-    It can still be set for backwards compatibility reasons.
+    :type: bool
+
+    :warning: Starting with Skype for Windows 3.6, this property has no effect. It can still be set
+              for backwards compatibility reasons.
     ''')
 
     def _GetAGC(self):
@@ -121,9 +133,10 @@ class Settings(object):
     AGC = property(_GetAGC, _SetAGC,
     doc='''Automatic gain control state.
 
-    @type: bool
-    @warning: Starting with Skype for Windows 3.6, this property has no effect.
-    It can still be set for backwards compatibility reasons.
+    :type: bool
+
+    :warning: Starting with Skype for Windows 3.6, this property has no effect. It can still be set
+              for backwards compatibility reasons.
     ''')
 
     def _GetAudioIn(self):
@@ -135,7 +148,7 @@ class Settings(object):
     AudioIn = property(_GetAudioIn, _SetAudioIn,
     doc='''Name of an audio input device.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetAudioOut(self):
@@ -147,7 +160,7 @@ class Settings(object):
     AudioOut = property(_GetAudioOut, _SetAudioOut,
     doc='''Name of an audio output device.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetAutoAway(self):
@@ -159,7 +172,7 @@ class Settings(object):
     AutoAway = property(_GetAutoAway, _SetAutoAway,
     doc='''Auto away status.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetLanguage(self):
@@ -171,7 +184,7 @@ class Settings(object):
     Language = property(_GetLanguage, _SetLanguage,
     doc='''Language of the Skype client as an ISO code.
 
-    @type: str
+    :type: str
     ''')
 
     def _GetPCSpeaker(self):
@@ -183,7 +196,7 @@ class Settings(object):
     PCSpeaker = property(_GetPCSpeaker, _SetPCSpeaker,
     doc='''PCSpeaker status.
 
-    @type: bool
+    :type: bool
     ''')
 
     def _GetRinger(self):
@@ -195,7 +208,7 @@ class Settings(object):
     Ringer = property(_GetRinger, _SetRinger,
     doc='''Name of a ringer device.
 
-    @type: unicode
+    :type: unicode
     ''')
 
     def _GetVideoIn(self):
@@ -207,5 +220,5 @@ class Settings(object):
     VideoIn = property(_GetVideoIn, _SetVideoIn,
     doc='''Name of a video input device.
 
-    @type: unicode
+    :type: unicode
     ''')
