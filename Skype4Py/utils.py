@@ -639,7 +639,7 @@ class Cached(object):
     def __new__(cls, Owner, Handle, *Args, **KwArgs):
         if cls._HandleCast is not None:
             Handle = cls._HandleCast(Handle)
-        key = cls, Handle
+        key = (cls, Handle)
         try:
             return Owner._ObjectCache[key]
         except KeyError:
@@ -647,6 +647,8 @@ class Cached(object):
             Owner._ObjectCache[key] = obj
             obj._Init(Owner, Handle, *Args, **KwArgs)
             return obj
+        except AttributeError:
+            raise TypeError('%s is not a cached objects owner' % repr(Owner))
             
     def _Init(self, Owner, Handle):
         '''Initializes the cached object. Receives all the arguments passed to the
