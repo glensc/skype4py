@@ -314,18 +314,19 @@ class Client(object):
 class PluginEvent(Cached):
     '''Represents an event displayed in Skype client's events pane.
     '''
+    _HandleCast = tounicode
 
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
-    def _Init(self, Id, Skype):
-        self._Skype = Skype
-        self._Id = tounicode(Id)
+    def _Init(self, Owner, Handle):
+        self._Skype = Owner
+        self._Id = Handle
 
     def Delete(self):
         '''Deletes the event from the events pane in the Skype client.
         '''
-        self._Skype._DoCommand('DELETE EVENT %s' % self._Id)
+        self._Skype._DoCommand('DELETE EVENT %s' % self.Id)
 
     def _GetId(self):
         return self._Id
@@ -340,13 +341,14 @@ class PluginEvent(Cached):
 class PluginMenuItem(Cached):
     '''Represents a menu item displayed in Skype client's "Do More" menus.
     '''
+    _HandleCast = tounicode
 
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
-    def _Init(self, Id, Skype, Caption=None, Hint=None, Enabled=None):
-        self._Skype = Skype
-        self._Id = tounicode(Id)
+    def _Init(self, Owner, Handle, Caption=None, Hint=None, Enabled=None):
+        self._Skype = Owner
+        self._Id = Handle
         self._CacheDict = {}
         if Caption is not None:
             self._CacheDict['CAPTION'] = tounicode(Caption)
@@ -358,13 +360,13 @@ class PluginMenuItem(Cached):
     def _Property(self, PropName, Set=None):
         if Set is None:
             return self._CacheDict[PropName]
-        self._Skype._Property('MENU_ITEM', self._Id, PropName, Set)
+        self._Skype._Property('MENU_ITEM', self.Id, PropName, Set)
         self._CacheDict[PropName] = unicode(Set)
 
     def Delete(self):
         '''Removes the menu item from the "Do More" menus.
         '''
-        self._Skype._DoCommand('DELETE MENU_ITEM %s' % self._Id)
+        self._Skype._DoCommand('DELETE MENU_ITEM %s' % self.Id)
 
     def _GetCaption(self):
         return self._Property('CAPTION')

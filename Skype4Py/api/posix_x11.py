@@ -332,13 +332,13 @@ class SkypeAPI(SkypeAPIBase):
                 raise SkypeAPIError('Skype attach timeout')
         finally:
             t.cancel()
-        command = Command(-1, 'NAME %s' % self.friendly_name, '', True, timeout)
+        command = Command('NAME %s' % self.friendly_name, '', True, timeout)
         self.send_command(command, True)
         if command.Reply != 'OK':
             self.win_skype = None
             self.set_attachment_status(apiAttachRefused)
             return
-        self.send_command(Command(-1, 'PROTOCOL %s' % self.protocol), True)
+        self.send_command(Command('PROTOCOL %s' % self.protocol), True)
         self.set_attachment_status(apiAttachSuccess)
 
     def is_running(self):

@@ -12,19 +12,20 @@ from user import *
 class Application(Cached):
     '''Represents an application in APP2APP protocol. Use `skype.Skype.Application` to instantiate.
     '''
+    _HandleCast = tounicode
 
     def __repr__(self):
         return '<%s with Name=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Name))
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('APPLICATION', self._Name, AlterName, Args)
+        return self._Skype._Alter('APPLICATION', self.Name, AlterName, Args)
 
-    def _Init(self, Name, Skype):
-        self._Name = tounicode(Name)
-        self._Skype = Skype
+    def _Init(self, Owner, Handle):
+        self._Skype = Owner
+        self._Handle = Handle
 
     def _Property(self, PropName, Set=None):
-        return self._Skype._Property('APPLICATION', self._Name, PropName, Set)
+        return self._Skype._Property('APPLICATION', self.Name, PropName, Set)
 
     def _Connect_ApplicationStreams(self, App, Streams):
         if App == self:
@@ -65,12 +66,12 @@ class Application(Cached):
     def Create(self):
         '''Creates the APP2APP application in Skype client.
         '''
-        self._Skype._DoCommand('CREATE APPLICATION %s' % self._Name)
+        self._Skype._DoCommand('CREATE APPLICATION %s' % self.Name)
 
     def Delete(self):
         '''Deletes the APP2APP application in Skype client.
         '''
-        self._Skype._DoCommand('DELETE APPLICATION %s' % self._Name)
+        self._Skype._DoCommand('DELETE APPLICATION %s' % self.Name)
 
     def SendDatagram(self, Text, Streams=None):
         '''Sends datagram to application streams.
@@ -88,7 +89,7 @@ class Application(Cached):
             s.SendDatagram(Text)
 
     def _GetConnectableUsers(self):
-        return gen(User(x, self._Skype) for x in split(self._Property('CONNECTABLE')))
+        return gen(User(self._Skype, x) for x in split(self._Property('CONNECTABLE')))
 
     ConnectableUsers = property(_GetConnectableUsers,
     doc='''All connectible users.
@@ -97,7 +98,7 @@ class Application(Cached):
     ''')
 
     def _GetConnectingUsers(self):
-        return gen(User(x, self._Skype) for x in split(self._Property('CONNECTING')))
+        return gen(User(self._Skype, x) for x in split(self._Property('CONNECTING')))
 
     ConnectingUsers = property(_GetConnectingUsers,
     doc='''All users connecting at the moment.
@@ -106,7 +107,7 @@ class Application(Cached):
     ''')
 
     def _GetName(self):
-        return self._Name
+        return self._Handle
 
     Name = property(_GetName,
     doc='''Name of the application.
@@ -115,7 +116,7 @@ class Application(Cached):
     ''')
 
     def _GetReceivedStreams(self):
-        return gen(ApplicationStream(x.split('=')[0], self) for x in split(self._Property('RECEIVED')))
+        return gen(ApplicationStream(self, x.split('=')[0]) for x in split(self._Property('RECEIVED')))
 
     ReceivedStreams = property(_GetReceivedStreams,
     doc='''All streams that received data and can be read.
@@ -124,7 +125,7 @@ class Application(Cached):
     ''')
 
     def _GetSendingStreams(self):
-        return gen(ApplicationStream(x.split('=')[0], self) for x in split(self._Property('SENDING')))
+        return gen(ApplicationStream(self, x.split('=')[0]) for x in split(self._Property('SENDING')))
 
     SendingStreams = property(_GetSendingStreams,
     doc='''All streams that send data and at the moment.
@@ -133,7 +134,7 @@ class Application(Cached):
     ''')
 
     def _GetStreams(self):
-        return gen(ApplicationStream(x, self) for x in split(self._Property('STREAMS')))
+        return gen(ApplicationStream(self, x) for x in split(self._Property('STREAMS')))
 
     Streams = property(_GetStreams,
     doc='''All currently connected application streams.
@@ -145,6 +146,7 @@ class Application(Cached):
 class ApplicationStream(Cached):
     '''Represents an application stream in APP2APP protocol.
     '''
+    _HandleCast = str
 
     def __len__(self):
         return self.DataLength
@@ -152,14 +154,14 @@ class ApplicationStream(Cached):
     def __repr__(self):
         return '<%s with Handle=%s, Application=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Handle), repr(self.Application))
 
-    def _Init(self, Handle, Application):
-        self._Handle = str(Handle)
-        self._Application = Application
+    def _Init(self, Owner, Handle, App):
+        self._Handle = Handle
+        self._App = App
 
     def Disconnect(self):
         '''Disconnects the stream.
         '''
-        self._Application._Alter('DISCONNECT', self._Handle)
+        self.Application._Alter('DISCONNECT', self.Handle)
 
     close = Disconnect
 
@@ -169,7 +171,7 @@ class ApplicationStream(Cached):
         :return: Read data or an empty string if none were available.
         :rtype: unicode
         '''
-        return self._Application._Alter('READ', self._Handle)
+        return self.Application._Alter('READ', self.Handle)
 
     read = Read
 
@@ -180,7 +182,7 @@ class ApplicationStream(Cached):
           Text : unicode
             Datagram to send.
         '''
-        self._Application._Alter('DATAGRAM', '%s %s' % (self._Handle, tounicode(Text)))
+        self.Application._Alter('DATAGRAM', '%s %s' % (self.Handle, tounicode(Text)))
 
     def Write(self, Text):
         '''Writes data to stream.
@@ -189,12 +191,12 @@ class ApplicationStream(Cached):
           Text : unicode
             Data to send.
         '''
-        self._Application._Alter('WRITE', '%s %s' % (self._Handle, tounicode(Text)))
+        self.Application._Alter('WRITE', '%s %s' % (self.Handle, tounicode(Text)))
 
     write = Write
 
     def _GetApplication(self):
-        return self._Application
+        return self._App
 
     Application = property(_GetApplication,
     doc='''Application this stream belongs to.
@@ -203,7 +205,7 @@ class ApplicationStream(Cached):
     ''')
 
     def _GetApplicationName(self):
-        return self._Application.Name
+        return self.Application.Name
 
     ApplicationName = property(_GetApplicationName,
     doc='''Name of the application this stream belongs to. Same as ``ApplicationStream.Application.Name``.
@@ -212,9 +214,9 @@ class ApplicationStream(Cached):
     ''')
 
     def _GetDataLength_GetStreamLength(self, Type):
-        for s in split(self._Application._Property(Type)):
+        for s in split(self.Application._Property(Type)):
             h, i = s.split('=')
-            if h == self._Handle:
+            if h == self.Handle:
                 return int(i)
 
     def _GetDataLength(self):
@@ -242,7 +244,7 @@ class ApplicationStream(Cached):
     ''')
 
     def _GetPartnerHandle(self):
-        return self._Handle.split(':')[0]
+        return self.Handle.split(':')[0]
 
     PartnerHandle = property(_GetPartnerHandle,
     doc='''Skypename of the user this stream is connected to.

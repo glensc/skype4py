@@ -11,19 +11,20 @@ from errors import SkypeError
 class Chat(Cached):
     '''Represents a Skype chat.
     '''
+    _HandleCast = str
 
     def __repr__(self):
         return '<%s with Name=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Name))
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('CHAT', self._Name, AlterName, Args, 'ALTER CHAT %s' % AlterName)
+        return self._Skype._Alter('CHAT', self.Name, AlterName, Args, 'ALTER CHAT %s' % AlterName)
 
-    def _Init(self, Name, Skype):
-        self._Skype = Skype
-        self._Name = str(Name)
+    def _Init(self, Owner, Handle):
+        self._Skype = Owner
+        self._Name = Handle
 
     def _Property(self, PropName, Value=None, Cache=True):
-        return self._Skype._Property('CHAT', self._Name, PropName, Value, Cache)
+        return self._Skype._Property('CHAT', self.Name, PropName, Value, Cache)
 
     def AcceptAdd(self):
         '''Accepts a shared group add request.
@@ -94,7 +95,7 @@ class Chat(Cached):
     def OpenWindow(self):
         '''Opens the chat window.
         '''
-        self._Skype.Client.OpenDialog('CHAT', self._Name)
+        self._Skype.Client.OpenDialog('CHAT', self.Name)
 
     def SendMessage(self, MessageText):
         '''Sends a chat message.
@@ -106,7 +107,7 @@ class Chat(Cached):
         :return: Message object
         :rtype: `ChatMessage`
         '''
-        return ChatMessage(chop(self._Skype._DoCommand('CHATMESSAGE %s %s' % (self._Name,
+        return ChatMessage(chop(self._Skype._DoCommand('CHATMESSAGE %s %s' % (self.Name,
             tounicode(MessageText))), 2)[1], self._Skype)
 
     def SetPassword(self, Password, Hint=''):
@@ -128,7 +129,7 @@ class Chat(Cached):
         self._Alter('UNBOOKMARK')
 
     def _GetActiveMembers(self):
-        return gen(User(x, self._Skype) for x in split(self._Property('ACTIVEMEMBERS', Cache=False)))
+        return gen(User(self._Skype, x) for x in split(self._Property('ACTIVEMEMBERS', Cache=False)))
 
     ActiveMembers = property(_GetActiveMembers,
     doc='''Active members of a chat.
@@ -158,7 +159,7 @@ class Chat(Cached):
     ''')
 
     def _GetAdder(self):
-        return User(self._Property('ADDER'), self._Skype)
+        return User(self._Skype, self._Property('ADDER'))
 
     Adder = property(_GetAdder,
     doc='''Returns the user that added current user to the chat.
@@ -177,7 +178,7 @@ class Chat(Cached):
     ''')
 
     def _GetApplicants(self):
-        return gen(User(x, self._Skype) for x in split(self._Property('APPLICANTS')))
+        return gen(User(self._Skype, x) for x in split(self._Property('APPLICANTS')))
 
     Applicants = property(_GetApplicants,
     doc='''Chat applicants.
@@ -265,7 +266,7 @@ class Chat(Cached):
     ''')
 
     def _GetMembers(self):
-        return gen(User(x, self._Skype) for x in split(self._Property('MEMBERS')))
+        return gen(User(self._Skype, x) for x in split(self._Property('MEMBERS')))
 
     Members = property(_GetMembers,
     doc='''Chat members.
@@ -331,7 +332,7 @@ class Chat(Cached):
     ''')
 
     def _GetPosters(self):
-        return gen(User(x, self._Skype) for x in split(self._Property('POSTERS')))
+        return gen(User(self._Skype, x) for x in split(self._Property('POSTERS')))
 
     Posters = property(_GetPosters,
     doc='''Users who have posted messages to this chat.
@@ -416,21 +417,22 @@ class Chat(Cached):
 class ChatMessage(Cached):
     '''Represents a single chat message.
     '''
+    _HandleCast = int
 
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
-    def _Init(self, Id, Skype):
-        self._Skype = Skype
-        self._Id = int(Id)
+    def _Init(self, Owner, Handle):
+        self._Skype = Owner
+        self._Id = Handle
 
     def _Property(self, PropName, Value=None, Cache=True):
-        return self._Skype._Property('CHATMESSAGE', self._Id, PropName, Value, Cache)
+        return self._Skype._Property('CHATMESSAGE', self.Id, PropName, Value, Cache)
 
     def MarkAsSeen(self):
         '''Marks a missed chat message as seen.
         '''
-        self._Skype._DoCommand('SET CHATMESSAGE %d SEEN' % self._Id, 'CHATMESSAGE %d STATUS READ' % self._Id)
+        self._Skype._DoCommand('SET CHATMESSAGE %d SEEN' % self.Id, 'CHATMESSAGE %d STATUS READ' % self.Id)
 
     def _GetBody(self):
         return self._Property('BODY')
@@ -562,7 +564,7 @@ class ChatMessage(Cached):
     ''')
 
     def _GetSender(self):
-        return User(self.FromHandle, self._Skype)
+        return User(self._Skype, self.FromHandle)
 
     Sender = property(_GetSender,
     doc='''Sender of the chat message.
@@ -612,19 +614,20 @@ class ChatMessage(Cached):
 class ChatMember(Cached):
     '''Represents a member of a public chat.
     '''
+    _HandleCast = int
 
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('CHATMEMBER', self._Id, AlterName, Args, 'ALTER CHATMEMBER %s' % AlterName)
+        return self._Skype._Alter('CHATMEMBER', self.Id, AlterName, Args, 'ALTER CHATMEMBER %s' % AlterName)
 
-    def _Init(self, Id, Skype):
-        self._Skype = Skype
-        self._Id = int(Id)
+    def _Init(self, Owner, Handle):
+        self._Skype = Owner
+        self._Id = Handle
 
     def _Property(self, PropName, Value=None, Cache=True):
-        return self._Skype._Property('CHATMEMBER', self._Id, PropName, Value, Cache)
+        return self._Skype._Property('CHATMEMBER', self.Id, PropName, Value, Cache)
 
     def CanSetRoleTo(self, Role):
         '''Checks if the new role can be applied to the member.

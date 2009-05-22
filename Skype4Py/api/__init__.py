@@ -29,8 +29,8 @@ class Command(object):
     To send a command to Skype, use `Skype.SendCommand`.
     '''
 
-    def __init__(self, Id, Command, Expected=u'', Blocking=False, Timeout=30000):
-        '''Use `Skype.Command` to instantiate the object instead.
+    def __init__(self, Command, Expected=u'', Blocking=False, Timeout=30000, Id=-1):
+        '''Use `Skype.Command` to instantiate the object instead of doing it directly.
         '''
 
         self.Blocking = Blocking
@@ -64,8 +64,8 @@ class Command(object):
         :type: int'''
 
     def __repr__(self):
-        return '<%s with Id=%s, Command=%s, Blocking=%s, Reply=%s>' % \
-            (object.__repr__(self)[1:-1], self.Id, repr(self.Command), self.Blocking, repr(self.Reply))
+        return '<%s with Command=%s, Blocking=%s, Reply=%s, Id=%s>' % \
+            (object.__repr__(self)[1:-1], repr(self.Command), self.Blocking, repr(self.Reply), self.Id)
 
     def timeout2float(self):
         '''A wrapper for `api.timeout2float` function. Returns the converted

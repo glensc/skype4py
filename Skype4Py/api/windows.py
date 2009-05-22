@@ -112,7 +112,7 @@ class SkypeAPI(SkypeAPIBase):
     def set_friendly_name(self, friendly_name):
         SkypeAPIBase.set_friendly_name(self, friendly_name)
         if self.skype:
-            self.send_command(Command(-1, 'NAME %s' % friendly_name))
+            self.send_command(Command('NAME %s' % friendly_name))
 
     def get_foreground_window(self):
         fhwnd = windll.user32.GetForegroundWindow()
@@ -173,7 +173,7 @@ class SkypeAPI(SkypeAPIBase):
                 windll.user32.SetForegroundWindow(fhwnd)
         # check if we got the Skype window's hwnd
         if self.skype:
-            self.send_command(Command(-1, 'PROTOCOL %s' % self.protocol))
+            self.send_command(Command('PROTOCOL %s' % self.protocol))
         elif not self.wait:
             raise SkypeAPIError('Skype attach timeout')
 

@@ -68,6 +68,8 @@ class Skype(EventHandlingBase):
 
         self._API = SkypeAPI(Options)
         self._API.register_handler(self._Handler)
+        
+        Cached._CreateOwner(self)
 
         self._Cache = True
         self.ResetCache()
@@ -96,7 +98,7 @@ class Skype(EventHandlingBase):
                 object_type, object_id, prop_name, value = [a] + chop(b, 2)
                 self._CacheDict[str(object_type), str(object_id), str(prop_name)] = value
                 if object_type == 'USER':
-                    o = User(object_id, self)
+                    o = User(self, object_id)
                     if prop_name == 'ONLINESTATUS':
                         self._CallEventHandler('OnlineStatus', o, str(value))
                     elif prop_name == 'MOOD_TEXT' or prop_name == 'RICH_MOOD_TEXT':
@@ -104,7 +106,7 @@ class Skype(EventHandlingBase):
                     elif prop_name == 'RECEIVEDAUTHREQUEST':
                         self._CallEventHandler('UserAuthorizationRequestReceived', o)
                 elif object_type == 'CALL':
-                    o = Call(object_id, self)
+                    o = Call(self, object_id)
                     if prop_name == 'STATUS':
                         self._CallEventHandler('CallStatus', o, str(value))
                     elif prop_name == 'SEEN':
@@ -122,54 +124,54 @@ class Skype(EventHandlingBase):
                     elif prop_name == 'VIDEO_RECEIVE_STATUS':
                         self._CallEventHandler('CallVideoReceiveStatusChanged', o, str(value))
                 elif object_type == 'CHAT':
-                    o = Chat(object_id, self)
+                    o = Chat(self, object_id)
                     if prop_name == 'MEMBERS':
-                        self._CallEventHandler('ChatMembersChanged', o, gen(User(x, self) for x in split(value)))
+                        self._CallEventHandler('ChatMembersChanged', o, gen(User(self, x) for x in split(value)))
                     if prop_name in ('OPENED', 'CLOSED'):
                         self._CallEventHandler('ChatWindowState', o, (prop_name == 'OPENED'))
                 elif object_type == 'CHATMEMBER':
-                    o = ChatMember(object_id, self)
+                    o = ChatMember(self, object_id)
                     if prop_name == 'ROLE':
                         self._CallEventHandler('ChatMemberRoleChanged', o, str(value))
                 elif object_type == 'CHATMESSAGE':
-                    o = ChatMessage(object_id, self)
+                    o = ChatMessage(self, object_id)
                     if prop_name == 'STATUS':
                         self._CallEventHandler('MessageStatus', o, str(value))
                 elif object_type == 'APPLICATION':
-                    o = Application(object_id, self)
+                    o = Application(self, object_id)
                     if prop_name == 'CONNECTING':
-                        self._CallEventHandler('ApplicationConnecting', o, gen(User(x, self) for x in split(value)))
+                        self._CallEventHandler('ApplicationConnecting', o, gen(User(self, x) for x in split(value)))
                     elif prop_name == 'STREAMS':
-                        self._CallEventHandler('ApplicationStreams', o, gen(ApplicationStream(x, o) for x in split(value)))
+                        self._CallEventHandler('ApplicationStreams', o, gen(ApplicationStream(o, x) for x in split(value)))
                     elif prop_name == 'DATAGRAM':
                         handle, text = chop(value)
-                        self._CallEventHandler('ApplicationDatagram', o, ApplicationStream(handle, o), text)
+                        self._CallEventHandler('ApplicationDatagram', o, ApplicationStream(o, handle), text)
                     elif prop_name == 'SENDING':
-                        self._CallEventHandler('ApplicationSending', o, gen(ApplicationStream(x.split('=')[0], o) for x in split(value)))
+                        self._CallEventHandler('ApplicationSending', o, gen(ApplicationStream(o, x.split('=')[0]) for x in split(value)))
                     elif prop_name == 'RECEIVED':
-                        self._CallEventHandler('ApplicationReceiving', o, gen(ApplicationStream(x.split('=')[0], o) for x in split(value)))
+                        self._CallEventHandler('ApplicationReceiving', o, gen(ApplicationStream(o, x.split('=')[0]) for x in split(value)))
                 elif object_type == 'GROUP':
-                    o = Group(object_id, self)
+                    o = Group(self, object_id)
                     if prop_name == 'VISIBLE':
                         self._CallEventHandler('GroupVisible', o, (value == 'TRUE'))
                     elif prop_name == 'EXPANDED':
                         self._CallEventHandler('GroupExpanded', o, (value == 'TRUE'))
                     elif prop_name == 'USERS':
-                        self._CallEventHandler('GroupUsers', o, gen(User(x, self) for x in split(value, ', ')))
+                        self._CallEventHandler('GroupUsers', o, gen(User(self, x) for x in split(value, ', ')))
                 elif object_type == 'SMS':
-                    o = SmsMessage(object_id, self)
+                    o = SmsMessage(self, object_id)
                     if prop_name == 'STATUS':
                         self._CallEventHandler('SmsMessageStatusChanged', o, str(value))
                     elif prop_name == 'TARGET_STATUSES':
                         for t in split(value, ', '):
                             number, status = t.split('=')
-                            self._CallEventHandler('SmsTargetStatusChanged', SmsTarget((number, o)), str(status))
+                            self._CallEventHandler('SmsTargetStatusChanged', SmsTarget(o, number), str(status))
                 elif object_type == 'FILETRANSFER':
-                    o = FileTransfer(object_id, self)
+                    o = FileTransfer(self, object_id)
                     if prop_name == 'STATUS':
                         self._CallEventHandler('FileTransferStatusChanged', o, str(value))
                 elif object_type == 'VOICEMAIL':
-                    o = Voicemail(object_id, self)
+                    o = Voicemail(self, object_id)
                     if prop_name == 'STATUS':
                         self._CallEventHandler('VoicemailStatus', o, str(value))
             elif a in ('PROFILE', 'PRIVILEGE'):
@@ -205,7 +207,7 @@ class Skype(EventHandlingBase):
             elif a == 'EVENT':
                 object_id, prop_name, value = chop(b, 2)
                 if prop_name == 'CLICKED':
-                    self._CallEventHandler('PluginEventClicked', PluginEvent(object_id, self))
+                    self._CallEventHandler('PluginEventClicked', PluginEvent(self, object_id))
             elif a == 'MENU_ITEM':
                 object_id, prop_name, value = chop(b, 2)
                 if prop_name == 'CLICKED':
@@ -215,14 +217,14 @@ class Skype(EventHandlingBase):
                         users = ()
                         context_id = u''
                         if context in (pluginContextContact, pluginContextCall, pluginContextChat):
-                            users = gen(User(x, self) for x in split(value[:i-1], ', '))
+                            users = gen(User(self, x) for x in split(value[:i-1], ', '))
                         if context in (pluginContextCall, pluginContextChat):
                             j = value.rfind('CONTEXT_ID ')
                             if j >= 0:
                                 context_id = str(chop(value[j+11:])[0])
                                 if context == pluginContextCall:
                                     context_id = int(context_id)
-                        self._CallEventHandler('PluginMenuItemClicked', PluginMenuItem(object_id, self), users, str(context), context_id)
+                        self._CallEventHandler('PluginMenuItemClicked', PluginMenuItem(self, object_id), users, str(context), context_id)
             elif a == 'WALLPAPER':
                 self._CallEventHandler('WallpaperChanged', unicode2path(b))
         elif Mode == 'rece':
@@ -235,7 +237,7 @@ class Skype(EventHandlingBase):
                 raise SkypeAPIError('Skype connection refused')
 
     def _DoCommand(self, Cmd, ExpectedReply=''):
-        command = Command(-1, Cmd, ExpectedReply, True, self.Timeout)
+        command = Command(Cmd, ExpectedReply, True, self.Timeout)
         self.SendCommand(command)
         a, b = chop(command.Reply)
         if a == 'ERROR':
@@ -276,13 +278,13 @@ class Skype(EventHandlingBase):
                 self._CacheDict[h] = value
 
     def _Alter(self, ObjectType, ObjectId, AlterName, Args=None, Reply=None):
-        com = 'ALTER %s %s %s' % (str(ObjectType), str(ObjectId), str(AlterName))
+        cmd = 'ALTER %s %s %s' % (str(ObjectType), str(ObjectId), str(AlterName))
         if Reply is None:
-            Reply = com
+            Reply = cmd
         if Args is not None:
-            com = '%s %s' % (com, tounicode(Args))
-        reply = self._DoCommand(com, Reply)
-        arg = com.split()
+            cmd = '%s %s' % (cmd, tounicode(Args))
+        reply = self._DoCommand(cmd, Reply)
+        arg = cmd.split()
         while arg:
             try:
                 a, b = chop(reply)
@@ -295,10 +297,11 @@ class Skype(EventHandlingBase):
         return reply
 
     def _Search(self, ObjectType, Args=None):
-        com = 'SEARCH %s' % ObjectType
+        cmd = 'SEARCH %s' % ObjectType
         if Args is not None:
-            com = '%s %s' % (com, Args)
-        return tuple(split(chop(self._DoCommand(com))[-1], ', '))
+            cmd = '%s %s' % (cmd, Args)
+        # It is safe to do str() as none of the searchable objects use non-ascii chars.
+        return split(chop(str(self._DoCommand(cmd)))[-1], ', ')
 
     def ApiSecurityContextEnabled(self, Context):
         '''Queries if an API security context for Internet Explorer is enabled.
@@ -330,7 +333,7 @@ class Skype(EventHandlingBase):
         if Command in self._AsyncSearchUsersCommands:
             self._AsyncSearchUsersCommands.remove(Command)
             self._CallEventHandler('AsyncSearchUsersFinished', Command.Id,
-                gen(User(x, self) for x in split(chop(Command.Reply)[-1], ', ')))
+                gen(User(self, x) for x in split(chop(Command.Reply)[-1], ', ')))
             if len(self._AsyncSearchUsersCommands) == 0:
                 self.UnregisterEventHandler('Reply', self._AsyncSearchUsersReplyHandler)
                 del self._AsyncSearchUsersCommands
@@ -349,7 +352,7 @@ class Skype(EventHandlingBase):
         if not hasattr(self, '_AsyncSearchUsersCommands'):
             self._AsyncSearchUsersCommands = []
             self.RegisterEventHandler('Reply', self._AsyncSearchUsersReplyHandler)
-        command = Command(-1, 'SEARCH USERS %s' % tounicode(Target), 'USERS', False, self.Timeout)
+        command = Command('SEARCH USERS %s' % tounicode(Target), 'USERS', False, self.Timeout)
         self._AsyncSearchUsersCommands.append(command)
         self.SendCommand(command)
         # return pCookie - search identifier
@@ -382,7 +385,7 @@ class Skype(EventHandlingBase):
         :return: Call object.
         :rtype: `call.Call`
         '''
-        o = Call(Id, self)
+        o = Call(self, Id)
         o.Status # Test if such a call exists.
         return o
 
@@ -396,7 +399,7 @@ class Skype(EventHandlingBase):
         :return: Call objects.
         :rtype: tuple of `call.Call`
         '''
-        return gen(Call(x, self) for x in self._Search('CALLS', Target))
+        return gen(Call(self, x) for x in self._Search('CALLS', Target))
 
     def _ChangeUserStatus_UserStatus(self, Status):
         if Status.upper() == self._ChangeUserStatus_Status:
@@ -432,7 +435,7 @@ class Skype(EventHandlingBase):
         :return: A chat object.
         :rtype: `chat.Chat`
         '''
-        o = Chat(Name, self)
+        o = Chat(self, Name)
         o.Status # Tests if such a chat really exists.
         return o
 
@@ -482,7 +485,7 @@ class Skype(EventHandlingBase):
         :see: `SendCommand`
         '''
         from API import Command as COMMAND
-        return COMMAND(Id, Command, Reply, Block, Timeout)
+        return COMMAND(Command, Reply, Block, Timeout, Id)
 
     def Conference(self, Id=0):
         '''Queries a call conference object.
@@ -494,9 +497,9 @@ class Skype(EventHandlingBase):
         :return: A conference object.
         :rtype: `Conference`
         '''
-        o = Conference(Id, self)
+        o = Conference(self, Id)
         if Id <= 0 or not o.Calls:
-            raise ISkypeError(0, 'Unknown conference')
+            raise SkypeError(0, 'Unknown conference')
         return o
 
     def CreateChatUsingBlob(self, Blob):
@@ -509,7 +512,7 @@ class Skype(EventHandlingBase):
         :return: A chat object
         :rtype: `chat.Chat`
         '''
-        return Chat(chop(self._DoCommand('CHAT CREATEUSINGBLOB %s' % Blob), 2)[1], self)
+        return Chat(self, chop(self._DoCommand('CHAT CREATEUSINGBLOB %s' % Blob), 2)[1])
 
     def CreateChatWith(self, *Usernames):
         '''Creates a chat with one or more users.
@@ -523,7 +526,7 @@ class Skype(EventHandlingBase):
 
         :see: `Chat.AddMembers`
         '''
-        return Chat(chop(self._DoCommand('CHAT CREATE %s' % ', '.join(Usernames)), 2)[1], self)
+        return Chat(self, chop(self._DoCommand('CHAT CREATE %s' % ', '.join(Usernames)), 2)[1])
 
     def CreateGroup(self, GroupName):
         '''Creates a custom contact group.
@@ -556,7 +559,7 @@ class Skype(EventHandlingBase):
         :return: An sms message object.
         :rtype: `SmsMessage`
         '''
-        return SmsMessage(chop(self._DoCommand('CREATE SMS %s %s' % (MessageType, ', '.join(TargetNumbers))), 2)[1], self)
+        return SmsMessage(self, chop(self._DoCommand('CREATE SMS %s %s' % (MessageType, ', '.join(TargetNumbers))), 2)[1])
 
     def DeleteGroup(self, GroupId):
         '''Deletes a custom contact group.
@@ -592,7 +595,7 @@ class Skype(EventHandlingBase):
         :return: A chat object
         :rtype: `chat.Chat`
         '''
-        return Chat(chop(self._DoCommand('CHAT FINDUSINGBLOB %s' % Blob), 2)[1], self)
+        return Chat(self, chop(self._DoCommand('CHAT FINDUSINGBLOB %s' % Blob), 2)[1])
 
     def Greeting(self, Username=''):
         '''Queries the greeting used as voicemail.
@@ -620,7 +623,7 @@ class Skype(EventHandlingBase):
         :return: A chat message object.
         :rtype: `ChatMessage`
         '''
-        o = ChatMessage(Id, self)
+        o = ChatMessage(self, Id)
         o.Status # Test if such an id is known.
         return o
 
@@ -634,7 +637,7 @@ class Skype(EventHandlingBase):
         :return: Chat message objects.
         :rtype: tuple of `ChatMessage`
         '''
-        return gen(ChatMessage(x, self) for x in self._Search('CHATMESSAGES', Target))
+        return gen(ChatMessage(self, x) for x in self._Search('CHATMESSAGES', Target))
 
     def PlaceCall(self, *Targets):
         '''Places a call to a single user or creates a conference call.
@@ -651,7 +654,7 @@ class Skype(EventHandlingBase):
         reply = self._DoCommand('CALL %s' % ', '.join(Targets))
         # Skype for Windows returns the call status which gives us the call Id;
         if reply.startswith('CALL '):
-            return Call(chop(reply, 2)[1], self)
+            return Call(self, chop(reply, 2)[1])
         # On linux we get 'OK' as reply so we search for the new call on
         # list of active calls.
         for c in self.ActiveCalls:
@@ -724,7 +727,7 @@ class Skype(EventHandlingBase):
         :return: Found users.
         :rtype: tuple of `user.User`
         '''
-        return gen(User(x, self) for x in self._Search('USERS', tounicode(Target)))
+        return gen(User(self, x) for x in self._Search('USERS', tounicode(Target)))
 
     def SendCommand(self, Command):
         '''Sends an API command.
@@ -799,7 +802,7 @@ class Skype(EventHandlingBase):
         :return: A user object.
         :rtype: `user.User`
         '''
-        o = User(Username, self)
+        o = User(self, Username)
         o.OnlineStatus # Test if such a user exists.
         return o
 
@@ -827,12 +830,12 @@ class Skype(EventHandlingBase):
         :return: A voicemail object.
         :rtype: `Voicemail`
         '''
-        o = Voicemail(Id, self)
+        o = Voicemail(self, Id)
         o.Type # Test if such a voicemail exists.
         return o
 
     def _GetActiveCalls(self):
-        return gen(Call(x, self) for x in self._Search('ACTIVECALLS'))
+        return gen(Call(self, x) for x in self._Search('ACTIVECALLS'))
 
     ActiveCalls = property(_GetActiveCalls,
     doc='''Queries a list of active calls.
@@ -841,7 +844,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetActiveChats(self):
-        return gen(Chat(x, self) for x in self._Search('ACTIVECHATS'))
+        return gen(Chat(self, x) for x in self._Search('ACTIVECHATS'))
 
     ActiveChats = property(_GetActiveChats,
     doc='''Queries a list of active chats.
@@ -850,7 +853,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetActiveFileTransfers(self):
-        return gen(FileTransfer(x, self) for x in self._Search('ACTIVEFILETRANSFERS'))
+        return gen(FileTransfer(self, x) for x in self._Search('ACTIVEFILETRANSFERS'))
 
     ActiveFileTransfers = property(_GetActiveFileTransfers,
     doc='''Queries currently active file transfers.
@@ -892,7 +895,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetBookmarkedChats(self):
-        return gen(Chat(x, self) for x in self._Search('BOOKMARKEDCHATS'))
+        return gen(Chat(self, x) for x in self._Search('BOOKMARKEDCHATS'))
 
     BookmarkedChats = property(_GetBookmarkedChats,
     doc='''Queries a list of bookmarked chats.
@@ -914,7 +917,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetChats(self):
-        return gen(Chat(x, self) for x in self._Search('CHATS'))
+        return gen(Chat(self, x) for x in self._Search('CHATS'))
 
     Chats = property(_GetChats,
     doc='''Queries a list of chats.
@@ -949,7 +952,7 @@ class Skype(EventHandlingBase):
         for c in self.Calls():
             cid = c.ConferenceId
             if cid > 0 and cid not in [x.Id for x in confs]:
-                yield Conference(cid, self)
+                yield Conference(self, cid)
 
     Conferences = property(lambda self: gen(self._GetConferences()),
     doc='''Queries a list of call conferences.
@@ -976,7 +979,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetCurrentUser(self):
-        return User(self.CurrentUserHandle, self)
+        return User(self, self.CurrentUserHandle)
 
     CurrentUser = property(_GetCurrentUser,
     doc='''Queries the current user object.
@@ -1015,7 +1018,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetCustomGroups(self):
-        return gen(Group(x, self) for x in self._Search('GROUPS', 'CUSTOM'))
+        return gen(Group(self, x) for x in self._Search('GROUPS', 'CUSTOM'))
 
     CustomGroups = property(_GetCustomGroups,
     doc='''Queries the list of custom contact groups. Custom groups are contact groups defined by the user.
@@ -1024,7 +1027,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetFileTransfers(self):
-        return gen(FileTransfer(x, self) for x in self._Search('FILETRANSFERS'))
+        return gen(FileTransfer(self, x) for x in self._Search('FILETRANSFERS'))
 
     FileTransfers = property(_GetFileTransfers,
     doc='''Queries all file transfers.
@@ -1035,7 +1038,7 @@ class Skype(EventHandlingBase):
     def _GetFocusedContacts(self):
         # we have to use _DoCommand() directly because for unknown reason the API returns
         # "CONTACTS FOCUSED" instead of "CONTACTS_FOCUSED" (note the space instead of "_")
-        return gen(User(x, self) for x in split(chop(self._DoCommand('GET CONTACTS_FOCUSED', 'CONTACTS FOCUSED'), 2)[-1]))
+        return gen(User(self, x) for x in split(chop(self._DoCommand('GET CONTACTS_FOCUSED', 'CONTACTS FOCUSED'), 2)[-1]))
 
     FocusedContacts = property(_GetFocusedContacts,
     doc='''Queries a list of contacts selected in the contacts list.
@@ -1056,7 +1059,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetFriends(self):
-        return gen(User(x, self) for x in self._Search('FRIENDS'))
+        return gen(User(self, x) for x in self._Search('FRIENDS'))
 
     Friends = property(_GetFriends,
     doc='''Queries the users in a contact list.
@@ -1065,7 +1068,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetGroups(self):
-        return gen(Group(x, self) for x in self._Search('GROUPS', 'ALL'))
+        return gen(Group(self, x) for x in self._Search('GROUPS', 'ALL'))
 
     Groups = property(_GetGroups,
     doc='''Queries the list of all contact groups.
@@ -1074,7 +1077,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetHardwiredGroups(self):
-        return gen(Group(x, self) for x in self._Search('GROUPS', 'HARDWIRED'))
+        return gen(Group(self, x) for x in self._Search('GROUPS', 'HARDWIRED'))
 
     HardwiredGroups = property(_GetHardwiredGroups,
     doc='''Queries the list of hardwired contact groups. Hardwired groups are "smart" contact groups,
@@ -1084,7 +1087,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetMissedCalls(self):
-        return gen(Call(x, self) for x in self._Search('MISSEDCALLS'))
+        return gen(Call(self, x) for x in self._Search('MISSEDCALLS'))
 
     MissedCalls = property(_GetMissedCalls,
     doc='''Queries a list of missed calls.
@@ -1093,7 +1096,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetMissedChats(self):
-        return gen(Chat(x, self) for x in self._Search('MISSEDCHATS'))
+        return gen(Chat(self, x) for x in self._Search('MISSEDCHATS'))
 
     MissedChats = property(_GetMissedChats,
     doc='''Queries a list of missed chats.
@@ -1102,7 +1105,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetMissedMessages(self):
-        return gen(ChatMessage(x, self) for x in self._Search('MISSEDCHATMESSAGES'))
+        return gen(ChatMessage(self, x) for x in self._Search('MISSEDCHATMESSAGES'))
 
     MissedMessages = property(_GetMissedMessages,
     doc='''Queries a list of missed chat messages.
@@ -1111,7 +1114,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetMissedSmss(self):
-        return gen(SmsMessage(x, self) for x in self._Search('MISSEDSMSS'))
+        return gen(SmsMessage(self, x) for x in self._Search('MISSEDSMSS'))
 
     MissedSmss = property(_GetMissedSmss,
     doc='''Requests a list of all missed SMS messages.
@@ -1120,7 +1123,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetMissedVoicemails(self):
-        return gen(Voicemail(x, self) for x in self._Search('MISSEDVOICEMAILS'))
+        return gen(Voicemail(self, x) for x in self._Search('MISSEDVOICEMAILS'))
 
     MissedVoicemails = property(_GetMissedVoicemails,
     doc='''Requests a list of missed voicemails.
@@ -1166,7 +1169,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetRecentChats(self):
-        return gen(Chat(x, self) for x in self._Search('RECENTCHATS'))
+        return gen(Chat(self, x) for x in self._Search('RECENTCHATS'))
 
     RecentChats = property(_GetRecentChats,
     doc='''Queries a list of recent chats.
@@ -1196,7 +1199,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetSmss(self):
-        return gen(SmsMessage(x, self) for x in self._Search('SMSS'))
+        return gen(SmsMessage(self, x) for x in self._Search('SMSS'))
 
     Smss = property(_GetSmss,
     doc='''Requests a list of all SMS messages.
@@ -1229,7 +1232,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetUsersWaitingAuthorization(self):
-        return gen(User(x, self) for x in self._Search('USERSWAITINGMYAUTHORIZATION'))
+        return gen(User(self, x) for x in self._Search('USERSWAITINGMYAUTHORIZATION'))
 
     UsersWaitingAuthorization = property(_GetUsersWaitingAuthorization,
     doc='''Queries the list of users waiting for authorization.
@@ -1247,7 +1250,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetVoicemails(self):
-        return gen(Voicemail(x, self) for x in self._Search('VOICEMAILS'))
+        return gen(Voicemail(self, x) for x in self._Search('VOICEMAILS'))
 
     Voicemails = property(_GetVoicemails,
     doc='''Queries a list of voicemails.

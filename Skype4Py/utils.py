@@ -623,28 +623,56 @@ class EventHandlingBase(object):
 
 class Cached(object):
     '''Base class for all cached objects.
+    
+    Every object has an owning object a handle. Owning object is where the cache is
+    maintained, handle identifies an object of given type.
+    
+    Thanks to the caching, trying to create two objects with the same owner and handle
+    yields exactly the same object. The cache itself is based on weak references so
+    not referenced objects are automatically removed from the cache.
 
-    Every object is identified by an Id specified as first parameter of the constructor.
-    Trying to create two objects with same Id yields the same object. Uses weak references
-    to allow the objects to be deleted normally.
-
-    :warning: ``__init__()`` is always called, don't use it to prevent initializing an already
-              initialized object. Use ``_Init()`` instead, it is called only once.
+    Because the ``__init__`` method will be called no matter if the object already
+    existed or not, it is recommended to use the `_Init` method instead.
     '''
-    _Cache = weakref.WeakValueDictionary()
+    _HandleCast = None
 
-    def __new__(cls, Id, *Args, **KwArgs):
-        h = cls, Id
+    def __new__(cls, Owner, Handle, *Args, **KwArgs):
+        if cls._HandleCast is not None:
+            Handle = cls._HandleCast(Handle)
+        key = cls, Handle
         try:
-            return cls._Cache[h]
+            return Owner._ObjectCache[key]
         except KeyError:
-            o = object.__new__(cls)
-            cls._Cache[h] = o
-            o._Init(Id, *Args, **KwArgs)
-            return o
+            obj = object.__new__(cls)
+            Owner._ObjectCache[key] = obj
+            obj._Init(Owner, Handle, *Args, **KwArgs)
+            return obj
             
-    def _Init(self, Id):
-        pass
+    def _Init(self, Owner, Handle):
+        '''Initializes the cached object. Receives all the arguments passed to the
+        constructor The default implementation stores the ``Owner`` in
+        ``self._Owner`` and ``Handle`` in ``self._Handle``.
+        
+        This method should be used instead of ``__init__`` to prevent double
+        initialization.
+        '''
+        self._Owner = Owner
+        self._Handle = Handle
 
     def __copy__(self):
         return self
+        
+    def _MakeOwner(self):
+        '''Prepares the object for use as an owner for other cached objects.
+        '''
+        self._CreateOwner(self)
+
+    @classmethod
+    def _CreateOwner(cls, Owner):
+        '''Prepares any object for use as an owner for cached objects.
+        
+        :Parameters:
+          Owner
+            Object that should be turned into a cached objects owner.
+        '''
+        Owner._ObjectCache = weakref.WeakValueDictionary()

@@ -6,79 +6,29 @@ __docformat__ = 'restructuredtext en'
 from utils import *
 
 
-class SmsChunk(Cached):
-    '''Represents a single chunk of a multi-part SMS message.
-    '''
-
-    def __repr__(self):
-        return '<%s with Id=%s, Message=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Message))
-
-    def _Init(self, Id_Message):
-        Id, Message = Id_Message
-        self._Id = int(Id)
-        self._Message = Message
-
-    def _GetCharactersLeft(self):
-        count, left = map(int, chop(self._Message._Property('CHUNKING', Cache=False)))
-        if self._Id == count - 1:
-            return left
-        return 0
-
-    CharactersLeft = property(_GetCharactersLeft,
-    doc='''CharactersLeft.
-
-    :type: int
-    ''')
-
-    def _GetId(self):
-        return self._Id
-
-    Id = property(_GetId,
-    doc='''SMS chunk Id.
-
-    :type: int
-    ''')
-
-    def _GetMessage(self):
-        return self._Message
-
-    Message = property(_GetMessage,
-    doc='''SMS message associated with this chunk.
-
-    :type: `SmsMessage`
-    ''')
-
-    def _GetText(self):
-        return self._Message._Property('CHUNK %s' % self._Id)
-
-    Text = property(_GetText,
-    doc='''Text (body) of this SMS chunk.
-
-    :type: unicode
-    ''')
-
-
 class SmsMessage(Cached):
     '''Represents an SMS message.
     '''
+    _HandleCast = int
 
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('SMS', self._Id, AlterName, Args)
+        return self._Skype._Alter('SMS', self.Id, AlterName, Args)
 
-    def _Init(self, Id, Skype):
-        self._Id = int(Id)
-        self._Skype = Skype
+    def _Init(self, Owner, Handle):
+        self._Skype = Owner
+        self._Handle = Handle
+        self._MakeOwner()
 
     def _Property(self, PropName, Set=None, Cache=True):
-        return self._Skype._Property('SMS', self._Id, PropName, Set, Cache)
+        return self._Skype._Property('SMS', self.Id, PropName, Set, Cache)
 
     def Delete(self):
         '''Deletes this SMS message.
         '''
-        self._Skype._DoCommand('DELETE SMS %s' % self._Id)
+        self._Skype._DoCommand('DELETE SMS %s' % self.Id)
 
     def Send(self):
         '''Sends this SMS message.
@@ -98,7 +48,7 @@ class SmsMessage(Cached):
     ''')
 
     def _GetChunks(self):
-        return gen(SmsChunk((x, self)) for x in range(int(chop(self._Property('CHUNKING', Cache=False))[0])))
+        return gen(SmsChunk(self, x) for x in range(int(chop(self._Property('CHUNKING', Cache=False))[0])))
 
     Chunks = property(_GetChunks,
     doc='''Chunks of this SMS message. More than one if this is a multi-part message.
@@ -126,7 +76,7 @@ class SmsMessage(Cached):
     ''')
 
     def _GetId(self):
-        return self._Id
+        return self._Handle
 
     Id = property(_GetId,
     doc='''Unique SMS message Id.
@@ -243,7 +193,7 @@ class SmsMessage(Cached):
     ''')
 
     def _GetTargets(self):
-        return gen(SmsTarget((x, self)) for x in split(self._Property('TARGET_NUMBERS'), ', '))
+        return gen(SmsTarget(self, x) for x in split(self._Property('TARGET_NUMBERS'), ', '))
 
     Targets = property(_GetTargets,
     doc='''Target objects.
@@ -272,17 +222,69 @@ class SmsMessage(Cached):
     ''')
 
 
+class SmsChunk(Cached):
+    '''Represents a single chunk of a multi-part SMS message.
+    '''
+    _HandleCast = int
+
+    def __repr__(self):
+        return '<%s with Id=%s, Message=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Message))
+
+    def _Init(self, Owner, Handle):
+        self._Message = Owner
+        self._Id = Handle
+
+    def _GetCharactersLeft(self):
+        count, left = map(int, chop(self.Message._Property('CHUNKING', Cache=False)))
+        if self.Id == count - 1:
+            return left
+        return 0
+
+    CharactersLeft = property(_GetCharactersLeft,
+    doc='''CharactersLeft.
+
+    :type: int
+    ''')
+
+    def _GetId(self):
+        return self._Id
+
+    Id = property(_GetId,
+    doc='''SMS chunk Id.
+
+    :type: int
+    ''')
+
+    def _GetMessage(self):
+        return self._Message
+
+    Message = property(_GetMessage,
+    doc='''SMS message associated with this chunk.
+
+    :type: `SmsMessage`
+    ''')
+
+    def _GetText(self):
+        return self.Message._Property('CHUNK %s' % self.Id)
+
+    Text = property(_GetText,
+    doc='''Text (body) of this SMS chunk.
+
+    :type: unicode
+    ''')
+
+
 class SmsTarget(Cached):
     '''Represents a single target of a multi-target SMS message.
     '''
+    _HandleCast = str
 
     def __repr__(self):
         return '<%s with Number=%s, Message=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Number), repr(self.Message))
 
-    def _Init(self, Number_Message):
-        Number, Message = Number_Message
-        self._Number = str(Number)
-        self._Message = Message
+    def _Init(self, Owner, Handle):
+        self._Message = Owner
+        self._Number = Handle
 
     def _GetMessage(self):
         return self._Message
@@ -303,7 +305,7 @@ class SmsTarget(Cached):
     ''')
 
     def _GetStatus(self):
-        for t in split(self._Message._Property('TARGET_STATUSES'), ', '):
+        for t in split(self.Message._Property('TARGET_STATUSES'), ', '):
             number, status = t.split('=')
             if number == self._Number:
                 return str(status)

@@ -107,7 +107,7 @@ class SkypeAPI(SkypeAPIBase):
     def set_friendly_name(self, friendly_name):
         SkypeAPIBase.set_friendly_name(self, friendly_name)
         if self.skype_out:
-            self.send_command(Command(-1, 'NAME %s' % friendly_name))
+            self.send_command(Command('NAME %s' % friendly_name))
 
     def start_watcher(self):
         self.dbus_name_owner_watch = self.bus.add_signal_receiver(self.dbus_name_owner_changed,
@@ -150,14 +150,14 @@ class SkypeAPI(SkypeAPIBase):
                 raise SkypeAPIError('Skype attach timeout')
         finally:
             t.cancel()
-        command = Command(-1, 'NAME %s' % self.friendly_name, '', True, timeout)
+        command = Command('NAME %s' % self.friendly_name, '', True, timeout)
         if self.skype_out:
             self.send_command(command)
         if command.Reply != 'OK':
             self.skype_out = None
             self.set_attachment_status(apiAttachRefused)
             return
-        self.send_command(Command(-1, 'PROTOCOL %s' % self.protocol))
+        self.send_command(Command('PROTOCOL %s' % self.protocol))
         self.set_attachment_status(apiAttachSuccess)
 
     def is_running(self):

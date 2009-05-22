@@ -10,19 +10,20 @@ from enums import *
 class Call(Cached):
     '''Represents a voice/video call.
     '''
+    _HandleCast = int
 
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('CALL', self._Id, AlterName, Args)
-
-    def _Init(self, Id, Skype):
-        self._Skype = Skype
-        self._Id = int(Id)
+        return self._Skype._Alter('CALL', self.Id, AlterName, Args)
+        
+    def _Init(self, Owner, Handle):
+        self._Skype = Owner
+        self._Id = Handle
 
     def _Property(self, PropName, Set=None, Cache=True):
-        return self._Skype._Property('CALL', self._Id, PropName, Set, Cache)
+        return self._Skype._Property('CALL', self.Id, PropName, Set, Cache)
 
     def Answer(self):
         '''Answers the call.
@@ -126,9 +127,9 @@ class Call(Cached):
         :return: Conference object.
         :rtype: `Conference`
         '''
-        reply = self._Skype._DoCommand('SET CALL %s JOIN_CONFERENCE %s' % (self._Id, Id),
-            'CALL %s CONF_ID' % self._Id)
-        return Conference(reply.split()[-1], self._Skype)
+        reply = self._Skype._DoCommand('SET CALL %s JOIN_CONFERENCE %s' % (self.Id, Id),
+            'CALL %s CONF_ID' % self.Id)
+        return Conference(self._Skype, reply.split()[-1])
 
     def MarkAsSeen(self):
         '''Marks the call as seen.
@@ -287,7 +288,7 @@ class Call(Cached):
 
     def _GetParticipants(self):
         count = int(self._Property('CONF_PARTICIPANTS_COUNT'))
-        return gen(Participant((self._Id, x), self._Skype) for x in xrange(count))
+        return gen(Participant((self.Id, x), self._Skype) for x in xrange(count))
 
     Participants = property(_GetParticipants,
     doc='''Participants of a conference call not hosted by the user.
@@ -538,19 +539,27 @@ class Call(Cached):
 class Participant(Cached):
     '''Represents a conference call participant.
     '''
+    _HandleCast = int
 
     def __repr__(self):
         return '<%s with Id=%s, Idx=%s, Handle=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Idx), repr(self.Handle))
 
-    def _Init(self, IdIdx, Skype):
-        self._Skype = Skype
-        id_, idx = IdIdx
-        self._Id = int(id_)
-        self._Idx = int(idx)
+    def _Init(self, Owner, Handle):
+        self._Call = Owner
+        self._Idx = Handle
 
     def _Property(self, Prop):
-        reply = self._Skype._Property('CALL', self._Id, 'CONF_PARTICIPANT %d' % self._Idx)
+        reply = self._Skype._Property('CALL', self.Id, 'CONF_PARTICIPANT %d' % self.Idx)
         return chop(reply, 3)[Prop]
+
+    def _GetCall(self):
+        return self._Call
+
+    Call = property(_GetCall,
+    doc='''Call object.
+
+    :type: `Call`
+    ''')
 
     def _GetCallStatus(self):
         return str(self._Property(2))
@@ -589,7 +598,7 @@ class Participant(Cached):
     ''')
 
     def _GetId(self):
-        return self._Id
+        return self._Call.Id
 
     Id = property(_GetId,
     doc='''Call Id.
@@ -610,13 +619,14 @@ class Participant(Cached):
 class Conference(Cached):
     '''Represents a conference call.
     '''
+    _HandleCast = int
 
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
-    def _Init(self, Id, Skype):
-        self._Skype = Skype
-        self._Id = int(Id)
+    def _Init(self, Owner, Handle):
+        self._Skype = Owner
+        self._Id = Handle
 
     def Finish(self):
         '''Finishes a conference so all active calls have the status
@@ -640,7 +650,7 @@ class Conference(Cached):
             c.Resume()
 
     def _GetActiveCalls(self):
-        return gen(x for x in self._Skype.ActiveCalls if x.ConferenceId == self._Id)
+        return gen(x for x in self._Skype.ActiveCalls if x.ConferenceId == self.Id)
 
     ActiveCalls = property(_GetActiveCalls,
     doc='''Active calls with the same conference ID.
@@ -649,7 +659,7 @@ class Conference(Cached):
     ''')
 
     def _GetCalls(self):
-        return gen(x for x in self._Skype.Calls() if x.ConferenceId == self._Id)
+        return gen(x for x in self._Skype.Calls() if x.ConferenceId == self.Id)
 
     Calls = property(_GetCalls,
     doc='''Calls with the same conference ID.

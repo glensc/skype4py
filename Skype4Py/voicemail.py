@@ -10,19 +10,20 @@ from enums import *
 class Voicemail(Cached):
     '''Represents a voicemail.
     '''
+    _HandleCast = int
 
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('VOICEMAIL', self._Id, AlterName, Args)
+        return self._Skype._Alter('VOICEMAIL', self.Id, AlterName, Args)
 
-    def _Init(self, Id, Skype):
-        self._Id = int(Id)
-        self._Skype = Skype
+    def _Init(self, Owner, Handle):
+        self._Skype = Owner
+        self._Id = Handle
 
     def _Property(self, PropName, Set=None, Cache=True):
-        return self._Skype._Property('VOICEMAIL', self._Id, PropName, Set, Cache)
+        return self._Skype._Property('VOICEMAIL', self.Id, PropName, Set, Cache)
 
     def CaptureMicDevice(self, DeviceType=None, Set=None):
         '''Queries or sets the mic capture device.
@@ -93,7 +94,7 @@ class Voicemail(Cached):
     def Open(self):
         '''Opens and plays this voicemail.
         '''
-        self._Skype._DoCommand('OPEN VOICEMAIL %s' % self._Id)
+        self._Skype._DoCommand('OPEN VOICEMAIL %s' % self.Id)
 
     def OutputDevice(self, DeviceType=None, Set=None):
         '''Queries or sets the sound output device.
@@ -133,8 +134,8 @@ class Voicemail(Cached):
         # check for the "SETUNPLAYED"/"DELETE" part of the response.
         
         #self._Alter('SETUNPLAYED')
-        self._Skype._DoCommand('ALTER VOICEMAIL %d SETUNPLAYED' % self._Id,
-                               'ALTER VOICEMAIL %d' % self._Id)
+        self._Skype._DoCommand('ALTER VOICEMAIL %d SETUNPLAYED' % self.Id,
+                               'ALTER VOICEMAIL %d' % self.Id)
 
     def StartPlayback(self):
         '''Starts playing downloaded voicemail.
