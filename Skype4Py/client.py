@@ -57,7 +57,7 @@ class Client(object):
         '''
         self._Skype._DoCommand('CREATE EVENT %s CAPTION %s HINT %s' % (tounicode(EventId),
             quote(tounicode(Caption)), quote(tounicode(Hint))))
-        return PluginEvent(EventId, self._Skype)
+        return PluginEvent(self._Skype, EventId)
 
     def CreateMenuItem(self, MenuItemId, PluginContext, CaptionText, HintText=u'', IconPath='', Enabled=True,
                        ContactType=pluginContactTypeAll, MultipleContacts=False):
@@ -85,18 +85,18 @@ class Client(object):
         :return: Menu item object.
         :rtype: `PluginMenuItem`
         '''
-        com = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s ENABLED %s' % (tounicode(MenuItemId), PluginContext,
+        cmd = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s ENABLED %s' % (tounicode(MenuItemId), PluginContext,
             quote(tounicode(CaptionText)), cndexp(Enabled, 'true', 'false'))
         if HintText:
-            com += ' HINT %s' % quote(tounicode(HintText))
+            cmd += ' HINT %s' % quote(tounicode(HintText))
         if IconPath:
-            com += ' ICON %s' % quote(path2unicode(IconPath))
+            cmd += ' ICON %s' % quote(path2unicode(IconPath))
         if MultipleContacts:
-            com += ' ENABLE_MULTIPLE_CONTACTS true'
+            cmd += ' ENABLE_MULTIPLE_CONTACTS true'
         if PluginContext == pluginContextContact:
-            com += ' CONTACT_TYPE_FILTER %s' % ContactType
-        self._Skype._DoCommand(com)
-        return PluginMenuItem(MenuItemId, self._Skype, CaptionText, HintText, Enabled)
+            cmd += ' CONTACT_TYPE_FILTER %s' % ContactType
+        self._Owner._DoCommand(cmd)
+        return PluginMenuItem(self._Skype, MenuItemId, CaptionText, HintText, Enabled)
 
     def Focus(self):
         '''Brings the client window into focus.
@@ -319,17 +319,13 @@ class PluginEvent(Cached):
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
-    def _Init(self, Owner, Handle):
-        self._Skype = Owner
-        self._Id = Handle
-
     def Delete(self):
         '''Deletes the event from the events pane in the Skype client.
         '''
-        self._Skype._DoCommand('DELETE EVENT %s' % self.Id)
+        self._Owner._DoCommand('DELETE EVENT %s' % self.Id)
 
     def _GetId(self):
-        return self._Id
+        return self._Handle
 
     Id = property(_GetId,
     doc='''Unique event Id.
@@ -346,9 +342,7 @@ class PluginMenuItem(Cached):
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
-    def _Init(self, Owner, Handle, Caption=None, Hint=None, Enabled=None):
-        self._Skype = Owner
-        self._Id = Handle
+    def _Init(self, Caption=None, Hint=None, Enabled=None):
         self._CacheDict = {}
         if Caption is not None:
             self._CacheDict['CAPTION'] = tounicode(Caption)
@@ -360,13 +354,13 @@ class PluginMenuItem(Cached):
     def _Property(self, PropName, Set=None):
         if Set is None:
             return self._CacheDict[PropName]
-        self._Skype._Property('MENU_ITEM', self.Id, PropName, Set)
+        self._Owner._Property('MENU_ITEM', self.Id, PropName, Set)
         self._CacheDict[PropName] = unicode(Set)
 
     def Delete(self):
         '''Removes the menu item from the "Do More" menus.
         '''
-        self._Skype._DoCommand('DELETE MENU_ITEM %s' % self.Id)
+        self._Owner._DoCommand('DELETE MENU_ITEM %s' % self.Id)
 
     def _GetCaption(self):
         return self._Property('CAPTION')
@@ -406,7 +400,7 @@ class PluginMenuItem(Cached):
     ''')
 
     def _GetId(self):
-        return self._Id
+        return self._Handle
 
     Id = property(_GetId,
     doc='''Unique menu item Id.

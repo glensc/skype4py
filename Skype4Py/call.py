@@ -16,14 +16,13 @@ class Call(Cached):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('CALL', self.Id, AlterName, Args)
-        
-    def _Init(self, Owner, Handle):
-        self._Skype = Owner
-        self._Id = Handle
+        return self._Owner._Alter('CALL', self.Id, AlterName, Args)
+
+    def _Init(self):
+        self._MakeOwner()
 
     def _Property(self, PropName, Set=None, Cache=True):
-        return self._Skype._Property('CALL', self.Id, PropName, Set, Cache)
+        return self._Owner._Property('CALL', self.Id, PropName, Set, Cache)
 
     def Answer(self):
         '''Answers the call.
@@ -127,9 +126,9 @@ class Call(Cached):
         :return: Conference object.
         :rtype: `Conference`
         '''
-        reply = self._Skype._DoCommand('SET CALL %s JOIN_CONFERENCE %s' % (self.Id, Id),
+        reply = self._Owner._DoCommand('SET CALL %s JOIN_CONFERENCE %s' % (self.Id, Id),
             'CALL %s CONF_ID' % self.Id)
-        return Conference(self._Skype, reply.split()[-1])
+        return Conference(self._Owner, reply.split()[-1])
 
     def MarkAsSeen(self):
         '''Marks the call as seen.
@@ -269,7 +268,7 @@ class Call(Cached):
     ''')
 
     def _GetId(self):
-        return self._Id
+        return self._Handle
 
     Id = property(_GetId,
     doc='''Call Id.
@@ -288,12 +287,12 @@ class Call(Cached):
 
     def _GetParticipants(self):
         count = int(self._Property('CONF_PARTICIPANTS_COUNT'))
-        return gen(Participant((self.Id, x), self._Skype) for x in xrange(count))
+        return ParticipantCollection(self._Owner, xrange(count))
 
     Participants = property(_GetParticipants,
     doc='''Participants of a conference call not hosted by the user.
 
-    :type: tuple of `Participant`
+    :type: `ParticipantCollection`
     ''')
 
     def _GetPartnerDisplayName(self):
@@ -536,6 +535,10 @@ class Call(Cached):
     ''')
 
 
+class CallCollection(CachedCollection):
+    _Type = Call
+
+
 class Participant(Cached):
     '''Represents a conference call participant.
     '''
@@ -544,12 +547,8 @@ class Participant(Cached):
     def __repr__(self):
         return '<%s with Id=%s, Idx=%s, Handle=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Idx), repr(self.Handle))
 
-    def _Init(self, Owner, Handle):
-        self._Call = Owner
-        self._Idx = Handle
-
     def _Property(self, Prop):
-        reply = self._Skype._Property('CALL', self.Id, 'CONF_PARTICIPANT %d' % self.Idx)
+        reply = self._Owner._Property('CONF_PARTICIPANT %d' % self.Idx)
         return chop(reply, 3)[Prop]
 
     def _GetCall(self):
@@ -607,13 +606,17 @@ class Participant(Cached):
     ''')
 
     def _GetIdx(self):
-        return self._Idx
+        return self._Handle
 
     Idx = property(_GetIdx,
     doc='''Call participant index.
 
     :type: int
     ''')
+
+
+class ParticipantCollection(CachedCollection):
+    _Type = Participant
 
 
 class Conference(Cached):
@@ -623,10 +626,6 @@ class Conference(Cached):
 
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
-
-    def _Init(self, Owner, Handle):
-        self._Skype = Owner
-        self._Id = Handle
 
     def Finish(self):
         '''Finishes a conference so all active calls have the status
@@ -650,28 +649,32 @@ class Conference(Cached):
             c.Resume()
 
     def _GetActiveCalls(self):
-        return gen(x for x in self._Skype.ActiveCalls if x.ConferenceId == self.Id)
+        return CallCollection(self._Owner, (x.Id for x in self._Owner.ActiveCalls if x.ConferenceId == self.Id))
 
     ActiveCalls = property(_GetActiveCalls,
     doc='''Active calls with the same conference ID.
 
-    :type: tuple of `Call`
+    :type: `CallCollection`
     ''')
 
     def _GetCalls(self):
-        return gen(x for x in self._Skype.Calls() if x.ConferenceId == self.Id)
+        return CallCollection(self._Owner, (x.Id for x in self._Owner.Calls() if x.ConferenceId == self.Id))
 
     Calls = property(_GetCalls,
     doc='''Calls with the same conference ID.
 
-    :type: tuple of `Call`
+    :type: `CallCollection`
     ''')
 
     def _GetId(self):
-        return self._Id
+        return self._Handle
 
     Id = property(_GetId,
     doc='''Id of a conference.
 
     :type: int
     ''')
+
+
+class ConferenceCollection(CachedCollection):
+    _Type = Conference

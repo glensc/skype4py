@@ -31,10 +31,6 @@ Skype4Py is a multiplatform Skype API wrapper for Python.
      ``Skype4Py.SkypeError``, an alias for `Skype4Py.errors.SkypeError`
      
      ``Skype4Py.SkypeAPIError``, an alias for `Skype4Py.errors.SkypeAPIError`
-     
-   - Functions
-     
-     ``Skype4Py.use_generators``, an alias for `Skype4Py.utils.use_generators`
 
    The two classes exposed by the ``Skype4Py`` package are the only ones that are to be instantiated
    directly. They in turn provide means of instantiating the remaining ones. They are also the only
@@ -99,7 +95,6 @@ from skype import Skype
 from callchannel import CallChannelManager
 from errors import SkypeError, SkypeAPIError
 from enums import *
-from utils import use_generators
 
 
 __version__ = '1.0.31.1'

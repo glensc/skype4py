@@ -9,49 +9,9 @@ import threading
 from new import instancemethod
 
 
-__all__ = ['use_generators', 'gen', 'tounicode', 'path2unicode', 'unicode2path',
-           'chop', 'args2dict', 'quote', 'split', 'cndexp', 'WeakCallableRef',
-           'EventHandlingBase', 'Cached']
-
-
-# Disabled by default for backward compatibility.
-generators_enabled = False
-
-
-def use_generators(yes=True):
-    '''Enables or disables the use of generator objects throughout Skype4Py.
-    If generator objects are enabled, whenever Skype4Py is expected to return
-    a collection (usually a tuple), a generator object will be returned instead.
-    
-    Generators are disabled by default for backward compatibility.
-    
-    New in 1.0.31.1.
-
-    :Parameters:
-      yes : bool
-        True/False enables/disables the generator objects.
-    '''
-    global generators_enabled
-    generators_enabled = yes
-
-
-def gen(genobj, fallback=tuple):
-    '''Takes a generator object and returns it unchanged if generators were
-    enabled using `use_generators`. Otherwise falls back to the type passed
-    using fallback argument, which is a tuple by default.
-
-    :Parameters:
-      genobj : generator object
-        Generator object to be processed.
-      fallback
-        Fallback collection type, normally a list or tuple.
-
-    :return: Unchanged generator or converted to the fallback type.
-    '''
-    global generators_enabled
-    if generators_enabled:
-        return genobj
-    return fallback(genobj)
+__all__ = ['tounicode', 'path2unicode', 'unicode2path', 'chop', 'args2dict', 'quote',
+           'split', 'cndexp', 'WeakCallableRef', 'EventHandlingBase',
+           'Cached', 'CachedCollection']
 
 
 def tounicode(s):
@@ -634,23 +594,25 @@ class Cached(object):
     Because the ``__init__`` method will be called no matter if the object already
     existed or not, it is recommended to use the `_Init` method instead.
     '''
-    _HandleCast = None
+    # Abstract. Must be specified by subclasses.
+    #_HandleCast = ?
 
-    def __new__(cls, Owner, Handle, *Args, **KwArgs):
-        if cls._HandleCast is not None:
-            Handle = cls._HandleCast(Handle)
+    def __new__(cls, Owner, Handle):
+        Handle = cls._HandleCast(Handle)
         key = (cls, Handle)
         try:
             return Owner._ObjectCache[key]
         except KeyError:
             obj = object.__new__(cls)
             Owner._ObjectCache[key] = obj
-            obj._Init(Owner, Handle, *Args, **KwArgs)
+            obj._Owner = Owner
+            obj._Handle = Handle
+            obj._Init()
             return obj
         except AttributeError:
             raise TypeError('%s is not a cached objects owner' % repr(Owner))
             
-    def _Init(self, Owner, Handle):
+    def _Init(self):
         '''Initializes the cached object. Receives all the arguments passed to the
         constructor The default implementation stores the ``Owner`` in
         ``self._Owner`` and ``Handle`` in ``self._Handle``.
@@ -658,8 +620,6 @@ class Cached(object):
         This method should be used instead of ``__init__`` to prevent double
         initialization.
         '''
-        self._Owner = Owner
-        self._Handle = Handle
 
     def __copy__(self):
         return self
@@ -678,3 +638,160 @@ class Cached(object):
             Object that should be turned into a cached objects owner.
         '''
         Owner._ObjectCache = weakref.WeakValueDictionary()
+
+
+class CachedCollection(object):
+    '''
+    '''
+    _Type = Cached
+    
+    def __init__(self, Owner, Handles):
+        self._Owner = Owner
+        self._Handles = map(self._Type._HandleCast, Handles)
+
+    def _AssertItem(self, Item):
+        if not isinstance(Item, self._Type):
+            raise TypeError('expected %s instance' % repr(self._Type))
+        if self._Owner is not Item._Owner:
+            raise TypeError('expected %s owned item' % repr(self._Owner))
+        
+    def _AssertCollection(self, Col):
+        if not isinstance(Col, self.__class__):
+            raise TypeError('expected %s instance' % repr(self.__class__))
+        if self._Type is not Col._Type:
+            raise TypeError('expected collection of %s' % repr(self._Type))
+        if self._Owner is not Col._Owner:
+            raise TypeError('expected %s owned collection' % repr(self._Owner))
+
+    def __len__(self):
+        return len(self._Handles)
+
+    def __getitem__(self, Key):
+        if isinstance(Key, slice):
+            return self.__class__(self._Owner, self._Handles[Key])
+        return self._Type(self._Owner, self._Handles[Key])
+
+    def __setitem__(self, Key, Item):
+        if isinstance(Key, slice):
+            handles = []
+            for it in Item:
+                self._AssertItem(it)
+                handles.append(it._Handle)
+            self._Handlers[Key] = handles
+        else:
+            self._AssertItem(Item)
+            self._Handles[Key] = Item._Handle
+
+    def __delitem__(self, Key):
+        del self._Handles[Key]
+
+    def __iter__(self):
+        for handle in self._Handles:
+            yield self._Type(self._Owner, handle)
+
+    def __contains__(self, Item):
+        try:
+            self._AssertItem(Item)
+        except TypeError:
+            return False
+        return (Item._Handle in self._Handles)
+
+    def __add__(self, Other):
+        self._AssertCollection(Other)
+        return self.__class__(self._Owner, self._Handles +
+                          Other._Handles)
+
+    def __iadd__(self, Other):
+        self._AssertCollection(Other)
+        self._Handles += Other._Handles
+        return self
+
+    def __mul__(self, Times):
+        return self.__class__(self._Owner, self._Handles * Times)
+    __rmul__ = __mul__
+
+    def __imul__(self, Times):
+        self._Handles *= Times
+        return self
+
+    def append(self, item):
+        '''
+        '''
+        self._AssertItem(item)
+        self._Handles.append(item._Handle)
+
+    def count(self, item):
+        '''
+        '''
+        self._AssertItem(item)
+        return self._Handles.count(item._Handle)
+
+    def index(self, item):
+        '''
+        '''
+        self._AssertItem(item)
+        return self._Handles.index(item._Handle)
+
+    def extend(self, seq):
+        '''
+        '''
+        self.__iadd__(seq)
+
+    def insert(self, index, item):
+        '''
+        '''
+        self._AssertItem(item)
+        self._Handles.insert(index, item._Handle)
+
+    def pop(self, pos=-1):
+        '''
+        '''
+        return self._Type(self._Owner, self._Handles.pop(pos))
+
+    def remove(self, item):
+        '''
+        '''
+        self._AssertItem(item)
+        self._Handles.remove(item._Handle)
+
+    def reverse(self):
+        '''
+        '''
+        self._Handles.reverse()
+
+    def sort(self, cmpfunc=None, key=None, reverse=False):
+        '''
+        '''
+        wrapper = None
+        if cmpfunc is not None:
+            def wrapper(a, b):
+                return cmpfunc(self._Type(self._Owner, a),
+                               self._Type(self._Owner, b))
+        self._Handles.sort(wrapper, key, reverse)
+
+    def Add(self, Item):
+        '''
+        '''
+        self.append(Item)
+
+    def Remove(self, Index):
+        '''
+        '''
+        del self[Index]
+
+    def RemoveAll(self):
+        '''
+        '''
+        del self[:]
+
+    def Item(self, Index):
+        '''
+        '''
+        return self[Index]
+
+    def _GetCount(self):
+        return len(self)
+
+    Count = property(_GetCount,
+    doc='''
+    ''')

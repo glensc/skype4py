@@ -17,14 +17,10 @@ class Chat(Cached):
         return '<%s with Name=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Name))
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('CHAT', self.Name, AlterName, Args, 'ALTER CHAT %s' % AlterName)
-
-    def _Init(self, Owner, Handle):
-        self._Skype = Owner
-        self._Name = Handle
+        return self._Owner._Alter('CHAT', self.Name, AlterName, Args, 'ALTER CHAT %s' % AlterName)
 
     def _Property(self, PropName, Value=None, Cache=True):
-        return self._Skype._Property('CHAT', self.Name, PropName, Value, Cache)
+        return self._Owner._Property('CHAT', self.Name, PropName, Value, Cache)
 
     def AcceptAdd(self):
         '''Accepts a shared group add request.
@@ -95,7 +91,7 @@ class Chat(Cached):
     def OpenWindow(self):
         '''Opens the chat window.
         '''
-        self._Skype.Client.OpenDialog('CHAT', self.Name)
+        self._Owner.Client.OpenDialog('CHAT', self.Name)
 
     def SendMessage(self, MessageText):
         '''Sends a chat message.
@@ -107,8 +103,8 @@ class Chat(Cached):
         :return: Message object
         :rtype: `ChatMessage`
         '''
-        return ChatMessage(chop(self._Skype._DoCommand('CHATMESSAGE %s %s' % (self.Name,
-            tounicode(MessageText))), 2)[1], self._Skype)
+        return ChatMessage(chop(self._Owner._DoCommand('CHATMESSAGE %s %s' % (self.Name,
+            tounicode(MessageText))), 2)[1], self._Owner)
 
     def SetPassword(self, Password, Hint=''):
         '''Sets the chat password.
@@ -129,12 +125,12 @@ class Chat(Cached):
         self._Alter('UNBOOKMARK')
 
     def _GetActiveMembers(self):
-        return gen(User(self._Skype, x) for x in split(self._Property('ACTIVEMEMBERS', Cache=False)))
+        return UserCollection(self._Owner, split(self._Property('ACTIVEMEMBERS', Cache=False)))
 
     ActiveMembers = property(_GetActiveMembers,
     doc='''Active members of a chat.
 
-    :type: tuple of `User`
+    :type: `UserCollection`
     ''')
 
     def _GetActivityDatetime(self):
@@ -159,7 +155,7 @@ class Chat(Cached):
     ''')
 
     def _GetAdder(self):
-        return User(self._Skype, self._Property('ADDER'))
+        return User(self._Owner, self._Property('ADDER'))
 
     Adder = property(_GetAdder,
     doc='''Returns the user that added current user to the chat.
@@ -178,12 +174,12 @@ class Chat(Cached):
     ''')
 
     def _GetApplicants(self):
-        return gen(User(self._Skype, x) for x in split(self._Property('APPLICANTS')))
+        return UserCollection(self._Owner, split(self._Property('APPLICANTS')))
 
     Applicants = property(_GetApplicants,
     doc='''Chat applicants.
 
-    :type: tuple of `User`
+    :type: `UserCollection`
     ''')
 
     def _GetBlob(self):
@@ -257,30 +253,30 @@ class Chat(Cached):
     ''')
 
     def _GetMemberObjects(self):
-        return gen(ChatMember(x, self._Skype) for x in split(self._Property('MEMBEROBJECTS'), ', '))
+        return ChatMemberCollection(self._Owner, split(self._Property('MEMBEROBJECTS'), ', '))
 
     MemberObjects = property(_GetMemberObjects,
     doc='''Chat members as member objects.
 
-    :type: tuple of `ChatMember`
+    :type: `ChatMemberCollection`
     ''')
 
     def _GetMembers(self):
-        return gen(User(self._Skype, x) for x in split(self._Property('MEMBERS')))
+        return UserCollection(self._Owner, split(self._Property('MEMBERS')))
 
     Members = property(_GetMembers,
     doc='''Chat members.
 
-    :type: tuple of `User`
+    :type: `UserCollection`
     ''')
 
     def _GetMessages(self):
-        return gen(ChatMessage(x ,self._Skype) for x in split(self._Property('CHATMESSAGES', Cache=False), ', '))
+        return ChatMessageCollection(self._Owner, split(self._Property('CHATMESSAGES', Cache=False), ', '))
 
     Messages = property(_GetMessages,
     doc='''All chat messages.
 
-    :type: tuple of `ChatMessage`
+    :type: `ChatMessageCollection`
     ''')
 
     def _GetMyRole(self):
@@ -302,7 +298,7 @@ class Chat(Cached):
     ''')
 
     def _GetName(self):
-        return self._Name
+        return self._Handle
 
     Name = property(_GetName,
     doc='''Chat name as used by Skype to identify this chat.
@@ -332,21 +328,21 @@ class Chat(Cached):
     ''')
 
     def _GetPosters(self):
-        return gen(User(self._Skype, x) for x in split(self._Property('POSTERS')))
+        return UserCollection(self._Owner, split(self._Property('POSTERS')))
 
     Posters = property(_GetPosters,
     doc='''Users who have posted messages to this chat.
 
-    :type: tuple of `User`
+    :type: `UserCollection`
     ''')
 
     def _GetRecentMessages(self):
-        return gen(ChatMessage(x, self._Skype) for x in split(self._Property('RECENTCHATMESSAGES', Cache=False), ', '))
+        return ChatMessageCollection(self._Owner, split(self._Property('RECENTCHATMESSAGES', Cache=False), ', '))
 
     RecentMessages = property(_GetRecentMessages,
     doc='''Most recent chat messages.
 
-    :type: tuple of `ChatMessage`
+    :type: `ChatMessageCollection`
     ''')
 
     def _GetStatus(self):
@@ -414,6 +410,10 @@ class Chat(Cached):
     ''')
 
 
+class ChatCollection(CachedCollection):
+    _Type = Chat
+
+
 class ChatMessage(Cached):
     '''Represents a single chat message.
     '''
@@ -422,17 +422,13 @@ class ChatMessage(Cached):
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
-    def _Init(self, Owner, Handle):
-        self._Skype = Owner
-        self._Id = Handle
-
     def _Property(self, PropName, Value=None, Cache=True):
-        return self._Skype._Property('CHATMESSAGE', self.Id, PropName, Value, Cache)
+        return self._Owner._Property('CHATMESSAGE', self.Id, PropName, Value, Cache)
 
     def MarkAsSeen(self):
         '''Marks a missed chat message as seen.
         '''
-        self._Skype._DoCommand('SET CHATMESSAGE %d SEEN' % self.Id, 'CHATMESSAGE %d STATUS READ' % self.Id)
+        self._Owner._DoCommand('SET CHATMESSAGE %d SEEN' % self.Id, 'CHATMESSAGE %d STATUS READ' % self.Id)
 
     def _GetBody(self):
         return self._Property('BODY')
@@ -447,7 +443,7 @@ class ChatMessage(Cached):
     ''')
 
     def _GetChat(self):
-        return Chat(self.ChatName, self._Skype)
+        return Chat(self.ChatName, self._Owner)
 
     Chat = property(_GetChat,
     doc='''Chat this message was posted on.
@@ -521,7 +517,7 @@ class ChatMessage(Cached):
     ''')
 
     def _GetId(self):
-        return self._Id
+        return self._Handle
 
     Id = property(_GetId,
     doc='''Chat message Id.
@@ -564,7 +560,7 @@ class ChatMessage(Cached):
     ''')
 
     def _GetSender(self):
-        return User(self._Skype, self.FromHandle)
+        return User(self._Owner, self.FromHandle)
 
     Sender = property(_GetSender,
     doc='''Sender of the chat message.
@@ -602,13 +598,17 @@ class ChatMessage(Cached):
     ''')
 
     def _GetUsers(self):
-        return gen(User(self._Skype, x) for x in split(self._Property('USERS')))
+        return UserCollection(self._Owner, split(self._Property('USERS')))
 
     Users = property(_GetUsers,
     doc='''Users added to the chat.
 
-    :type: tuple of `User`
+    :type: `UserCollection`
     ''')
+
+
+class ChatMessageCollection(CachedCollection):
+    _Type = ChatMessage
 
 
 class ChatMember(Cached):
@@ -620,14 +620,10 @@ class ChatMember(Cached):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('CHATMEMBER', self.Id, AlterName, Args, 'ALTER CHATMEMBER %s' % AlterName)
-
-    def _Init(self, Owner, Handle):
-        self._Skype = Owner
-        self._Id = Handle
+        return self._Owner._Alter('CHATMEMBER', self.Id, AlterName, Args, 'ALTER CHATMEMBER %s' % AlterName)
 
     def _Property(self, PropName, Value=None, Cache=True):
-        return self._Skype._Property('CHATMEMBER', self.Id, PropName, Value, Cache)
+        return self._Owner._Property('CHATMEMBER', self.Id, PropName, Value, Cache)
 
     def CanSetRoleTo(self, Role):
         '''Checks if the new role can be applied to the member.
@@ -642,7 +638,7 @@ class ChatMember(Cached):
         return (self._Alter('CANSETROLETO', Role) == 'TRUE')
 
     def _GetChat(self):
-        return Chat(self._Property('CHATNAME'), self._Skype)
+        return Chat(self._Property('CHATNAME'), self._Owner)
 
     Chat = property(_GetChat,
     doc='''Chat this member belongs to.
@@ -660,7 +656,7 @@ class ChatMember(Cached):
     ''')
 
     def _GetId(self):
-        return self._Id
+        return self._Handle
 
     Id = property(_GetId,
     doc='''Chat member Id.
@@ -688,3 +684,7 @@ class ChatMember(Cached):
 
     :type: `enums`.chatMemberRole*
     ''')
+
+
+class ChatMemberCollection(CachedCollection):
+    _Type = ChatMember

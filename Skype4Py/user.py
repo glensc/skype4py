@@ -15,12 +15,8 @@ class User(Cached):
     def __repr__(self):
         return '<%s with Handle=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Handle))
 
-    def _Init(self, Owner, Handle):
-        self._Skype = Owner
-        self._Handle = Handle
-
     def _Property(self, PropName, Set=None, Cache=True):
-        return self._Skype._Property('USER', self.Handle, PropName, Set, Cache)
+        return self._Owner._Property('USER', self.Handle, PropName, Set, Cache)
 
     def SaveAvatarToFile(self, Filename, AvatarId=1):
         '''Saves user avatar to a file.
@@ -32,7 +28,7 @@ class User(Cached):
             Avatar Id.
         '''
         s = 'USER %s AVATAR %s %s' % (self.Handle, AvatarId, path2unicode(Filename))
-        self._Skype._DoCommand('GET %s' % s, s)
+        self._Owner._DoCommand('GET %s' % s, s)
 
     def SetBuddyStatusPendingAuthorization(self, Text=u''):
         '''Sets the BuddyStaus property to `enums.budPendingAuthorization`
@@ -56,12 +52,12 @@ class User(Cached):
     ''')
 
     def _GetAliases(self):
-        return gen(str(x) for x in split(self._Property('ALIASES')))
+        return split(self._Property('ALIASES'))
 
     Aliases = property(_GetAliases,
     doc='''Aliases of the user.
 
-    :type: tuple of str
+    :type: list of str
     ''')
 
     def _GetBirthday(self):
@@ -110,7 +106,7 @@ class User(Cached):
     def _GetCountry(self):
         value = self._Property('COUNTRY')
         if value:
-            if self._Skype.Protocol >= 4:
+            if self._Owner.Protocol >= 4:
                 value = chop(value)[-1]
         return value
 
@@ -121,7 +117,7 @@ class User(Cached):
     ''')
 
     def _GetCountryCode(self):
-        if self._Skype.Protocol < 4:
+        if self._Owner.Protocol < 4:
             return ''
         value = self._Property('COUNTRY')
         if value:
@@ -245,7 +241,7 @@ class User(Cached):
     def _GetLanguage(self):
         value = self._Property('LANGUAGE')
         if value:
-            if self._Skype.Protocol >= 4:
+            if self._Owner.Protocol >= 4:
                 value = chop(value)[-1]
         return value
 
@@ -256,7 +252,7 @@ class User(Cached):
     ''')
 
     def _GetLanguageCode(self):
-        if self._Skype.Protocol < 4:
+        if self._Owner.Protocol < 4:
             return u''
         value = self._Property('LANGUAGE')
         if value:
@@ -406,6 +402,10 @@ class User(Cached):
     ''')
 
 
+class UserCollection(CachedCollection):
+    _Type = User
+
+
 class Group(Cached):
     '''Represents a group of Skype users.
     '''
@@ -415,14 +415,10 @@ class Group(Cached):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('GROUP', self._Id, AlterName, Args)
-
-    def _Init(self, Owner, Handle):
-        self._Skype = Owner
-        self._Id = Handle
+        return self._Owner._Alter('GROUP', self.Id, AlterName, Args)
 
     def _Property(self, PropName, Value=None, Cache=True):
-        return self._Skype._Property('GROUP', self._Id, PropName, Value, Cache)
+        return self._Owner._Property('GROUP', self.Id, PropName, Value, Cache)
 
     def Accept(self):
         '''Accepts an invitation to join a shared contact group.
@@ -483,7 +479,7 @@ class Group(Cached):
     ''')
 
     def _GetId(self):
-        return self._Id
+        return self._Handle
 
     Id = property(_GetId,
     doc='''Group Id.
@@ -510,12 +506,12 @@ class Group(Cached):
     ''')
 
     def _GetOnlineUsers(self):
-        return gen(x for x in self.Users if x.OnlineStatus == olsOnline)
+        return UserCollection(self._Owner, (x.Handle for x in self.Users if x.OnlineStatus == olsOnline))
 
     OnlineUsers = property(_GetOnlineUsers,
     doc='''Users of the group that are online
 
-    :type: tuple of `User`
+    :type: `UserCollection`
     ''')
 
     def _GetType(self):
@@ -528,10 +524,14 @@ class Group(Cached):
     ''')
 
     def _GetUsers(self):
-        return gen(User(self._Skype, x) for x in split(self._Property('USERS', Cache=False), ', '))
+        return UserCollection(self._Owner, split(self._Property('USERS', Cache=False), ', '))
 
     Users = property(_GetUsers,
     doc='''Users in this group.
 
-    :type: tuple of `User`
+    :type: `UserCollection`
     ''')
+
+
+class GroupCollection(CachedCollection):
+    _Type = Group

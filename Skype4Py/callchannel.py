@@ -229,12 +229,12 @@ class CallChannelManager(EventHandlingBase):
         self._Skype = None
 
     def _GetChannels(self):
-        return gen(x for x in self._Channels)
+        return list(self._Channels)
 
     Channels = property(_GetChannels,
     doc='''All call data channels.
 
-    :type: tuple of `CallChannel`
+    :type: list of `CallChannel`
     ''')
 
     def _GetChannelType(self):

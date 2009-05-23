@@ -15,20 +15,18 @@ class SmsMessage(Cached):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('SMS', self.Id, AlterName, Args)
+        return self._Owner._Alter('SMS', self.Id, AlterName, Args)
 
-    def _Init(self, Owner, Handle):
-        self._Skype = Owner
-        self._Handle = Handle
+    def _Init(self):
         self._MakeOwner()
 
     def _Property(self, PropName, Set=None, Cache=True):
-        return self._Skype._Property('SMS', self.Id, PropName, Set, Cache)
+        return self._Owner._Property('SMS', self.Id, PropName, Set, Cache)
 
     def Delete(self):
         '''Deletes this SMS message.
         '''
-        self._Skype._DoCommand('DELETE SMS %s' % self.Id)
+        self._Owner._DoCommand('DELETE SMS %s' % self.Id)
 
     def Send(self):
         '''Sends this SMS message.
@@ -48,12 +46,12 @@ class SmsMessage(Cached):
     ''')
 
     def _GetChunks(self):
-        return gen(SmsChunk(self, x) for x in range(int(chop(self._Property('CHUNKING', Cache=False))[0])))
+        return SmsChunkCollection(self, xrange(int(chop(self._Property('CHUNKING', Cache=False))[0])))
 
     Chunks = property(_GetChunks,
     doc='''Chunks of this SMS message. More than one if this is a multi-part message.
 
-    :type: tuple of `SmsChunk`
+    :type: `SmsChunkCollection`
     ''')
 
     def _GetDatetime(self):
@@ -181,7 +179,7 @@ class SmsMessage(Cached):
     ''')
 
     def _GetTargetNumbers(self):
-        return gen(str(x) for x in split(self._Property('TARGET_NUMBERS'), ', '))
+        return split(self._Property('TARGET_NUMBERS'), ', ')
 
     def _SetTargetNumbers(self, Value):
         self._Property('TARGET_NUMBERS', ', '.join(Value))
@@ -193,12 +191,12 @@ class SmsMessage(Cached):
     ''')
 
     def _GetTargets(self):
-        return gen(SmsTarget(self, x) for x in split(self._Property('TARGET_NUMBERS'), ', '))
+        return SmsTargetCollection(self, split(self._Property('TARGET_NUMBERS'), ', '))
 
     Targets = property(_GetTargets,
     doc='''Target objects.
 
-    :type: tuple of `SmsTarget`
+    :type: `SmsTargetCollection`
     ''')
 
     def _GetTimestamp(self):
@@ -222,6 +220,10 @@ class SmsMessage(Cached):
     ''')
 
 
+class SmsMessageCollection(CachedCollection):
+    _Type = SmsMessage
+
+
 class SmsChunk(Cached):
     '''Represents a single chunk of a multi-part SMS message.
     '''
@@ -229,10 +231,6 @@ class SmsChunk(Cached):
 
     def __repr__(self):
         return '<%s with Id=%s, Message=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Message))
-
-    def _Init(self, Owner, Handle):
-        self._Message = Owner
-        self._Id = Handle
 
     def _GetCharactersLeft(self):
         count, left = map(int, chop(self.Message._Property('CHUNKING', Cache=False)))
@@ -247,7 +245,7 @@ class SmsChunk(Cached):
     ''')
 
     def _GetId(self):
-        return self._Id
+        return self._Handle
 
     Id = property(_GetId,
     doc='''SMS chunk Id.
@@ -256,7 +254,7 @@ class SmsChunk(Cached):
     ''')
 
     def _GetMessage(self):
-        return self._Message
+        return self._Owner
 
     Message = property(_GetMessage,
     doc='''SMS message associated with this chunk.
@@ -274,6 +272,10 @@ class SmsChunk(Cached):
     ''')
 
 
+class SmsChunkCollection(CachedCollection):
+    _Type = SmsChunk
+
+
 class SmsTarget(Cached):
     '''Represents a single target of a multi-target SMS message.
     '''
@@ -282,12 +284,8 @@ class SmsTarget(Cached):
     def __repr__(self):
         return '<%s with Number=%s, Message=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Number), repr(self.Message))
 
-    def _Init(self, Owner, Handle):
-        self._Message = Owner
-        self._Number = Handle
-
     def _GetMessage(self):
-        return self._Message
+        return self._Owner
 
     Message = property(_GetMessage,
     doc='''An SMS message object this target refers to.
@@ -296,7 +294,7 @@ class SmsTarget(Cached):
     ''')
 
     def _GetNumber(self):
-        return self._Number
+        return self._Handle
 
     Number = property(_GetNumber,
     doc='''Target phone number.
@@ -307,7 +305,7 @@ class SmsTarget(Cached):
     def _GetStatus(self):
         for t in split(self.Message._Property('TARGET_STATUSES'), ', '):
             number, status = t.split('=')
-            if number == self._Number:
+            if number == self.Number:
                 return str(status)
 
     Status = property(_GetStatus,
@@ -315,3 +313,7 @@ class SmsTarget(Cached):
 
     :type: `enums`.smsTargetStatus*
     ''')
+
+
+class SmsTargetCollection(CachedCollection):
+    _Type = SmsTarget

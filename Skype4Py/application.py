@@ -18,14 +18,10 @@ class Application(Cached):
         return '<%s with Name=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Name))
 
     def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('APPLICATION', self.Name, AlterName, Args)
-
-    def _Init(self, Owner, Handle):
-        self._Skype = Owner
-        self._Handle = Handle
+        return self._Owner._Alter('APPLICATION', self.Name, AlterName, Args)
 
     def _Property(self, PropName, Set=None):
-        return self._Skype._Property('APPLICATION', self.Name, PropName, Set)
+        return self._Owner._Property('APPLICATION', self.Name, PropName, Set)
 
     def _Connect_ApplicationStreams(self, App, Streams):
         if App == self:
@@ -52,10 +48,10 @@ class Application(Cached):
             self._Connect_Stream = [None]
             self._Connect_Username = Username
             self._Connect_ApplicationStreams(self, self.Streams)
-            self._Skype.RegisterEventHandler('ApplicationStreams', self._Connect_ApplicationStreams)
+            self._Owner.RegisterEventHandler('ApplicationStreams', self._Connect_ApplicationStreams)
             self._Alter('CONNECT', Username)
             self._Connect_Event.wait()
-            self._Skype.UnregisterEventHandler('ApplicationStreams', self._Connect_ApplicationStreams)
+            self._Owner.UnregisterEventHandler('ApplicationStreams', self._Connect_ApplicationStreams)
             try:
                 return self._Connect_Stream[0]
             finally:
@@ -66,12 +62,12 @@ class Application(Cached):
     def Create(self):
         '''Creates the APP2APP application in Skype client.
         '''
-        self._Skype._DoCommand('CREATE APPLICATION %s' % self.Name)
+        self._Owner._DoCommand('CREATE APPLICATION %s' % self.Name)
 
     def Delete(self):
         '''Deletes the APP2APP application in Skype client.
         '''
-        self._Skype._DoCommand('DELETE APPLICATION %s' % self.Name)
+        self._Owner._DoCommand('DELETE APPLICATION %s' % self.Name)
 
     def SendDatagram(self, Text, Streams=None):
         '''Sends datagram to application streams.
@@ -89,21 +85,21 @@ class Application(Cached):
             s.SendDatagram(Text)
 
     def _GetConnectableUsers(self):
-        return gen(User(self._Skype, x) for x in split(self._Property('CONNECTABLE')))
+        return UserCollection(self._Owner, split(self._Property('CONNECTABLE')))
 
     ConnectableUsers = property(_GetConnectableUsers,
     doc='''All connectible users.
 
-    :type: tuple of `User`
+    :type: `UserCollection`
     ''')
 
     def _GetConnectingUsers(self):
-        return gen(User(self._Skype, x) for x in split(self._Property('CONNECTING')))
+        return UserCollection(self._Owner, split(self._Property('CONNECTING')))
 
     ConnectingUsers = property(_GetConnectingUsers,
     doc='''All users connecting at the moment.
 
-    :type: tuple of `User`
+    :type: `UserCollection`
     ''')
 
     def _GetName(self):
@@ -116,30 +112,30 @@ class Application(Cached):
     ''')
 
     def _GetReceivedStreams(self):
-        return gen(ApplicationStream(self, x.split('=')[0]) for x in split(self._Property('RECEIVED')))
+        return ApplicationStreamCollection(self, (x.split('=')[0] for x in split(self._Property('RECEIVED'))))
 
     ReceivedStreams = property(_GetReceivedStreams,
     doc='''All streams that received data and can be read.
 
-    :type: tuple of `ApplicationStream`
+    :type: `ApplicationStreamCollection`
     ''')
 
     def _GetSendingStreams(self):
-        return gen(ApplicationStream(self, x.split('=')[0]) for x in split(self._Property('SENDING')))
+        return ApplicationStreamCollection(self, (x.split('=')[0] for x in split(self._Property('SENDING'))))
 
     SendingStreams = property(_GetSendingStreams,
     doc='''All streams that send data and at the moment.
 
-    :type: tuple of `ApplicationStream`
+    :type: `ApplicationStreamCollection`
     ''')
 
     def _GetStreams(self):
-        return gen(ApplicationStream(self, x) for x in split(self._Property('STREAMS')))
+        return ApplicationStreamCollection(self, split(self._Property('STREAMS')))
 
     Streams = property(_GetStreams,
     doc='''All currently connected application streams.
 
-    :type: tuple of `ApplicationStream`
+    :type: `ApplicationStreamCollection`
     ''')
 
 
@@ -153,10 +149,6 @@ class ApplicationStream(Cached):
 
     def __repr__(self):
         return '<%s with Handle=%s, Application=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Handle), repr(self.Application))
-
-    def _Init(self, Owner, Handle, App):
-        self._Handle = Handle
-        self._App = App
 
     def Disconnect(self):
         '''Disconnects the stream.
@@ -196,7 +188,7 @@ class ApplicationStream(Cached):
     write = Write
 
     def _GetApplication(self):
-        return self._App
+        return self._Owner
 
     Application = property(_GetApplication,
     doc='''Application this stream belongs to.
@@ -251,3 +243,7 @@ class ApplicationStream(Cached):
 
     :type: str
     ''')
+
+
+class ApplicationStreamCollection(CachedCollection):
+    _Type = ApplicationStream

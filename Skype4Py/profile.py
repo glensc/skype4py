@@ -217,7 +217,7 @@ class Profile(object):
     ''')
 
     def _GetLanguages(self):
-        return gen(str(x) for x in split(self._Property('LANGUAGES')))
+        return [str(x) for x in split(self._Property('LANGUAGES'))]
 
     def _SetLanguages(self, Value):
         self._Property('LANGUAGES', ' '.join(Value))
@@ -225,7 +225,7 @@ class Profile(object):
     Languages = property(_GetLanguages, _SetLanguages,
     doc='''"ISO language codes of the profile.
 
-    :type: tuple of str
+    :type: list of str
     ''')
 
     def _GetMoodText(self):
@@ -327,11 +327,11 @@ class Profile(object):
     ''')
 
     def _GetValidatedSmsNumbers(self):
-        return gen(str(x) for x in split(self._Property('SMS_VALIDATED_NUMBERS'), ', '))
+        return [str(x) for x in split(self._Property('SMS_VALIDATED_NUMBERS'), ', ')]
 
     ValidatedSmsNumbers = property(_GetValidatedSmsNumbers,
     doc='''List of phone numbers the user has registered for usage in reply-to
     field of SMS messages.
 
-    :type: tuple of unicode
+    :type: list of str
     ''')

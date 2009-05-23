@@ -16,15 +16,11 @@ class FileTransfer(Cached):
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
 
-    def _Init(self, Owner, Handle):
-        self._Skype = Owner
-        self._Id = Handle
-
     def _Alter(self, AlterName, Args=None):
-        return self._Skype._Alter('FILETRANSFER', self.Id, AlterName, Args)
+        return self._Owner._Alter('FILETRANSFER', self.Id, AlterName, Args)
 
     def _Property(self, PropName, Set=None):
-        return self._Skype._Property('FILETRANSFER', self.Id, PropName, Set)
+        return self._Owner._Property('FILETRANSFER', self.Id, PropName, Set)
 
     def _GetBytesPerSecond(self):
         return int(self._Property('BYTESPERSECOND'))
@@ -100,7 +96,7 @@ class FileTransfer(Cached):
     ''')
 
     def _GetId(self):
-        return self._Id
+        return self._Handle
 
     Id = property(_GetId,
     doc='''Unique file transfer Id.
@@ -162,3 +158,7 @@ class FileTransfer(Cached):
 
     :type: `enums`.fileTransferType*
     ''')
+
+
+class FileTransferCollection(CachedCollection):
+    _Type = FileTransfer
