@@ -10,8 +10,8 @@ from new import instancemethod
 
 
 __all__ = ['tounicode', 'path2unicode', 'unicode2path', 'chop', 'args2dict', 'quote',
-           'split', 'cndexp', 'WeakCallableRef', 'EventHandlingBase',
-           'Cached', 'CachedCollection']
+           'split', 'cndexp', 'EventHandlingBase', 'CollectionMixin', 'Cached',
+           'CachedCollection']
 
 
 def tounicode(s):
@@ -188,113 +188,39 @@ def cndexp(condition, truevalue, falsevalue):
     return falsevalue
 
 
-class WeakMethod(object):
-    '''Helper class for WeakCallableRef function (see below).
-    Don't use directly.
-    '''
-
-    def __init__(self, method, callback=None):
-        '''__init__.
-
+class EventSchedulerThread(threading.Thread):
+    def __init__(self, name, after, handlers, args, kwargs):
+        '''Initializes the object.
+        
         :Parameters:
-          method : method
-            Method to be referenced.
-          callback : callable
-            Callback to be called when the method is garbage collected.
-        '''
-        self.im_func = method.im_func
-        try:
-            self.weak_im_self = weakref.ref(method.im_self, self._dies)
-        except TypeError:
-            self.weak_im_self = None
-        self.im_class = method.im_class
-        self.callback = callback
-
-    def __call__(self):
-        if self.weak_im_self:
-            im_self = self.weak_im_self()
-            if im_self is None:
-                return None
-        else:
-            im_self = None
-        return instancemethod(self.im_func, im_self, self.im_class)
-
-    def __repr__(self):
-        obj = self()
-        objrepr = repr(obj)
-        if obj is None:
-            objrepr = 'dead'
-        return '<weakref at 0x%x; %s>' % (id(self), objrepr)
-
-    def _dies(self, ref):
-        # weakref to im_self died
-        self.im_func = self.im_class = None
-        if self.callback is not None:
-            self.callback(self)
-
-
-def WeakCallableRef(c, callback=None):
-    '''Creates and returns a new weak reference to a callable object.
-
-    In contrast to weakref.ref() works on all kinds of callables.
-    Usage is same as weakref.ref().
-
-    :Parameters:
-      c : callable
-        A callable that the weak reference should point to.
-      callback : callable
-        Callback called when the callable is garbage collected (freed).
-
-    :return: A weak callable reference.
-    :rtype: weakref
-    '''
-
-    try:
-        return WeakMethod(c, callback)
-    except AttributeError:
-        return weakref.ref(c, callback)
-
-
-class EventHandlingThread(threading.Thread):
-    def __init__(self, name=None):
-        '''__init__.
-
-        :Parameters:
-          name : unicode
-            name
-        '''
-        threading.Thread.__init__(self, name='%s event handler' % name)
-        self.setDaemon(False)
-        self.lock = threading.Lock()
-        self.queue = []
-
-    def enqueue(self, target, args, kwargs):
-        '''enqueue.
-
-        :Parameters:
-          target : callable
-            Callable to be called.
+          name : str
+            Event name.
+          after : threading.Thread or None
+            If not None, a thread that needs to end before this
+            one starts.
+          handlers : iterable
+            Iterable of callable event handlers.
           args : tuple
-            Positional arguments for the callable.
+            Positional arguments for the event handlers.
           kwargs : dict
-            Keyword arguments for the callable.
+            Keyword arguments for the event handlers.
+
+        :note: When the thread is started (using the ``start`` method), it iterates over
+               the handlers and calls them with the supplied arguments.
         '''
-        self.queue.append((target, args, kwargs))
+        threading.Thread.__init__(self, name='Skype4Py %s event scheduler' % name)
+        self.setDaemon(False)
+        self.after = after
+        self.handlers = handlers
+        self.args = args
+        self.kwargs = kwargs
 
     def run(self):
-        '''Executes all queued targets.
-        '''
-        while True:
-            try:
-                try:
-                    self.lock.acquire()
-                    h = self.queue[0]
-                    del self.queue[0]
-                except IndexError:
-                    break
-            finally:
-                self.lock.release()
-            h[0](*h[1], **h[2])
+        if self.after:
+            self.after.join()
+            self.after = None # Remove the reference.
+        for handler in self.handlers:
+            handler(*self.args, **self.kwargs)
 
 
 class EventHandlingBase(object):
@@ -309,13 +235,11 @@ class EventHandlingBase(object):
     `SkypeEvents`. The events class is always defined in the same module as the main class.
 
     The events class tells you what events you can assign your event handlers to, when do they
-    occur and what arguments lists should your event handlers accept.
+    occur and what arguments should your event handlers accept.
 
     There are three ways of attaching an event handler to an event.
 
     1. ``Events`` object.
-
-       Use this method if you need to attach many event handlers to many events.
 
        Write your event handlers as methods of a class. The superclass of your class
        is not important for Skype4Py, it will just look for methods with appropriate names.
@@ -334,9 +258,26 @@ class EventHandlingBase(object):
                    print 'The status of the user changed'
 
            skype = Skype4Py.Skype(Events=MySkypeEvents())
+           
+       If your application is build around a class, you may want to use is for Skype4Py
+       events too. For example:
+       
+       .. python::
+       
+           import Skype4Py
+           
+           class MyApplication:
+               def __init__(self):
+                   self.skype = Skype4Py.Skype(Events=self)
+                   
+               def UserStatus(self, Status):
+                   print 'The status of the user changed'
+                   
+       This lets you access the `Skype` object (``self.skype``) without using global
+       variables.
 
-       The ``UserStatus`` method will be called when the status of the user currently logged
-       into Skype is changed.
+       In both examples, the ``UserStatus`` method will be called when the status of the
+       user currently logged into Skype is changed.
 
     2. ``On...`` properties.
 
@@ -357,14 +298,16 @@ class EventHandlingBase(object):
        The ``user_status`` function will be called when the status of the user currently logged
        into Skype is changed.
 
-       The names of the events and their arguments lists should be taken from respective events
+       The names of the events and their arguments lists can be found in respective events
        classes (see above). Note that there is no ``self`` argument (which can be seen in the events
        classes) simply because our event handler is a function, not a method.
 
     3. ``RegisterEventHandler`` / ``UnregisterEventHandler`` methods.
 
        This method, like the second one, also lets you use any callables as event handlers. However,
-       it additionally lets you assign many event handlers to a single event.
+       it also lets you assign many event handlers to a single event. This may be useful if for
+       example you need to momentarily attach an event handler without disturbing other parts of
+       your code already using one of the above two methods.
 
        In this case, you use `RegisterEventHandler` and `UnregisterEventHandler` methods
        of the object whose events you are interested in. For example:
@@ -387,37 +330,37 @@ class EventHandlingBase(object):
        classes) simply because our event handler is a function, not a method.
        
        All handlers attached to a single event will be called serially in the order they were
-       attached.
+       registered.
 
     **Multithreading warning.**
 
-    The event handlers are always called on a separate thread. At any given time, there is at most
-    one handling thread per event type. This means that when a lot of events of the same type are
-    generated at once, their handlers will be called in serial on one thread. Handling of events
-    of different types may happen simultaneously on many threads.
+    All event handlers are called on separate threads, never on the main one. At any given time,
+    there is at most one thread per event calling your handlers. This means that when many events
+    of the same type occur at once, the handlers will be called one after another. Different events
+    will be handled simultaneously.
     
-    **Object owning note.**
+    **Cyclic references note.**
 
-    In the first method, a reference to the events object is stored. However, in the second and
-    third method, only weak references to the event handlers are maintained. This means that you
-    must make sure that Skype4Py is not the only one having a reference to the callable or else
-    it will be garbage collected and silently removed from Skype4Py's handlers list. On the other
-    hand, it frees you from worrying about cyclic references.
-    
-    Skype4Py uses its own mechanism for weak references to callables (`WeakCallableRef`) which
-    properly handles weak references to all types of Python callables.
+    Until Skype4Py 1.0.31.1, the library used weak references to the handlers. This was removed
+    to avoid confusion and simplify/speed up the code. If cyclic references do occur, they are
+    expected to be removed by the Python's garbage collector which should always be present as
+    the library is expected to work in a relatively resource rich environment which is needed
+    by the Skype client anyway.
     '''
-
+    # Initialized by the _AddEvents() class method.
     _EventNames = []
 
     def __init__(self):
         '''Initializes the object.
         '''
-        self._EventHandlerObj = None
-        self._DefaultEventHandlers = {}
-        self._EventHandlers = {}
-        self._EventThreads = {}
+        # Event -> EventSchedulerThread object mapping. Use WeakValueDictionary to let the
+        # threads be freed after they are finished.
+        self._EventThreads = weakref.WeakValueDictionary()
+        self._EventHandlerObj = None # Current "Events" object.
+        self._DefaultEventHandlers = {} # "On..." handlers.
+        self._EventHandlers = {} # "RegisterEventHandler" handlers.
 
+        # Initialize the _EventHandlers mapping.
         for event in self._EventNames:
             self._EventHandlers[event] = []
 
@@ -434,43 +377,24 @@ class EventHandlingBase(object):
           KwArgs
             Keyword arguments for the event handlers.
         '''
-        # get list of relevant handlers
-        handlers = dict([(x, x()) for x in self._EventHandlers[Event]])
-        if None in handlers.values():
-            # cleanup
-            self._EventHandlers[Event] = list([x[0] for x in handlers.items() if x[1] is not None])
-        handlers = filter(None, handlers.values())
-        # try the On... handlers
+        if Event not in self._EventHandlers:
+            raise ValueError('%s is not a valid %s event name' % (Event, self.__class__.__name__))
+        # Get a list of handlers for this event.
         try:
-            h = self._DefaultEventHandlers[Event]()
-            if h:
-                handlers.append(h)
+            handlers = [self._DefaultEventHandlers[Event]]
         except KeyError:
-            pass
-        # try the object handlers
-        try:
-            handlers.append(getattr(self._EventHandlerObj, Event))
-        except AttributeError:
-            pass
-        # if no handlers, leave
-        if not handlers:
-            return
-        # initialize event handling thread if needed
-        if Event in self._EventThreads:
-            t = self._EventThreads[Event]
-            t.lock.acquire()
-            if not self._EventThreads[Event].isAlive():
-                t = self._EventThreads[Event] = EventHandlingThread(Event)
-        else:
-            t = self._EventThreads[Event] = EventHandlingThread(Event)
-        # enqueue handlers in thread
-        for h in handlers:
-            t.enqueue(h, Args, KwArgs)
-        # start serial event processing
-        try:
-            t.lock.release()
-        except:
-            t.start()
+            handlers = []
+        handlers.extend(self._EventHandlers[Event])
+        # Proceed only if there are handlers.
+        if handlers:
+            # Get the last thread for this event.
+            after = self._EventThreads.get(Event, None)
+            # Create a new thread, pass the last one to it so it can wait until it is finished.
+            thread = EventSchedulerThread(Event, after, handlers, Args, KwArgs)
+            # Store a weak reference to the new thread for this event.
+            self._EventThreads[Event] = thread
+            # Start the thread.
+            thread.start()
 
     def RegisterEventHandler(self, Event, Target):
         '''Registers any callable as an event handler.
@@ -484,25 +408,19 @@ class EventHandlingBase(object):
         :return: True is callable was successfully registered, False if it was already registered.
         :rtype: bool
 
-        :see: `EventHandlingBase`
+        :see: `UnregisterEventHandler`
         '''
-
         if not callable(Target):
             raise TypeError('%s is not callable' % repr(Target))
         if Event not in self._EventHandlers:
             raise ValueError('%s is not a valid %s event name' % (Event, self.__class__.__name__))
-        # get list of relevant handlers
-        handlers = dict([(x, x()) for x in self._EventHandlers[Event]])
-        if None in handlers.values():
-            # cleanup
-            self._EventHandlers[Event] = list([x[0] for x in handlers.items() if x[1] is not None])
-        if Target in handlers.values():
+        if Target in self._EventHandlers[Event]:
             return False
-        self._EventHandlers[Event].append(WeakCallableRef(Target))
+        self._EventHandlers[Event].append(Target)
         return True
 
     def UnregisterEventHandler(self, Event, Target):
-        '''Unregisters a previously registered event handler (a callable).
+        '''Unregisters an event handler previously registered with `RegisterEventHandler`.
 
         :Parameters:
           Event : str
@@ -514,29 +432,22 @@ class EventHandlingBase(object):
                  first.
         :rtype: bool
 
-        :see: `EventHandlingBase`
+        :see: `RegisterEventHandler`
         '''
-
         if not callable(Target):
             raise TypeError('%s is not callable' % repr(Target))
         if Event not in self._EventHandlers:
             raise ValueError('%s is not a valid %s event name' % (Event, self.__class__.__name__))
-        # get list of relevant handlers
-        handlers = dict([(x, x()) for x in self._EventHandlers[Event]])
-        if None in handlers.values():
-            # cleanup
-            self._EventHandlers[Event] = list([x[0] for x in handlers.items() if x[1] is not None])
-        for wref, trg in handlers.items():
-            if trg == Target:
-                self._EventHandlers[Event].remove(wref)
-                return True
+        if Target in self._EventHandlers[Event]:
+            self._EventHandlers[Event].remove(Target)
+            return True
         return False
 
     def _SetDefaultEventHandler(self, Event, Target):
         if Target:
             if not callable(Target):
                 raise TypeError('%s is not callable' % repr(Target))
-            self._DefaultEventHandlers[Event] = WeakCallableRef(Target)
+            self._DefaultEventHandlers[Event] = Target
         else:
             try:
                 del self._DefaultEventHandlers[Event]
@@ -545,40 +456,82 @@ class EventHandlingBase(object):
 
     def _GetDefaultEventHandler(self, Event):
         try:
-            return self._DefaultEventHandlers[Event]()
+            return self._DefaultEventHandlers[Event]
         except KeyError:
-            pass
+            return None
 
     def _SetEventHandlerObj(self, Obj):
         '''Registers an object as events handler, object should contain methods with names
-        corresponding to event names, only one object may be registered at a time. A reference
-        to the object will be kept until it is unregistered.
+        corresponding to event names, only one object may be registered at a time.
         
         :Parameters:
           Obj
-            Object to register. If None, unregisters the currently registered object.
+            Object to register. May be None in which case the currently registered object
+            will be unregistered.
         '''
         self._EventHandlerObj = Obj
 
-    @staticmethod
-    def __AddEvents_make_event(Event):
-        # TODO: rework to make compatible with cython (someday?)
-        return property(lambda self: self._GetDefaultEventHandler(Event),
-                        lambda self, value: self._SetDefaultEventHandler(Event, value))
-
     @classmethod
     def _AddEvents(cls, Class):
-        '''Adds events to class based on the attributes of the given class.
+        '''Adds events based on the attributes of the given ``...Events`` class.
         
         :Parameters:
           Class : class
             An `...Events` class whose methods define events that may occur in the
             instances of the current class.
         '''
+        def make_event(event):
+            return property(lambda self: self._GetDefaultEventHandler(Event),
+                             lambda self, Value: self._SetDefaultEventHandler(Event, Value))
         for event in dir(Class):
             if not event.startswith('_'):
-                setattr(cls, 'On%s' % event, cls.__AddEvents_make_event(event))
+                setattr(cls, 'On%s' % event, make_event(event))
                 cls._EventNames.append(event)
+
+
+class List(list):
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return self.__class__(list.__getitem__(self, key))
+        return list.__getitem__(self, key)
+
+    def __getslice__(self, i, j):
+        return self.__getitem__(slice(i, j))
+
+    def __add__(self, other):
+        return self.__class__(list.__add__(self, other))
+
+    def __mul__(self, times):
+        return self.__class__(list.__mul__(self, times))
+
+
+class CollectionMixin(object):
+    def Add(self, Item):
+        '''
+        '''
+        self.append(Item)
+
+    def Remove(self, Index):
+        '''
+        '''
+        del self[Index]
+
+    def RemoveAll(self):
+        '''
+        '''
+        del self[:]
+
+    def Item(self, Index):
+        '''
+        '''
+        return self[Index]
+
+    def _GetCount(self):
+        return len(self)
+
+    Count = property(_GetCount,
+    doc='''
+    ''')
 
 
 class Cached(object):
@@ -640,14 +593,16 @@ class Cached(object):
         Owner._ObjectCache = weakref.WeakValueDictionary()
 
 
-class CachedCollection(object):
+class CachedCollection(CollectionMixin):
     '''
     '''
     _Type = Cached
     
-    def __init__(self, Owner, Handles):
+    def __init__(self, Owner, Handles=[], Items=[]):
         self._Owner = Owner
         self._Handles = map(self._Type._HandleCast, Handles)
+        for item in Items:
+            self.append(item)
 
     def _AssertItem(self, Item):
         if not isinstance(Item, self._Type):
@@ -713,6 +668,11 @@ class CachedCollection(object):
     def __imul__(self, Times):
         self._Handles *= Times
         return self
+        
+    def __copy__(self):
+        obj = self.__class__(self._Owner)
+        obj._Handles = self._Handles[:]
+        return obj
 
     def append(self, item):
         '''
@@ -768,30 +728,3 @@ class CachedCollection(object):
                 return cmpfunc(self._Type(self._Owner, a),
                                self._Type(self._Owner, b))
         self._Handles.sort(wrapper, key, reverse)
-
-    def Add(self, Item):
-        '''
-        '''
-        self.append(Item)
-
-    def Remove(self, Index):
-        '''
-        '''
-        del self[Index]
-
-    def RemoveAll(self):
-        '''
-        '''
-        del self[:]
-
-    def Item(self, Index):
-        '''
-        '''
-        return self[Index]
-
-    def _GetCount(self):
-        return len(self)
-
-    Count = property(_GetCount,
-    doc='''
-    ''')

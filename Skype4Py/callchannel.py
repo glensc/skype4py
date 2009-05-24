@@ -4,86 +4,12 @@ __docformat__ = 'restructuredtext en'
 
 
 import time
+import weakref
+from copy import copy
 
 from utils import *
 from enums import *
 from errors import SkypeError
-
-
-class CallChannel(object):
-    '''Represents a call channel.
-    '''
-
-    def __init__(self, Manager, Call, Stream, Type):
-        '''Initializes the object.
-        
-        :Parameters:
-          Manager : `CallChannelManager`
-            The call channel manager object.
-          Call : `Call`
-            The call object.
-          Stream : `ApplicationStream`
-            The APP2APP stream object.
-          Type : `enums`.cct*
-            The call channel type.
-        '''
-        self._Manager = Manager
-        self._Call = Call
-        self._Stream = Stream
-        self._Type = str(Type)
-
-    def __repr__(self):
-        return '<%s with Manager=%s, Call=%s, Stream=%s>' % (object.__repr__(self)[1:-1], repr(self.Manager), repr(self.Call), repr(self.Stream))
-
-    def SendTextMessage(self, Text):
-        '''Sends a text message over channel.
-
-        :Parameters:
-          Text : unicode
-            Text to send.
-        '''
-        if self._Type == cctReliable:
-            self._Stream.Write(Text)
-        elif self._Type == cctDatagram:
-            self._Stream.SendDatagram(Text)
-        else:
-            raise SkypeError(0, 'Cannot send using %s channel type' & repr(self._Type))
-
-    def _GetCall(self):
-        return self._Call
-
-    Call = property(_GetCall,
-    doc='''The call object associated with this channel.
-
-    :type: `Call`
-    ''')
-
-    def _GetManager(self):
-        return self._Manager
-
-    Manager = property(_GetManager,
-    doc='''The call channel manager object.
-
-    :type: `CallChannelManager`
-    ''')
-
-    def _GetStream(self):
-        return self._Stream
-
-    Stream = property(_GetStream,
-    doc='''Underlying APP2APP stream object.
-
-    @type: `ApplicationStream`
-    ''')
-
-    def _GetType(self):
-        return self._Type
-
-    Type = property(_GetType,
-    doc='''Type of this channel.
-
-    :type: `enums`.cct*
-    ''')
 
 
 class CallChannelManager(EventHandlingBase):
@@ -118,14 +44,14 @@ class CallChannelManager(EventHandlingBase):
     '''
 
     def __del__(self):
-        if self._Application:
-            self._Application.Delete()
-            self._Application = None
+        if getattr(self, '_App', None):
+            self._App.Delete()
+            self._App = None
             self._Skype.UnregisterEventHandler('ApplicationStreams', self._OnApplicationStreams)
             self._Skype.UnregisterEventHandler('ApplicationReceiving', self._OnApplicationReceiving)
             self._Skype.UnregisterEventHandler('ApplicationDatagram', self._OnApplicationDatagram)
 
-    def __init__(self, Events=None):
+    def __init__(self, Events=None, Skype=None):
         '''Initializes the object.
         
         :Parameters:
@@ -137,17 +63,13 @@ class CallChannelManager(EventHandlingBase):
         if Events:
             self._SetEventHandlerObj(Events)
 
-        self._Skype = None
-        self._CallStatusEventHandler = None
-        self._ApplicationStreamsEventHandler = None
-        self._ApplicationReceivingEventHandler = None
-        self._ApplicationDatagramEventHandler = None
-        self._Application = None
+        self._Skype = Skype # May be None until Connect is called.
+        self._App = None
         self._Name = u'CallChannelManager'
         self._ChannelType = cctReliable
-        self._Channels = []
+        self._Channels = CallChannelCollection()
 
-    def _OnApplicationDatagram(self, App, Stream, Text):
+    def _ApplicationDatagram(self, App, Stream, Text):
         if App == self._Application:
             for ch in self_Channels:
                 if ch.Stream == Stream:
@@ -155,21 +77,21 @@ class CallChannelManager(EventHandlingBase):
                     self._CallEventHandler('Message', self, ch, msg)
                     break
 
-    def _OnApplicationReceiving(self, App, Streams):
+    def _ApplicationReceiving(self, App, Streams):
         if App == self._Application:
             for ch in self._Channels:
                 if ch.Stream in Streams:
                     msg = CallChannelMessage(ch.Stream.Read())
                     self._CallEventHandler('Message', self, ch, msg)
 
-    def _OnApplicationStreams(self, App, Streams):
+    def _ApplicationStreams(self, App, Streams):
         if App == self._Application:
             for ch in self._Channels:
                 if ch.Stream not in Streams:
                     self._Channels.remove(ch)
                     self._CallEventHandler('Channels', self, self.Channels)
 
-    def _OnCallStatus(self, Call, Status):
+    def _CallStatus(self, Call, Status):
         if Status == clsRinging:
             if self._Application is None:
                 self.CreateApplication()
@@ -201,7 +123,8 @@ class CallChannelManager(EventHandlingBase):
         :see: `Disconnect`
         '''
         self._Skype = Skype
-        self._Skype.RegisterEventHandler('CallStatus', self._OnCallStatus)
+        self._Skype.RegisterEventHandler('CallStatus', self._CallStatus)
+        del self._Channels[:]
 
     def CreateApplication(self, ApplicationName=None):
         '''Creates an APP2APP application context. The application is automatically created using
@@ -209,15 +132,15 @@ class CallChannelManager(EventHandlingBase):
         
         :Parameters:
           ApplicationName : unicode
-            Application name. The default name is ``u'CallChannelManager'``.
+            Application name. Initial name, when the manager is created, is ``u'CallChannelManager'``.
         '''
         if ApplicationName is not None:
             self.Name = tounicode(ApplicationName)
-        self._Application = self._Skype.Application(self.Name)
-        self._Skype.RegisterEventHandler('ApplicationStreams', self._OnApplicationStreams)
-        self._Skype.RegisterEventHandler('ApplicationReceiving', self._OnApplicationReceiving)
-        self._Skype.RegisterEventHandler('ApplicationDatagram', self._OnApplicationDatagram)
-        self._Application.Create()
+        self._App = self._Skype.Application(self.Name)
+        self._Skype.RegisterEventHandler('ApplicationStreams', self._ApplicationStreams)
+        self._Skype.RegisterEventHandler('ApplicationReceiving', self._ApplicationReceiving)
+        self._Skype.RegisterEventHandler('ApplicationDatagram', self._ApplicationDatagram)
+        self._App.Create()
         self._CallEventHandler('Created', self)
 
     def Disconnect(self):
@@ -225,16 +148,17 @@ class CallChannelManager(EventHandlingBase):
         
         :see: `Connect`
         '''
-        self._Skype.UnregisterEventHandler('CallStatus', self._OnCallStatus)
+        self._Skype.UnregisterEventHandler('CallStatus', self._CallStatus)
         self._Skype = None
 
     def _GetChannels(self):
-        return list(self._Channels)
+        # Slice to copy, we don't want our collection to be externaly modified.
+        return self._Channels[:]
 
     Channels = property(_GetChannels,
     doc='''All call data channels.
 
-    :type: list of `CallChannel`
+    :type: `CallChannelCollection`
     ''')
 
     def _GetChannelType(self):
@@ -250,7 +174,7 @@ class CallChannelManager(EventHandlingBase):
     ''')
 
     def _GetCreated(self):
-        return bool(self._Application)
+        return (not not self._App)
 
     Created = property(_GetCreated,
     doc='''Returns True if the application context has been created.
@@ -309,6 +233,78 @@ class CallChannelManagerEvents(object):
 
 
 CallChannelManager._AddEvents(CallChannelManagerEvents)
+
+
+class CallChannel(object):
+    '''Represents a call channel.
+    '''
+
+    def __init__(self, Manager, Call, Stream, Type):
+        self._Manager = Manager
+        self._Call = Call
+        self._Stream = Stream
+        self._Type = Type
+
+    def __repr__(self):
+        return '<%s with Manager=%s, Call=%s, Stream=%s>' % (object.__repr__(self)[1:-1],
+            repr(self.Manager), repr(self.Call), repr(self.Stream))
+
+    def SendTextMessage(self, Text):
+        '''Sends a text message over channel.
+
+        :Parameters:
+          Text : unicode
+            Text to send.
+        '''
+        if self.Type == cctReliable:
+            self.Stream.Write(Text)
+        elif self.Type == cctDatagram:
+            self.Stream.SendDatagram(Text)
+        else:
+            raise SkypeError(0, 'Cannot send using %s channel type' & repr(self.Type))
+
+    def _GetCall(self):
+        return self._Call
+
+    Call = property(_GetCall,
+    doc='''The call object associated with this channel.
+
+    :type: `Call`
+    ''')
+
+    def _GetManager(self):
+        return self._Manager
+
+    Manager = property(_GetManager,
+    doc='''The call channel manager object.
+
+    :type: `CallChannelManager`
+    ''')
+
+    def _GetStream(self):
+        return self._Stream
+
+    Stream = property(_GetStream,
+    doc='''Underlying APP2APP stream object.
+
+    @type: `ApplicationStream`
+    ''')
+
+    def _GetType(self):
+        return self._Type
+
+    def _SetType(self, Value):
+        self._Type = str(Value)
+
+    Type = property(_GetType, _SetType,
+    doc='''Type of this channel.
+
+    :type: `enums`.cct*
+    ''')
+
+
+class CallChannelCollection(List, CollectionMixin):
+    pass
 
 
 class CallChannelMessage(object):

@@ -291,13 +291,11 @@ class SkypeAPI(SkypeAPIBase):
             return winp.contents.value
 
     def close(self):
-        # if there are no active handlers
-        if self.count_handlers() == 0:
-            self.loop_break = True
-            self.loop_event.set()
-            while self.isAlive():
-                time.sleep(0.01)
-            self.dprint('closed')
+        self.loop_break = True
+        self.loop_event.set()
+        while self.isAlive():
+            time.sleep(0.01)
+        self.dprint('closed')
 
     def set_friendly_name(self, friendly_name):
         SkypeAPIBase.set_friendly_name(self, friendly_name)
@@ -369,7 +367,7 @@ class SkypeAPI(SkypeAPIBase):
         if self.attachment_status != apiAttachSuccess and not force:
             self.attach(command.Timeout)
         self.push_command(command)
-        self.call_handler('send', command)
+        self.notifier.sending_command(command)
         cmd = u'#%d %s' % (command.Id, command.Command)
         self.dprint('-> %s', repr(cmd))
         if command.Blocking:
@@ -409,8 +407,8 @@ class SkypeAPI(SkypeAPIBase):
                 else:
                     command._timer.cancel()
                     del command._timer
-                self.call_handler('rece', command)
+                self.notifier.reply_received(command)
             else:
-                self.call_handler('rece_api', cmd[p + 1:])
+                self.notifier.notification_received(cmd[p + 1:])
         else:
-            self.call_handler('rece_api', cmd)
+            self.notifier.notification_received(cmd)

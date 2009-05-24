@@ -25,7 +25,6 @@ __docformat__ = 'restructuredtext en'
 import sys
 import threading
 import time
-import weakref
 
 from Skype4Py.api import Command, SkypeAPIBase, timeout2float
 from Skype4Py.enums import *
@@ -94,15 +93,13 @@ class SkypeAPI(SkypeAPIBase):
         self.dprint('thread finished')
 
     def close(self):
-        # if there are no active handlers
-        if self.count_handlers() == 0:
-            if hasattr(self, 'mainloop'):
-                self.mainloop.quit()
-            self.skype_in = self.skype_out = None
-            if self.dbus_name_owner_watch is not None:
-                self.bus.remove_signal_receiver(self.dbus_name_owner_watch)
-            self.dbus_name_owner_watch = None
-            self.dprint('closed')
+        if hasattr(self, 'mainloop'):
+            self.mainloop.quit()
+        self.skype_in = self.skype_out = None
+        if self.dbus_name_owner_watch is not None:
+            self.bus.remove_signal_receiver(self.dbus_name_owner_watch)
+        self.dbus_name_owner_watch = None
+        self.dprint('closed')
 
     def set_friendly_name(self, friendly_name):
         SkypeAPIBase.set_friendly_name(self, friendly_name)
@@ -189,7 +186,7 @@ class SkypeAPI(SkypeAPIBase):
         if not self.skype_out:
             self.attach(command.Timeout)
         self.push_command(command)
-        self.call_handler('send', command)
+        self.notifier.sending_command(command)
         cmd = u'#%d %s' % (command.Id, command.Command)
         self.dprint('-> %s', repr(cmd))
         if command.Blocking:
@@ -222,11 +219,11 @@ class SkypeAPI(SkypeAPIBase):
                 else:
                     command._timer.cancel()
                     del command._timer
-                self.call_handler('rece', command)
+                self.notifier.reply_received(command)
             else:
-                self.call_handler('rece_api', cmd[p + 1:])
+                self.notifier.notification_received(cmd[p + 1:])
         else:
-            self.call_handler('rece_api', cmd)
+            self.notifier.notification_received(cmd)
 
     def dbus_name_owner_changed(self, owned, old_owner, new_owner):
         self.dprint('<- dbus name owner changed')

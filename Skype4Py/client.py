@@ -95,7 +95,7 @@ class Client(object):
             cmd += ' ENABLE_MULTIPLE_CONTACTS true'
         if PluginContext == pluginContextContact:
             cmd += ' CONTACT_TYPE_FILTER %s' % ContactType
-        self._Owner._DoCommand(cmd)
+        self._Skype._DoCommand(cmd)
         return PluginMenuItem(self._Skype, MenuItemId, CaptionText, HintText, Enabled)
 
     def Focus(self):
@@ -311,10 +311,12 @@ class Client(object):
     ''')
 
 
-class PluginEvent(Cached):
+class PluginEvent(object):
     '''Represents an event displayed in Skype client's events pane.
     '''
-    _HandleCast = tounicode
+    def __init__(self, Skype, Id):
+        self._Skype = Skype
+        self._Id = Id
 
     def __repr__(self):
         return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
@@ -322,10 +324,10 @@ class PluginEvent(Cached):
     def Delete(self):
         '''Deletes the event from the events pane in the Skype client.
         '''
-        self._Owner._DoCommand('DELETE EVENT %s' % self.Id)
+        self._Skype._DoCommand('DELETE EVENT %s' % self.Id)
 
     def _GetId(self):
-        return self._Handle
+        return self._Id
 
     Id = property(_GetId,
     doc='''Unique event Id.
@@ -334,33 +336,30 @@ class PluginEvent(Cached):
     ''')
 
 
-class PluginMenuItem(Cached):
+class PluginMenuItem(object):
     '''Represents a menu item displayed in Skype client's "Do More" menus.
     '''
-    _HandleCast = tounicode
+    def __init__(self, Skype, Id, Caption, Hint, Enabled):
+        self._Skype = Skype
+        self._Id = Id
+        self._CacheDict = {}
+        self._CacheDict['CAPTION'] = tounicode(Caption)
+        self._CacheDict['HINT'] = tounicode(Hint)
+        self._CacheDict['ENABLED'] = cndexp(Enabled, u'TRUE', u'FALSE')
 
     def __repr__(self):
-        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
-
-    def _Init(self, Caption=None, Hint=None, Enabled=None):
-        self._CacheDict = {}
-        if Caption is not None:
-            self._CacheDict['CAPTION'] = tounicode(Caption)
-        if Hint is not None:
-            self._CacheDict['HINT'] = tounicode(Hint)
-        if Enabled is not None:
-            self._CacheDict['ENABLED'] = cndexp(Enabled, u'TRUE', u'FALSE')
+        return '<%s with Id=%s>' % (object.__repr__(self)[1:-1], repr(self.Id))
 
     def _Property(self, PropName, Set=None):
         if Set is None:
             return self._CacheDict[PropName]
-        self._Owner._Property('MENU_ITEM', self.Id, PropName, Set)
+        self._Skype._Property('MENU_ITEM', self.Id, PropName, Set)
         self._CacheDict[PropName] = unicode(Set)
 
     def Delete(self):
         '''Removes the menu item from the "Do More" menus.
         '''
-        self._Owner._DoCommand('DELETE MENU_ITEM %s' % self.Id)
+        self._Skype._DoCommand('DELETE MENU_ITEM %s' % self.Id)
 
     def _GetCaption(self):
         return self._Property('CAPTION')
@@ -375,7 +374,7 @@ class PluginMenuItem(Cached):
     ''')
 
     def _GetEnabled(self):
-        return self._Property('ENABLED') == 'TRUE'
+        return (self._Property('ENABLED') == 'TRUE')
 
     def _SetEnabled(self, Value):
         self._Property('ENABLED', cndexp(Value, 'TRUE', 'FALSE'))
@@ -400,7 +399,7 @@ class PluginMenuItem(Cached):
     ''')
 
     def _GetId(self):
-        return self._Handle
+        return self._Id
 
     Id = property(_GetId,
     doc='''Unique menu item Id.

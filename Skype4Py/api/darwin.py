@@ -323,12 +323,10 @@ class SkypeAPI(SkypeAPIBase):
         self.dprint('thread finished')
 
     def close(self):
-        # if there are no active handlers
-        if self.count_handlers() == 0:
-            if hasattr(self, 'loop'):
-                self.loop.quit()
-                self.client_id = -1
-                self.dprint('closed')
+        if hasattr(self, 'loop'):
+            self.loop.quit()
+            self.client_id = -1
+            self.dprint('closed')
 
     def set_friendly_name(self, friendly_name):
         SkypeAPIBase.set_friendly_name(self, friendly_name)
@@ -386,7 +384,7 @@ class SkypeAPI(SkypeAPIBase):
         if not self.attachment_status == apiAttachSuccess:
             self.attach(command.Timeout)
         self.push_command(command)
-        self.call_handler('send', command)
+        self.notifier.sending_command(command)
         cmd = u'#%d %s' % (command.Id, command.Command)
         if command.Blocking:
             command._event = event = threading.Event()
@@ -451,11 +449,11 @@ class SkypeAPI(SkypeAPIBase):
                 else:
                     command._timer.cancel()
                     del command._timer
-                self.call_handler('rece', command)
+                self.notifier.reply_received(command)
             else:
-                self.call_handler('rece_api', cmd[p + 1:])
+                self.notifier.notification_received(cmd[p + 1:])
         else:
-            self.call_handler('rece_api', cmd)
+            self.notifier.notification_received(cmd)
 
     def SKSkypeWillQuit(self, center, observer, name, obj, userInfo):
         self.dprint('<- SKSkypeWillQuit')

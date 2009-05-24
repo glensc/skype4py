@@ -20,7 +20,7 @@ from Skype4Py.enums import apiAttachUnknown
 from Skype4Py.errors import SkypeAPIError
 
 
-__all__ = ['Command', 'SkypeAPIBase', 'timeout2float', 'SkypeAPI']
+__all__ = ['Command', 'SkypeAPINotifier', 'SkypeAPIBase', 'timeout2float', 'SkypeAPI']
 
 
 class Command(object):
@@ -59,7 +59,7 @@ class Command(object):
         :type: unicode'''
 
         self.Timeout = Timeout
-        '''Timeout in milliseconds if Blocking == True.
+        '''Timeout if Blocking == True.
         
         :type: int'''
 
@@ -74,6 +74,20 @@ class Command(object):
         return timeout2float(self.Timeout)
 
 
+class SkypeAPINotifier(object):
+    def attachment_changed(self, status):
+        pass
+
+    def notification_received(self, notification):
+        pass
+        
+    def sending_command(self, command):
+        pass
+
+    def reply_received(self, command):
+        pass
+
+
 class SkypeAPIBase(threading.Thread):
     def __init__(self, opts):
         threading.Thread.__init__(self)
@@ -82,8 +96,8 @@ class SkypeAPIBase(threading.Thread):
         self.friendly_name = u'Skype4Py'
         self.protocol = 5
         self.commands = {}
-        self.commands_lock = threading.Lock()
-        self.handlers = []
+        self.commands_lock = threading.RLock()
+        self.notifier = SkypeAPINotifier()
         self.attachment_status = apiAttachUnknown
 
     def _not_implemented(self):
@@ -92,26 +106,10 @@ class SkypeAPIBase(threading.Thread):
     def finalize_opts(self, opts):
         if opts:
             raise TypeError('Unexpected option(s): %s' % ', '.join(opts.keys()))
-
-    def register_handler(self, handler):
-        for h in self.handlers:
-            if h() == handler:
-                return
-        self.handlers.append(WeakCallableRef(handler))
-
-    def update_handlers(self):
-        self.handlers = filter(lambda x: x(), self.handlers)
-
-    def count_handlers(self):
-        self.update_handlers()
-        return len(self.handlers)
-
-    def call_handler(self, mode, arg):
-        for h in self.handlers:
-            f = h()
-            if f:
-                f(mode, arg)
-
+        
+    def set_notifier(self, notifier):
+        self.notifier = notifier
+        
     def push_command(self, command):
         self.commands_lock.acquire()
         if command.Id < 0:
@@ -155,7 +153,7 @@ class SkypeAPIBase(threading.Thread):
         if attachment_status != self.attachment_status:
             self.dprint('new attachment status: %s', attachment_status)
             self.attachment_status = attachment_status
-            self.call_handler('attach', attachment_status)
+            self.notifier.attachment_changed(attachment_status)
 
     def attach(self, timeout, wait=True):
         self._not_implemented()
@@ -187,9 +185,9 @@ def timeout2float(timeout):
       timeout : int, long or float
         The input timeout. Assumed to be expressed in number of
         milliseconds if the type is int or long. For float, assumed
-        to be a number of seconds.
+        to be a number of seconds (or fractions thereof).
     
-    :return: The timeout expressed in number of seconds.
+    :return: The timeout expressed in number of seconds (or fractions thereof).
     :rtype: float
     '''
     if isinstance(timeout, float):

@@ -100,14 +100,12 @@ class SkypeAPI(SkypeAPIBase):
         self.dprint('thread finished')
 
     def close(self):
-        # if there are no active handlers
-        if self.count_handlers() == 0:
-            if self.hwnd:
-                windll.user32.PostMessageA(self.hwnd, WM_QUIT, 0, 0)
-                while self.hwnd:
-                    time.sleep(0.01)
-            self.skype = None
-            self.dprint('closed')
+        if self.hwnd:
+            windll.user32.PostMessageA(self.hwnd, WM_QUIT, 0, 0)
+            while self.hwnd:
+                time.sleep(0.01)
+        self.skype = None
+        self.dprint('closed')
 
     def set_friendly_name(self, friendly_name):
         SkypeAPIBase.set_friendly_name(self, friendly_name)
@@ -282,11 +280,11 @@ class SkypeAPI(SkypeAPIBase):
                     else:
                         command._timer.cancel()
                         del command._timer
-                    self.call_handler('rece', command)
+                    self.notifier.reply_received(command)
                 else:
-                    self.call_handler('rece_api', cmd[p + 1:])
+                    self.notifier.notification_received(cmd[p + 1:])
             else:
-                self.call_handler('rece_api', cmd)
+                self.notifier.notification_received(cmd)
             return 1
         elif umsg == apiAttachAvailable:
             self.dprint('<- apiAttachAvailable')
@@ -300,7 +298,7 @@ class SkypeAPI(SkypeAPIBase):
             if not self.skype:
                 self.attach(command.Timeout)
             self.push_command(command)
-            self.call_handler('send', command)
+            self.notifier.sending_command(command)
             cmd = u'#%d %s' % (command.Id, command.Command)
             cmd8 = cmd.encode('utf-8') + '\0'
             copydata = COPYDATASTRUCT(None, len(cmd8), cmd8)

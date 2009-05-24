@@ -4,6 +4,7 @@ __docformat__ = 'restructuredtext en'
 
 
 import threading
+import weakref
 
 from api import *
 from errors import *
@@ -20,6 +21,162 @@ from application import *
 from voicemail import *
 from sms import *
 from filetransfer import *
+
+
+class APINotifier(SkypeAPINotifier):
+    def __init__(self, skype):
+        self.skype = skype
+
+    def attachment_changed(self, status):
+        self.skype._CallEventHandler('AttachmentStatus', status)
+        if status == apiAttachRefused:
+            raise SkypeAPIError('Skype connection refused')
+
+    def notification_received(self, notification):
+        skype = self.skype
+        skype._CallEventHandler('Notify', notification)
+        a, b = chop(notification)
+        object_type = None
+        # if..elif handling cache and most event handlers
+        if a in ('CALL', 'USER', 'GROUP', 'CHAT', 'CHATMESSAGE', 'CHATMEMBER', 'VOICEMAIL', 'APPLICATION', 'SMS', 'FILETRANSFER'):
+            object_type, object_id, prop_name, value = [a] + chop(b, 2)
+            skype._CacheDict[str(object_type), str(object_id), str(prop_name)] = value
+            if object_type == 'USER':
+                o = User(skype, object_id)
+                if prop_name == 'ONLINESTATUS':
+                    skype._CallEventHandler('OnlineStatus', o, str(value))
+                elif prop_name == 'MOOD_TEXT' or prop_name == 'RICH_MOOD_TEXT':
+                    skype._CallEventHandler('UserMood', o, value)
+                elif prop_name == 'RECEIVEDAUTHREQUEST':
+                    skype._CallEventHandler('UserAuthorizationRequestReceived', o)
+            elif object_type == 'CALL':
+                o = Call(skype, object_id)
+                if prop_name == 'STATUS':
+                    skype._CallEventHandler('CallStatus', o, str(value))
+                elif prop_name == 'SEEN':
+                    skype._CallEventHandler('CallSeenStatusChanged', o, (value == 'TRUE'))
+                elif prop_name == 'VAA_INPUT_STATUS':
+                    skype._CallEventHandler('CallInputStatusChanged', o, (value == 'TRUE'))
+                elif prop_name == 'TRANSFER_STATUS':
+                    skype._CallEventHandler('CallTransferStatusChanged', o, str(value))
+                elif prop_name == 'DTMF':
+                    skype._CallEventHandler('CallDtmfReceived', o, str(value))
+                elif prop_name == 'VIDEO_STATUS':
+                    skype._CallEventHandler('CallVideoStatusChanged', o, str(value))
+                elif prop_name == 'VIDEO_SEND_STATUS':
+                    skype._CallEventHandler('CallVideoSendStatusChanged', o, str(value))
+                elif prop_name == 'VIDEO_RECEIVE_STATUS':
+                    skype._CallEventHandler('CallVideoReceiveStatusChanged', o, str(value))
+            elif object_type == 'CHAT':
+                o = Chat(skype, object_id)
+                if prop_name == 'MEMBERS':
+                    skype._CallEventHandler('ChatMembersChanged', o, UserCollection(skype, split(value)))
+                if prop_name in ('OPENED', 'CLOSED'):
+                    skype._CallEventHandler('ChatWindowState', o, (prop_name == 'OPENED'))
+            elif object_type == 'CHATMEMBER':
+                o = ChatMember(skype, object_id)
+                if prop_name == 'ROLE':
+                    skype._CallEventHandler('ChatMemberRoleChanged', o, str(value))
+            elif object_type == 'CHATMESSAGE':
+                o = ChatMessage(skype, object_id)
+                if prop_name == 'STATUS':
+                    skype._CallEventHandler('MessageStatus', o, str(value))
+            elif object_type == 'APPLICATION':
+                o = Application(skype, object_id)
+                if prop_name == 'CONNECTING':
+                    skype._CallEventHandler('ApplicationConnecting', o, UserCollection(skype, split(value)))
+                elif prop_name == 'STREAMS':
+                    skype._CallEventHandler('ApplicationStreams', o, ApplicationStreamCollection(o, split(value)))
+                elif prop_name == 'DATAGRAM':
+                    handle, text = chop(value)
+                    skype._CallEventHandler('ApplicationDatagram', o, ApplicationStream(o, handle), text)
+                elif prop_name == 'SENDING':
+                    skype._CallEventHandler('ApplicationSending', o, ApplicationStreamCollection(o, (x.split('=')[0] for x in split(value))))
+                elif prop_name == 'RECEIVED':
+                    skype._CallEventHandler('ApplicationReceiving', o, ApplicationStreamCollection(o, (x.split('=')[0] for x in split(value))))
+            elif object_type == 'GROUP':
+                o = Group(skype, object_id)
+                if prop_name == 'VISIBLE':
+                    skype._CallEventHandler('GroupVisible', o, (value == 'TRUE'))
+                elif prop_name == 'EXPANDED':
+                    skype._CallEventHandler('GroupExpanded', o, (value == 'TRUE'))
+                elif prop_name == 'USERS':
+                    skype._CallEventHandler('GroupUsers', o, UserCollection(skype, split(value, ', ')))
+            elif object_type == 'SMS':
+                o = SmsMessage(skype, object_id)
+                if prop_name == 'STATUS':
+                    skype._CallEventHandler('SmsMessageStatusChanged', o, str(value))
+                elif prop_name == 'TARGET_STATUSES':
+                    for t in split(value, ', '):
+                        number, status = t.split('=')
+                        skype._CallEventHandler('SmsTargetStatusChanged', SmsTarget(o, number), str(status))
+            elif object_type == 'FILETRANSFER':
+                o = FileTransfer(skype, object_id)
+                if prop_name == 'STATUS':
+                    skype._CallEventHandler('FileTransferStatusChanged', o, str(value))
+            elif object_type == 'VOICEMAIL':
+                o = Voicemail(skype, object_id)
+                if prop_name == 'STATUS':
+                    skype._CallEventHandler('VoicemailStatus', o, str(value))
+        elif a in ('PROFILE', 'PRIVILEGE'):
+            object_type, object_id, prop_name, value = [a, ''] + chop(b)
+            skype._CacheDict[str(object_type), str(object_id), str(prop_name)] = value
+        elif a in ('CURRENTUSERHANDLE', 'USERSTATUS', 'CONNSTATUS', 'PREDICTIVE_DIALER_COUNTRY', 'SILENT_MODE', 'AUDIO_IN', 'AUDIO_OUT', 'RINGER', 'MUTE', 'AUTOAWAY', 'WINDOWSTATE'):
+            object_type, object_id, prop_name, value = [a, '', '', b]
+            skype._CacheDict[str(object_type), str(object_id), str(prop_name)] = value
+            if object_type == 'MUTE':
+                skype._CallEventHandler('Mute', value == 'TRUE')
+            elif object_type == 'CONNSTATUS':
+                skype._CallEventHandler('ConnectionStatus', str(value))
+            elif object_type == 'USERSTATUS':
+                skype._CallEventHandler('UserStatus', str(value))
+            elif object_type == 'AUTOAWAY':
+                skype._CallEventHandler('AutoAway', (value == 'ON'))
+            elif object_type == 'WINDOWSTATE':
+                skype._CallEventHandler('ClientWindowState', str(value))
+            elif object_type == 'SILENT_MODE':
+                skype._CallEventHandler('SilentModeStatusChanged', (value == 'ON'))
+        elif a == 'CALLHISTORYCHANGED':
+            skype._CallEventHandler('CallHistory')
+        elif a == 'IMHISTORYCHANGED':
+            skype._CallEventHandler('MessageHistory', '') # XXX: Arg is Skypename, which one?
+        elif a == 'CONTACTS':
+            prop_name, value = chop(b)
+            if prop_name == 'FOCUSED':
+                skype._CallEventHandler('ContactsFocused', str(value))
+        elif a == 'DELETED':
+            prop_name, value = chop(b)
+            if prop_name == 'GROUP':
+                skype._CallEventHandler('GroupDeleted', int(value))
+        elif a == 'EVENT':
+            object_id, prop_name, value = chop(b, 2)
+            if prop_name == 'CLICKED':
+                skype._CallEventHandler('PluginEventClicked', PluginEvent(skype, object_id))
+        elif a == 'MENU_ITEM':
+            object_id, prop_name, value = chop(b, 2)
+            if prop_name == 'CLICKED':
+                i = value.rfind('CONTEXT ')
+                if i >= 0:
+                    context = chop(value[i+8:])[0]
+                    users = ()
+                    context_id = u''
+                    if context in (pluginContextContact, pluginContextCall, pluginContextChat):
+                        users = UserCollection(skype, split(value[:i-1], ', '))
+                    if context in (pluginContextCall, pluginContextChat):
+                        j = value.rfind('CONTEXT_ID ')
+                        if j >= 0:
+                            context_id = str(chop(value[j+11:])[0])
+                            if context == pluginContextCall:
+                                context_id = int(context_id)
+                    skype._CallEventHandler('PluginMenuItemClicked', PluginMenuItem(skype, object_id), users, str(context), context_id)
+        elif a == 'WALLPAPER':
+            skype._CallEventHandler('WallpaperChanged', unicode2path(b))
+        
+    def sending_command(self, command):
+        self.skype._CallEventHandler('Command', command)
+
+    def reply_received(self, command):
+        self.skype._CallEventHandler('Reply', command)
 
 
 class Skype(EventHandlingBase):
@@ -67,7 +224,7 @@ class Skype(EventHandlingBase):
             self._SetEventHandlerObj(Events)
 
         self._API = SkypeAPI(Options)
-        self._API.register_handler(self._Handler)
+        self._API.set_notifier(APINotifier(weakref.proxy(self)))
         
         Cached._CreateOwner(self)
 
@@ -84,157 +241,9 @@ class Skype(EventHandlingBase):
     def __del__(self):
         '''Frees all resources.
         '''
+        print 'Skype.__del__'
         if hasattr(self, '_API'):
             self._API.close()
-
-    def _Handler(self, Mode, Arg):
-        # low-level API callback
-        if Mode == 'rece_api':
-            self._CallEventHandler('Notify', Arg)
-            a, b = chop(Arg)
-            object_type = None
-            # if..elif handling cache and most event handlers
-            if a in ('CALL', 'USER', 'GROUP', 'CHAT', 'CHATMESSAGE', 'CHATMEMBER', 'VOICEMAIL', 'APPLICATION', 'SMS', 'FILETRANSFER'):
-                object_type, object_id, prop_name, value = [a] + chop(b, 2)
-                self._CacheDict[str(object_type), str(object_id), str(prop_name)] = value
-                if object_type == 'USER':
-                    o = User(self, object_id)
-                    if prop_name == 'ONLINESTATUS':
-                        self._CallEventHandler('OnlineStatus', o, str(value))
-                    elif prop_name == 'MOOD_TEXT' or prop_name == 'RICH_MOOD_TEXT':
-                        self._CallEventHandler('UserMood', o, value)
-                    elif prop_name == 'RECEIVEDAUTHREQUEST':
-                        self._CallEventHandler('UserAuthorizationRequestReceived', o)
-                elif object_type == 'CALL':
-                    o = Call(self, object_id)
-                    if prop_name == 'STATUS':
-                        self._CallEventHandler('CallStatus', o, str(value))
-                    elif prop_name == 'SEEN':
-                        self._CallEventHandler('CallSeenStatusChanged', o, (value == 'TRUE'))
-                    elif prop_name == 'VAA_INPUT_STATUS':
-                        self._CallEventHandler('CallInputStatusChanged', o, (value == 'TRUE'))
-                    elif prop_name == 'TRANSFER_STATUS':
-                        self._CallEventHandler('CallTransferStatusChanged', o, str(value))
-                    elif prop_name == 'DTMF':
-                        self._CallEventHandler('CallDtmfReceived', o, str(value))
-                    elif prop_name == 'VIDEO_STATUS':
-                        self._CallEventHandler('CallVideoStatusChanged', o, str(value))
-                    elif prop_name == 'VIDEO_SEND_STATUS':
-                        self._CallEventHandler('CallVideoSendStatusChanged', o, str(value))
-                    elif prop_name == 'VIDEO_RECEIVE_STATUS':
-                        self._CallEventHandler('CallVideoReceiveStatusChanged', o, str(value))
-                elif object_type == 'CHAT':
-                    o = Chat(self, object_id)
-                    if prop_name == 'MEMBERS':
-                        self._CallEventHandler('ChatMembersChanged', o, UserCollection(self, split(value)))
-                    if prop_name in ('OPENED', 'CLOSED'):
-                        self._CallEventHandler('ChatWindowState', o, (prop_name == 'OPENED'))
-                elif object_type == 'CHATMEMBER':
-                    o = ChatMember(self, object_id)
-                    if prop_name == 'ROLE':
-                        self._CallEventHandler('ChatMemberRoleChanged', o, str(value))
-                elif object_type == 'CHATMESSAGE':
-                    o = ChatMessage(self, object_id)
-                    if prop_name == 'STATUS':
-                        self._CallEventHandler('MessageStatus', o, str(value))
-                elif object_type == 'APPLICATION':
-                    o = Application(self, object_id)
-                    if prop_name == 'CONNECTING':
-                        self._CallEventHandler('ApplicationConnecting', o, UserCollection(self, split(value)))
-                    elif prop_name == 'STREAMS':
-                        self._CallEventHandler('ApplicationStreams', o, ApplicationStreamCollection(o, split(value)))
-                    elif prop_name == 'DATAGRAM':
-                        handle, text = chop(value)
-                        self._CallEventHandler('ApplicationDatagram', o, ApplicationStream(o, handle), text)
-                    elif prop_name == 'SENDING':
-                        self._CallEventHandler('ApplicationSending', o, ApplicationStreamCollection(o, (x.split('=')[0] for x in split(value))))
-                    elif prop_name == 'RECEIVED':
-                        self._CallEventHandler('ApplicationReceiving', o, ApplicationStreamCollection(o, (x.split('=')[0] for x in split(value))))
-                elif object_type == 'GROUP':
-                    o = Group(self, object_id)
-                    if prop_name == 'VISIBLE':
-                        self._CallEventHandler('GroupVisible', o, (value == 'TRUE'))
-                    elif prop_name == 'EXPANDED':
-                        self._CallEventHandler('GroupExpanded', o, (value == 'TRUE'))
-                    elif prop_name == 'USERS':
-                        self._CallEventHandler('GroupUsers', o, UserCollection(self, split(value, ', ')))
-                elif object_type == 'SMS':
-                    o = SmsMessage(self, object_id)
-                    if prop_name == 'STATUS':
-                        self._CallEventHandler('SmsMessageStatusChanged', o, str(value))
-                    elif prop_name == 'TARGET_STATUSES':
-                        for t in split(value, ', '):
-                            number, status = t.split('=')
-                            self._CallEventHandler('SmsTargetStatusChanged', SmsTarget(o, number), str(status))
-                elif object_type == 'FILETRANSFER':
-                    o = FileTransfer(self, object_id)
-                    if prop_name == 'STATUS':
-                        self._CallEventHandler('FileTransferStatusChanged', o, str(value))
-                elif object_type == 'VOICEMAIL':
-                    o = Voicemail(self, object_id)
-                    if prop_name == 'STATUS':
-                        self._CallEventHandler('VoicemailStatus', o, str(value))
-            elif a in ('PROFILE', 'PRIVILEGE'):
-                object_type, object_id, prop_name, value = [a, ''] + chop(b)
-                self._CacheDict[str(object_type), str(object_id), str(prop_name)] = value
-            elif a in ('CURRENTUSERHANDLE', 'USERSTATUS', 'CONNSTATUS', 'PREDICTIVE_DIALER_COUNTRY', 'SILENT_MODE', 'AUDIO_IN', 'AUDIO_OUT', 'RINGER', 'MUTE', 'AUTOAWAY', 'WINDOWSTATE'):
-                object_type, object_id, prop_name, value = [a, '', '', b]
-                self._CacheDict[str(object_type), str(object_id), str(prop_name)] = value
-                if object_type == 'MUTE':
-                    self._CallEventHandler('Mute', value == 'TRUE')
-                elif object_type == 'CONNSTATUS':
-                    self._CallEventHandler('ConnectionStatus', str(value))
-                elif object_type == 'USERSTATUS':
-                    self._CallEventHandler('UserStatus', str(value))
-                elif object_type == 'AUTOAWAY':
-                    self._CallEventHandler('AutoAway', (value == 'ON'))
-                elif object_type == 'WINDOWSTATE':
-                    self._CallEventHandler('ClientWindowState', str(value))
-                elif object_type == 'SILENT_MODE':
-                    self._CallEventHandler('SilentModeStatusChanged', (value == 'ON'))
-            elif a == 'CALLHISTORYCHANGED':
-                self._CallEventHandler('CallHistory')
-            elif a == 'IMHISTORYCHANGED':
-                self._CallEventHandler('MessageHistory', '') # XXX: Arg is Skypename, which one?
-            elif a == 'CONTACTS':
-                prop_name, value = chop(b)
-                if prop_name == 'FOCUSED':
-                    self._CallEventHandler('ContactsFocused', str(value))
-            elif a == 'DELETED':
-                prop_name, value = chop(b)
-                if prop_name == 'GROUP':
-                    self._CallEventHandler('GroupDeleted', int(value))
-            elif a == 'EVENT':
-                object_id, prop_name, value = chop(b, 2)
-                if prop_name == 'CLICKED':
-                    self._CallEventHandler('PluginEventClicked', PluginEvent(self, object_id))
-            elif a == 'MENU_ITEM':
-                object_id, prop_name, value = chop(b, 2)
-                if prop_name == 'CLICKED':
-                    i = value.rfind('CONTEXT ')
-                    if i >= 0:
-                        context = chop(value[i+8:])[0]
-                        users = ()
-                        context_id = u''
-                        if context in (pluginContextContact, pluginContextCall, pluginContextChat):
-                            users = UserCollection(self, split(value[:i-1], ', '))
-                        if context in (pluginContextCall, pluginContextChat):
-                            j = value.rfind('CONTEXT_ID ')
-                            if j >= 0:
-                                context_id = str(chop(value[j+11:])[0])
-                                if context == pluginContextCall:
-                                    context_id = int(context_id)
-                        self._CallEventHandler('PluginMenuItemClicked', PluginMenuItem(self, object_id), users, str(context), context_id)
-            elif a == 'WALLPAPER':
-                self._CallEventHandler('WallpaperChanged', unicode2path(b))
-        elif Mode == 'rece':
-            self._CallEventHandler('Reply', Arg)
-        elif Mode == 'send':
-            self._CallEventHandler('Command', Arg)
-        elif Mode == 'attach':
-            self._CallEventHandler('AttachmentStatus', str(Arg))
-            if Arg == apiAttachRefused:
-                raise SkypeAPIError('Skype connection refused')
 
     def _DoCommand(self, Cmd, ExpectedReply=''):
         command = Command(Cmd, ExpectedReply, True, self.Timeout)
@@ -473,8 +482,9 @@ class Skype(EventHandlingBase):
           Block : bool
             If set to True, `SendCommand` method waits for a response from Skype API before
             returning.
-          Timeout : int
-            Timeout in milliseconds. Used if Block=True.
+          Timeout : float, int or long
+            Timeout. Used if Block == True. Timeout may be expressed in milliseconds if the type
+            is int or long or in seconds (or fractions thereof) if the type is float.
           Id : int
             Command Id. The default (-1) means it will be assigned automatically as soon as the
             command is sent.
@@ -1223,10 +1233,11 @@ class Skype(EventHandlingBase):
     to the Skype API and to attachment requests (see `Attach`). If a response is not received
     during the timeout period, an `SkypeAPIError` exception is raised.
     
-    The units depend on the type. For float it is the number of seconds, for int or long
-    it is the number of milliseconds. Floats are commonly used in Python modules to express
-    timeouts (see time.sleep() for a basic example). Milliseconds are supported for backward
-    compatibility. Skype4Py support for real float timeouts was introduced in version 1.0.31.1.
+    The units depend on the type. For float it is the number of seconds (or fractions thereof),
+    for int or long it is the number of milliseconds. Floats are commonly used in Python modules
+    to express timeouts (time.sleep() for example). Milliseconds are supported because that's
+    what the Skype4COM library uses. Skype4Py support for real float timeouts was introduced
+    in version 1.0.31.1.
 
     The default value is 30000 milliseconds (int).
 
