@@ -10,10 +10,10 @@ from enums import *
 class Call(Cached):
     '''Represents a voice/video call.
     '''
-    _HandleCast = int
+    _ValidateHandle = int
 
     def __repr__(self):
-        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
+        return Cached.__repr__(self, 'Id')
 
     def _Alter(self, AlterName, Args=None):
         return self._Owner._Alter('CALL', self.Id, AlterName, Args)
@@ -536,16 +536,16 @@ class Call(Cached):
 
 
 class CallCollection(CachedCollection):
-    _Type = Call
+    _CachedType = Call
 
 
 class Participant(Cached):
     '''Represents a conference call participant.
     '''
-    _HandleCast = int
+    _ValidateHandle = int
 
     def __repr__(self):
-        return '<%s with Id=%s, Idx=%s, Handle=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Idx), repr(self.Handle))
+        return Cached.__repr__(self, 'Id', 'Idx', 'Handle')
 
     def _Property(self, Prop):
         reply = self._Owner._Property('CONF_PARTICIPANT %d' % self.Idx)
@@ -616,16 +616,16 @@ class Participant(Cached):
 
 
 class ParticipantCollection(CachedCollection):
-    _Type = Participant
+    _CachedType = Participant
 
 
 class Conference(Cached):
     '''Represents a conference call.
     '''
-    _HandleCast = int
+    _ValidateHandle = int
 
     def __repr__(self):
-        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
+        return Cached.__repr__(self, 'Id')
 
     def Finish(self):
         '''Finishes a conference so all active calls have the status
@@ -677,4 +677,4 @@ class Conference(Cached):
 
 
 class ConferenceCollection(CachedCollection):
-    _Type = Conference
+    _CachedType = Conference

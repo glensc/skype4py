@@ -9,10 +9,10 @@ from utils import *
 class SmsMessage(Cached):
     '''Represents an SMS message.
     '''
-    _HandleCast = int
+    _ValidateHandle = int
 
     def __repr__(self):
-        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
+        return Cached.__repr__(self, 'Id')
 
     def _Alter(self, AlterName, Args=None):
         return self._Owner._Alter('SMS', self.Id, AlterName, Args)
@@ -221,16 +221,16 @@ class SmsMessage(Cached):
 
 
 class SmsMessageCollection(CachedCollection):
-    _Type = SmsMessage
+    _CachedType = SmsMessage
 
 
 class SmsChunk(Cached):
     '''Represents a single chunk of a multi-part SMS message.
     '''
-    _HandleCast = int
+    _ValidateHandle = int
 
     def __repr__(self):
-        return '<%s with Id=%s, Message=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id), repr(self.Message))
+        return Cached.__repr__(self, 'Id', 'Message')
 
     def _GetCharactersLeft(self):
         count, left = map(int, chop(self.Message._Property('CHUNKING', Cache=False)))
@@ -273,16 +273,16 @@ class SmsChunk(Cached):
 
 
 class SmsChunkCollection(CachedCollection):
-    _Type = SmsChunk
+    _CachedType = SmsChunk
 
 
 class SmsTarget(Cached):
     '''Represents a single target of a multi-target SMS message.
     '''
-    _HandleCast = str
+    _ValidateHandle = str
 
     def __repr__(self):
-        return '<%s with Number=%s, Message=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Number), repr(self.Message))
+        return Cached.__repr__(self, 'Number', 'Message')
 
     def _GetMessage(self):
         return self._Owner
@@ -316,4 +316,4 @@ class SmsTarget(Cached):
 
 
 class SmsTargetCollection(CachedCollection):
-    _Type = SmsTarget
+    _CachedType = SmsTarget

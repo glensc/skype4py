@@ -12,10 +12,10 @@ from user import *
 class Application(Cached):
     '''Represents an application in APP2APP protocol. Use `skype.Skype.Application` to instantiate.
     '''
-    _HandleCast = tounicode
+    _ValidateHandle = staticmethod(tounicode)
 
     def __repr__(self):
-        return '<%s with Name=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Name))
+        return Cached.__repr__(self, 'Name')
 
     def _Alter(self, AlterName, Args=None):
         return self._Owner._Alter('APPLICATION', self.Name, AlterName, Args)
@@ -142,13 +142,13 @@ class Application(Cached):
 class ApplicationStream(Cached):
     '''Represents an application stream in APP2APP protocol.
     '''
-    _HandleCast = str
+    _ValidateHandle = str
 
     def __len__(self):
         return self.DataLength
 
     def __repr__(self):
-        return '<%s with Handle=%s, Application=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Handle), repr(self.Application))
+        return Cached.__repr__(self, 'Application')
 
     def Disconnect(self):
         '''Disconnects the stream.
@@ -246,4 +246,4 @@ class ApplicationStream(Cached):
 
 
 class ApplicationStreamCollection(CachedCollection):
-    _Type = ApplicationStream
+    _CachedType = ApplicationStream

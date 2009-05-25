@@ -4,7 +4,6 @@ __docformat__ = 'restructuredtext en'
 
 
 import time
-import weakref
 from copy import copy
 
 from utils import *
@@ -67,47 +66,47 @@ class CallChannelManager(EventHandlingBase):
         self._App = None
         self._Name = u'CallChannelManager'
         self._ChannelType = cctReliable
-        self._Channels = CallChannelCollection()
+        self._Channels = []
 
     def _ApplicationDatagram(self, App, Stream, Text):
-        if App == self._Application:
+        if App == self._App:
             for ch in self_Channels:
-                if ch.Stream == Stream:
+                if ch['stream'] == Stream:
                     msg = CallChannelMessage(Text)
-                    self._CallEventHandler('Message', self, ch, msg)
+                    self._CallEventHandler('Message', self, CallChannel(self, ch), msg)
                     break
 
     def _ApplicationReceiving(self, App, Streams):
-        if App == self._Application:
+        if App == self._App:
             for ch in self._Channels:
-                if ch.Stream in Streams:
+                if ch['stream'] in Streams:
                     msg = CallChannelMessage(ch.Stream.Read())
-                    self._CallEventHandler('Message', self, ch, msg)
+                    self._CallEventHandler('Message', self, CallChannel(self, ch), msg)
 
     def _ApplicationStreams(self, App, Streams):
-        if App == self._Application:
+        if App == self._App:
             for ch in self._Channels:
-                if ch.Stream not in Streams:
+                if ch['stream'] not in Streams:
                     self._Channels.remove(ch)
                     self._CallEventHandler('Channels', self, self.Channels)
 
     def _CallStatus(self, Call, Status):
         if Status == clsRinging:
-            if self._Application is None:
+            if self._App is None:
                 self.CreateApplication()
-            self._Application.Connect(Call.PartnerHandle, True)
-            for stream in self._Application.Streams:
+            self._App.Connect(Call.PartnerHandle, True)
+            for stream in self._App.Streams:
                 if stream.PartnerHandle == Call.PartnerHandle:
-                    self._Channels.append(CallChannel(self, Call, stream, self._ChannelType))
+                    self._Channels.append(dict(call=Call, stream=stream))
                     self._CallEventHandler('Channels', self, self.Channels)
                     break
         elif Status in (clsCancelled, clsFailed, clsFinished, clsRefused, clsMissed):
             for ch in self._Channels:
-                if ch.Call == Call:
+                if ch['call'] == Call:
                     self._Channels.remove(ch)
                     self._CallEventHandler('Channels', self, self.Channels)
                     try:
-                        ch.Stream.Disconnect()
+                        ch['stream'].Disconnect()
                     except SkypeError:
                         pass
                     break
@@ -152,8 +151,7 @@ class CallChannelManager(EventHandlingBase):
         self._Skype = None
 
     def _GetChannels(self):
-        # Slice to copy, we don't want our collection to be externaly modified.
-        return self._Channels[:]
+        return CallChannelCollection(self, self._Channels[:])
 
     Channels = property(_GetChannels,
     doc='''All call data channels.
@@ -238,16 +236,10 @@ CallChannelManager._AddEvents(CallChannelManagerEvents)
 class CallChannel(object):
     '''Represents a call channel.
     '''
-
-    def __init__(self, Manager, Call, Stream, Type):
-        self._Manager = Manager
-        self._Call = Call
-        self._Stream = Stream
-        self._Type = Type
+    _ValidateHandle = staticmethod(lambda x: x)
 
     def __repr__(self):
-        return '<%s with Manager=%s, Call=%s, Stream=%s>' % (object.__repr__(self)[1:-1],
-            repr(self.Manager), repr(self.Call), repr(self.Stream))
+        return Cached.__repr__(self, 'Manager', 'Call', 'Stream')
 
     def SendTextMessage(self, Text):
         '''Sends a text message over channel.
@@ -264,7 +256,7 @@ class CallChannel(object):
             raise SkypeError(0, 'Cannot send using %s channel type' & repr(self.Type))
 
     def _GetCall(self):
-        return self._Call
+        return self._Handle['call']
 
     Call = property(_GetCall,
     doc='''The call object associated with this channel.
@@ -273,7 +265,7 @@ class CallChannel(object):
     ''')
 
     def _GetManager(self):
-        return self._Manager
+        return self._Owner
 
     Manager = property(_GetManager,
     doc='''The call channel manager object.
@@ -282,7 +274,7 @@ class CallChannel(object):
     ''')
 
     def _GetStream(self):
-        return self._Stream
+        return self._Handle['stream']
 
     Stream = property(_GetStream,
     doc='''Underlying APP2APP stream object.
@@ -291,10 +283,10 @@ class CallChannel(object):
     ''')
 
     def _GetType(self):
-        return self._Type
+        return self._Handle.get('type', self.Manager.ChannelType)
 
     def _SetType(self, Value):
-        self._Type = str(Value)
+        self._Handle['type'] = str(Value)
 
     Type = property(_GetType, _SetType,
     doc='''Type of this channel.
@@ -303,8 +295,8 @@ class CallChannel(object):
     ''')
 
 
-class CallChannelCollection(List, CollectionMixin):
-    pass
+class CallChannelCollection(CachedCollection):
+    _CachedType = CallChannel
 
 
 class CallChannelMessage(object):

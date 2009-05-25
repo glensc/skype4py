@@ -11,10 +11,10 @@ from utils import *
 class FileTransfer(Cached):
     '''Represents a file transfer.
     '''
-    _HandleCast = int
+    _ValidateHandle = int
 
     def __repr__(self):
-        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
+        return Cached.__repr__(self, 'Id')
 
     def _Alter(self, AlterName, Args=None):
         return self._Owner._Alter('FILETRANSFER', self.Id, AlterName, Args)
@@ -161,4 +161,4 @@ class FileTransfer(Cached):
 
 
 class FileTransferCollection(CachedCollection):
-    _Type = FileTransfer
+    _CachedType = FileTransfer

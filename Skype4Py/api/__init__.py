@@ -14,6 +14,7 @@ __docformat__ = 'restructuredtext en'
 
 import sys
 import threading
+import logging
 
 from Skype4Py.utils import *
 from Skype4Py.enums import apiAttachUnknown
@@ -90,15 +91,19 @@ class SkypeAPINotifier(object):
 
 class SkypeAPIBase(threading.Thread):
     def __init__(self, opts):
-        threading.Thread.__init__(self)
+        threading.Thread.__init__(self, name='Skype4Py API thread')
         self.setDaemon(True)
-        self.debug_level = opts.pop('ApiDebugLevel', 0)
+        if not hasattr(self, 'logger'):
+            # Create a logger if the subclass hasn't done it already.
+            self.logger = logging.getLogger('Skype4Py.api.SkypeAPIBase')
         self.friendly_name = u'Skype4Py'
         self.protocol = 5
         self.commands = {}
-        self.commands_lock = threading.RLock()
+        # This lock is the main mechanism to make Skype4Py thread-safe.
+        self.rlock = threading.RLock()
         self.notifier = SkypeAPINotifier()
         self.attachment_status = apiAttachUnknown
+        self.logger.info('opened')
 
     def _not_implemented(self):
         raise SkypeAPIError('Function not implemented')
@@ -111,47 +116,43 @@ class SkypeAPIBase(threading.Thread):
         self.notifier = notifier
         
     def push_command(self, command):
-        self.commands_lock.acquire()
-        if command.Id < 0:
-            command.Id = 0
-            while command.Id in self.commands:
-                command.Id += 1
-        if command.Id in self.commands:
-            self.commands_lock.release()
-            raise SkypeAPIError('Command Id conflict')
-        self.commands[command.Id] = command
-        self.commands_lock.release()
+        self.acquire()
+        try:
+            if command.Id < 0:
+                command.Id = 0
+                while command.Id in self.commands:
+                    command.Id += 1
+            elif command.Id in self.commands:
+                raise SkypeAPIError('Command Id conflict')
+            self.commands[command.Id] = command
+        finally:
+            self.release()
 
     def pop_command(self, id_):
-        self.commands_lock.acquire()
+        self.acquire()
         try:
-            command = self.commands[id_]
-            del self.commands[id_]
-        except KeyError:
-            command = None
-        self.commands_lock.release()
-        return command
+            try:
+                return self.commands.pop(id_)
+            except KeyError:
+                return None
+        finally:
+            self.release()
+
+    def acquire(self):
+        self.rlock.acquire()
+        
+    def release(self):
+        self.rlock.release()
 
     def close(self):
-        pass
-
-    def set_debug_level(self, level):
-        self.debug_level = level
-
-    def dprint(self, msg, *args, **kwargs):
-        if self.debug_level >= kwargs.pop('level', 1):
-            if args:
-                msg = msg % args
-            print >>sys.stderr, 'Skype4Py/API %s' % msg
-        if kwargs:
-            raise TypeError('unexpected additional keyword arguments')
+        self.logger.info('closed')
 
     def set_friendly_name(self, friendly_name):
         self.friendly_name = friendly_name
 
     def set_attachment_status(self, attachment_status):
         if attachment_status != self.attachment_status:
-            self.dprint('new attachment status: %s', attachment_status)
+            self.logger.info('attachment: %s', attachment_status)
             self.attachment_status = attachment_status
             self.notifier.attachment_changed(attachment_status)
 

@@ -10,10 +10,10 @@ from enums import *
 class User(Cached):
     '''Represents a Skype user.
     '''
-    _HandleCast = str
+    _ValidateHandle = str
 
     def __repr__(self):
-        return '<%s with Handle=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Handle))
+        return Cached.__repr__(self, 'Handle')
 
     def _Property(self, PropName, Set=None, Cache=True):
         return self._Owner._Property('USER', self.Handle, PropName, Set, Cache)
@@ -403,16 +403,16 @@ class User(Cached):
 
 
 class UserCollection(CachedCollection):
-    _Type = User
+    _CachedType = User
 
 
 class Group(Cached):
     '''Represents a group of Skype users.
     '''
-    _HandleCast = int
+    _ValidateHandle = int
 
     def __repr__(self):
-        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
+        return Cached.__repr__(self, 'Id')
 
     def _Alter(self, AlterName, Args=None):
         return self._Owner._Alter('GROUP', self.Id, AlterName, Args)
@@ -534,4 +534,4 @@ class Group(Cached):
 
 
 class GroupCollection(CachedCollection):
-    _Type = Group
+    _CachedType = Group

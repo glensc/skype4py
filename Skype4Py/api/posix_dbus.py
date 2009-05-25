@@ -25,6 +25,7 @@ __docformat__ = 'restructuredtext en'
 import sys
 import threading
 import time
+import logging
 
 from Skype4Py.api import Command, SkypeAPIBase, timeout2float
 from Skype4Py.enums import *
@@ -66,6 +67,7 @@ class SkypeNotifyCallback(dbus.service.Object):
 
 class SkypeAPI(SkypeAPIBase):
     def __init__(self, opts):
+        self.logger = logging.getLogger('Skype4Py.api.posix_dbus.SkypeAPI')
         SkypeAPIBase.__init__(self, opts)
         self.skype_in = self.skype_out = self.dbus_name_owner_watch = None
         self.bus = opts.pop('Bus', None)
@@ -87,10 +89,10 @@ class SkypeAPI(SkypeAPIBase):
         self.finalize_opts(opts)
 
     def run(self):
-        self.dprint('thread started')
+        self.logger.info('thread started')
         if hasattr(self, 'mainloop'):
             self.mainloop.run()
-        self.dprint('thread finished')
+        self.logger.info('thread finished')
 
     def close(self):
         if hasattr(self, 'mainloop'):
@@ -99,7 +101,7 @@ class SkypeAPI(SkypeAPIBase):
         if self.dbus_name_owner_watch is not None:
             self.bus.remove_signal_receiver(self.dbus_name_owner_watch)
         self.dbus_name_owner_watch = None
-        self.dprint('closed')
+        SkypeAPIBase.close(self)
 
     def set_friendly_name(self, friendly_name):
         SkypeAPIBase.set_friendly_name(self, friendly_name)
@@ -118,44 +120,48 @@ class SkypeAPI(SkypeAPIBase):
         self.wait = False
 
     def attach(self, timeout, wait=True):
+        self.acquire()
         try:
-            if not self.isAlive():
-                self.start_watcher()
-                self.start()
-        except AssertionError:
-            pass
-        try:
-            self.wait = True
-            t = threading.Timer(timeout2float(timeout), self._attach_ftimeout)
-            if wait:
-                t.start()
-            while self.wait:
-                if not wait:
-                    self.wait = False
-                try:
-                    if not self.skype_out:
-                        self.skype_out = self.bus.get_object('com.Skype.API', '/com/Skype')
-                    if not self.skype_in:
-                        self.skype_in = SkypeNotifyCallback(self.bus, self.notify)
-                except dbus.DBusException:
+            try:
+                if not self.isAlive():
+                    self.start_watcher()
+                    self.start()
+            except AssertionError:
+                pass
+            try:
+                self.wait = True
+                t = threading.Timer(timeout2float(timeout), self._attach_ftimeout)
+                if wait:
+                    t.start()
+                while self.wait:
                     if not wait:
+                        self.wait = False
+                    try:
+                        if not self.skype_out:
+                            self.skype_out = self.bus.get_object('com.Skype.API', '/com/Skype')
+                        if not self.skype_in:
+                            self.skype_in = SkypeNotifyCallback(self.bus, self.notify)
+                    except dbus.DBusException:
+                        if not wait:
+                            break
+                        time.sleep(1.0)
+                    else:
                         break
-                    time.sleep(1.0)
                 else:
-                    break
-            else:
-                raise SkypeAPIError('Skype attach timeout')
+                    raise SkypeAPIError('Skype attach timeout')
+            finally:
+                t.cancel()
+            command = Command('NAME %s' % self.friendly_name, '', True, timeout)
+            if self.skype_out:
+                self.send_command(command)
+            if command.Reply != 'OK':
+                self.skype_out = None
+                self.set_attachment_status(apiAttachRefused)
+                return
+            self.send_command(Command('PROTOCOL %s' % self.protocol))
+            self.set_attachment_status(apiAttachSuccess)
         finally:
-            t.cancel()
-        command = Command('NAME %s' % self.friendly_name, '', True, timeout)
-        if self.skype_out:
-            self.send_command(command)
-        if command.Reply != 'OK':
-            self.skype_out = None
-            self.set_attachment_status(apiAttachRefused)
-            return
-        self.send_command(Command('PROTOCOL %s' % self.protocol))
-        self.set_attachment_status(apiAttachSuccess)
+            self.release()
 
     def is_running(self):
         try:
@@ -188,7 +194,7 @@ class SkypeAPI(SkypeAPIBase):
         self.push_command(command)
         self.notifier.sending_command(command)
         cmd = u'#%d %s' % (command.Id, command.Command)
-        self.dprint('-> %s', repr(cmd))
+        self.logger.debug('sending %s', repr(cmd))
         if command.Blocking:
             command._event = event = threading.Event()
         else:
@@ -207,7 +213,7 @@ class SkypeAPI(SkypeAPIBase):
             timer.start()
 
     def notify(self, cmd):
-        self.dprint('<- %s', repr(cmd))
+        self.logger.debug('received %s', repr(cmd))
         if cmd.startswith(u'#'):
             p = cmd.find(u' ')
             command = self.pop_command(int(cmd[1:p]))
@@ -226,7 +232,7 @@ class SkypeAPI(SkypeAPIBase):
             self.notifier.notification_received(cmd)
 
     def dbus_name_owner_changed(self, owned, old_owner, new_owner):
-        self.dprint('<- dbus name owner changed')
+        self.logger.debug('received dbus name owner changed')
         if new_owner == '':
             self.skype_out = None
         self.set_attachment_status(cndexp((new_owner == ''),

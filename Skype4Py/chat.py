@@ -11,10 +11,10 @@ from errors import SkypeError
 class Chat(Cached):
     '''Represents a Skype chat.
     '''
-    _HandleCast = str
+    _ValidateHandle = str
 
     def __repr__(self):
-        return '<%s with Name=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Name))
+        return Cached.__repr__(self, 'Name')
 
     def _Alter(self, AlterName, Args=None):
         return self._Owner._Alter('CHAT', self.Name, AlterName, Args, 'ALTER CHAT %s' % AlterName)
@@ -411,16 +411,16 @@ class Chat(Cached):
 
 
 class ChatCollection(CachedCollection):
-    _Type = Chat
+    _CachedType = Chat
 
 
 class ChatMessage(Cached):
     '''Represents a single chat message.
     '''
-    _HandleCast = int
+    _ValidateHandle = int
 
     def __repr__(self):
-        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
+        return Cached.__repr__(self, 'Id')
 
     def _Property(self, PropName, Value=None, Cache=True):
         return self._Owner._Property('CHATMESSAGE', self.Id, PropName, Value, Cache)
@@ -608,16 +608,16 @@ class ChatMessage(Cached):
 
 
 class ChatMessageCollection(CachedCollection):
-    _Type = ChatMessage
+    _CachedType = ChatMessage
 
 
 class ChatMember(Cached):
     '''Represents a member of a public chat.
     '''
-    _HandleCast = int
+    _ValidateHandle = int
 
     def __repr__(self):
-        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
+        return Cached.__repr__(self, 'Id')
 
     def _Alter(self, AlterName, Args=None):
         return self._Owner._Alter('CHATMEMBER', self.Id, AlterName, Args, 'ALTER CHATMEMBER %s' % AlterName)
@@ -687,4 +687,4 @@ class ChatMember(Cached):
 
 
 class ChatMemberCollection(CachedCollection):
-    _Type = ChatMember
+    _CachedType = ChatMember

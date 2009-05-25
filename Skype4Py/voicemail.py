@@ -10,10 +10,10 @@ from enums import *
 class Voicemail(Cached):
     '''Represents a voicemail.
     '''
-    _HandleCast = int
+    _ValidateHandle = int
 
     def __repr__(self):
-        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
+        return Cached.__repr__(self, 'Id')
 
     def _Alter(self, AlterName, Args=None):
         return self._Owner._Alter('VOICEMAIL', self.Id, AlterName, Args)
@@ -256,4 +256,4 @@ class Voicemail(Cached):
 
 
 class VoicemailCollection(CachedCollection):
-    _Type = Voicemail
+    _CachedType = Voicemail

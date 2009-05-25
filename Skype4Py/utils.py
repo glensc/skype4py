@@ -6,12 +6,12 @@ __docformat__ = 'restructuredtext en'
 import sys
 import weakref
 import threading
+import logging
 from new import instancemethod
 
 
 __all__ = ['tounicode', 'path2unicode', 'unicode2path', 'chop', 'args2dict', 'quote',
-           'split', 'cndexp', 'EventHandlingBase', 'CollectionMixin', 'Cached',
-           'CachedCollection']
+           'split', 'cndexp', 'EventHandlingBase', 'Cached', 'CachedCollection']
 
 
 def tounicode(s):
@@ -356,9 +356,10 @@ class EventHandlingBase(object):
         # Event -> EventSchedulerThread object mapping. Use WeakValueDictionary to let the
         # threads be freed after they are finished.
         self._EventThreads = weakref.WeakValueDictionary()
-        self._EventHandlerObj = None # Current "Events" object.
+        self._EventHandlerObject = None # Current "Events" object.
         self._DefaultEventHandlers = {} # "On..." handlers.
         self._EventHandlers = {} # "RegisterEventHandler" handlers.
+        self.__Logger = logging.getLogger('Skype4Py.utils.EventHandlingBase')
 
         # Initialize the _EventHandlers mapping.
         for event in self._EventNames:
@@ -379,11 +380,17 @@ class EventHandlingBase(object):
         '''
         if Event not in self._EventHandlers:
             raise ValueError('%s is not a valid %s event name' % (Event, self.__class__.__name__))
+        args = map(repr, Args) + ['%s=%s' % (key, repr(value)) for key, value in KwArgs.items()]
+        self.__Logger.debug('calling %s: %s', Event, ', '.join(args))
         # Get a list of handlers for this event.
         try:
             handlers = [self._DefaultEventHandlers[Event]]
         except KeyError:
             handlers = []
+        try:
+            handlers.append(getattr(self._EventHandlerObject, Event))
+        except AttributeError:
+            pass
         handlers.extend(self._EventHandlers[Event])
         # Proceed only if there are handlers.
         if handlers:
@@ -417,6 +424,7 @@ class EventHandlingBase(object):
         if Target in self._EventHandlers[Event]:
             return False
         self._EventHandlers[Event].append(Target)
+        self.__Logger.info('registered %s: %s', Event, repr(Target))
         return True
 
     def UnregisterEventHandler(self, Event, Target):
@@ -440,6 +448,7 @@ class EventHandlingBase(object):
             raise ValueError('%s is not a valid %s event name' % (Event, self.__class__.__name__))
         if Target in self._EventHandlers[Event]:
             self._EventHandlers[Event].remove(Target)
+            self.__Logger.info('unregistered %s: %s', Event, repr(Target))
             return True
         return False
 
@@ -448,6 +457,7 @@ class EventHandlingBase(object):
             if not callable(Target):
                 raise TypeError('%s is not callable' % repr(Target))
             self._DefaultEventHandlers[Event] = Target
+            self.__Logger.info('set default %s: %s', Event, repr(Target))
         else:
             try:
                 del self._DefaultEventHandlers[Event]
@@ -460,16 +470,17 @@ class EventHandlingBase(object):
         except KeyError:
             return None
 
-    def _SetEventHandlerObj(self, Obj):
+    def _SetEventHandlerObject(self, Object):
         '''Registers an object as events handler, object should contain methods with names
         corresponding to event names, only one object may be registered at a time.
         
         :Parameters:
-          Obj
+          Object
             Object to register. May be None in which case the currently registered object
             will be unregistered.
         '''
-        self._EventHandlerObj = Obj
+        self._EventHandlerObject = Object
+        self.__Logger.info('set object: %s', repr(Object))
 
     @classmethod
     def _AddEvents(cls, Class):
@@ -489,57 +500,12 @@ class EventHandlingBase(object):
                 cls._EventNames.append(event)
 
 
-class List(list):
-    def __getitem__(self, key):
-        if isinstance(key, slice):
-            return self.__class__(list.__getitem__(self, key))
-        return list.__getitem__(self, key)
-
-    def __getslice__(self, i, j):
-        return self.__getitem__(slice(i, j))
-
-    def __add__(self, other):
-        return self.__class__(list.__add__(self, other))
-
-    def __mul__(self, times):
-        return self.__class__(list.__mul__(self, times))
-
-
-class CollectionMixin(object):
-    def Add(self, Item):
-        '''
-        '''
-        self.append(Item)
-
-    def Remove(self, Index):
-        '''
-        '''
-        del self[Index]
-
-    def RemoveAll(self):
-        '''
-        '''
-        del self[:]
-
-    def Item(self, Index):
-        '''
-        '''
-        return self[Index]
-
-    def _GetCount(self):
-        return len(self)
-
-    Count = property(_GetCount,
-    doc='''
-    ''')
-
-
 class Cached(object):
     '''Base class for all cached objects.
-    
+
     Every object has an owning object a handle. Owning object is where the cache is
     maintained, handle identifies an object of given type.
-    
+
     Thanks to the caching, trying to create two objects with the same owner and handle
     yields exactly the same object. The cache itself is based on weak references so
     not referenced objects are automatically removed from the cache.
@@ -547,11 +513,13 @@ class Cached(object):
     Because the ``__init__`` method will be called no matter if the object already
     existed or not, it is recommended to use the `_Init` method instead.
     '''
-    # Abstract. Must be specified by subclasses.
-    #_HandleCast = ?
+    # Subclasses have to define a type/classmethod/staticmethod called
+    # _ValidateHandle(Handle)
+    # which is called by classmethod__new__ to validate the handle passed to
+    # it before it is stored in the instance.
 
     def __new__(cls, Owner, Handle):
-        Handle = cls._HandleCast(Handle)
+        Handle = cls._ValidateHandle(Handle)
         key = (cls, Handle)
         try:
             return Owner._ObjectCache[key]
@@ -577,44 +545,50 @@ class Cached(object):
     def __copy__(self):
         return self
         
+    def __repr__(self, *Attrs):
+        if not Attrs:
+            Attrs = ['_Handle']
+        return '<%s.%s with %s>' % (self.__class__.__module__, self.__class__.__name__,
+            ', '.join('%s=%s' % (name, repr(getattr(self, name))) for name in Attrs))
+        
     def _MakeOwner(self):
         '''Prepares the object for use as an owner for other cached objects.
         '''
         self._CreateOwner(self)
 
-    @classmethod
-    def _CreateOwner(cls, Owner):
+    @staticmethod
+    def _CreateOwner(Object):
         '''Prepares any object for use as an owner for cached objects.
         
         :Parameters:
-          Owner
+          Object
             Object that should be turned into a cached objects owner.
         '''
-        Owner._ObjectCache = weakref.WeakValueDictionary()
+        Object._ObjectCache = weakref.WeakValueDictionary()
 
 
-class CachedCollection(CollectionMixin):
+class CachedCollection(object):
     '''
     '''
-    _Type = Cached
+    _CachedType = Cached
     
     def __init__(self, Owner, Handles=[], Items=[]):
         self._Owner = Owner
-        self._Handles = map(self._Type._HandleCast, Handles)
+        self._Handles = map(self._CachedType._ValidateHandle, Handles)
         for item in Items:
             self.append(item)
 
     def _AssertItem(self, Item):
-        if not isinstance(Item, self._Type):
-            raise TypeError('expected %s instance' % repr(self._Type))
+        if not isinstance(Item, self._CachedType):
+            raise TypeError('expected %s instance' % repr(self._CachedType))
         if self._Owner is not Item._Owner:
             raise TypeError('expected %s owned item' % repr(self._Owner))
         
     def _AssertCollection(self, Col):
         if not isinstance(Col, self.__class__):
             raise TypeError('expected %s instance' % repr(self.__class__))
-        if self._Type is not Col._Type:
-            raise TypeError('expected collection of %s' % repr(self._Type))
+        if self._CachedType is not Col._CachedType:
+            raise TypeError('expected collection of %s' % repr(self._CachedType))
         if self._Owner is not Col._Owner:
             raise TypeError('expected %s owned collection' % repr(self._Owner))
 
@@ -624,7 +598,7 @@ class CachedCollection(CollectionMixin):
     def __getitem__(self, Key):
         if isinstance(Key, slice):
             return self.__class__(self._Owner, self._Handles[Key])
-        return self._Type(self._Owner, self._Handles[Key])
+        return self._CachedType(self._Owner, self._Handles[Key])
 
     def __setitem__(self, Key, Item):
         if isinstance(Key, slice):
@@ -642,7 +616,7 @@ class CachedCollection(CollectionMixin):
 
     def __iter__(self):
         for handle in self._Handles:
-            yield self._Type(self._Owner, handle)
+            yield self._CachedType(self._Owner, handle)
 
     def __contains__(self, Item):
         try:
@@ -706,7 +680,7 @@ class CachedCollection(CollectionMixin):
     def pop(self, pos=-1):
         '''
         '''
-        return self._Type(self._Owner, self._Handles.pop(pos))
+        return self._CachedType(self._Owner, self._Handles.pop(pos))
 
     def remove(self, item):
         '''
@@ -719,12 +693,38 @@ class CachedCollection(CollectionMixin):
         '''
         self._Handles.reverse()
 
-    def sort(self, cmpfunc=None, key=None, reverse=False):
+    def sort(self, cmp=None, key=None, reverse=False):
         '''
         '''
-        wrapper = None
-        if cmpfunc is not None:
-            def wrapper(a, b):
-                return cmpfunc(self._Type(self._Owner, a),
-                               self._Type(self._Owner, b))
-        self._Handles.sort(wrapper, key, reverse)
+        if key is None:
+            wrapper = lambda x: self._CachedType(self._Owner, x)
+        else:
+            wrapper = lambda x: key(self._CachedType(self._Owner, x))
+        self._Handles.sort(cmp, wrapper, reverse)
+
+    def Add(self, Item):
+        '''
+        '''
+        self.append(Item)
+
+    def Remove(self, Index):
+        '''
+        '''
+        del self[Index]
+
+    def RemoveAll(self):
+        '''
+        '''
+        del self[:]
+
+    def Item(self, Index):
+        '''
+        '''
+        return self[Index]
+
+    def _GetCount(self):
+        return len(self)
+
+    Count = property(_GetCount,
+    doc='''
+    ''')

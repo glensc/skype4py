@@ -16,6 +16,7 @@ import os
 from ctypes import *
 from ctypes.util import find_library
 import time
+import logging
 
 from Skype4Py.api import Command, SkypeAPIBase, timeout2float
 from Skype4Py.enums import *
@@ -198,6 +199,7 @@ x11.XInitThreads()
 
 class SkypeAPI(SkypeAPIBase):
     def __init__(self, opts):
+        self.logger = logging.getLogger('Skype4Py.api.posix_x11.SkypeAPI')
         SkypeAPIBase.__init__(self, opts)
         self.finalize_opts(opts)
 
@@ -226,7 +228,7 @@ class SkypeAPI(SkypeAPIBase):
                 x11.XCloseDisplay(self.disp)
 
     def run(self):
-        self.dprint('thread started')
+        self.logger.info('thread started')
         # main loop
         event = XEvent()
         data = ''
@@ -272,7 +274,7 @@ class SkypeAPI(SkypeAPIBase):
                         elif event.xproperty.state == PropertyDelete:
                             self.win_skype = None
                             self.set_attachment_status(apiAttachNotAvailable)
-        self.dprint('thread finished')
+        self.logger.info('thread finished')
    
     def get_skype(self):
         '''Returns Skype window ID or None if Skype not running.'''
@@ -295,7 +297,7 @@ class SkypeAPI(SkypeAPIBase):
         self.loop_event.set()
         while self.isAlive():
             time.sleep(0.01)
-        self.dprint('closed')
+        SkypeAPIBase.close(self)
 
     def set_friendly_name(self, friendly_name):
         SkypeAPIBase.set_friendly_name(self, friendly_name)
@@ -310,34 +312,38 @@ class SkypeAPI(SkypeAPIBase):
     def attach(self, timeout, wait=True):
         if self.attachment_status == apiAttachSuccess:
             return
-        if not self.isAlive():
-            try:
-                self.start()
-            except AssertionError:
-                raise SkypeAPIError('Skype API closed')
+        self.acquire()
         try:
-            self.wait = True
-            t = threading.Timer(timeout2float(timeout), self._attach_ftimeout)
-            if wait:
-                t.start()
-            while self.wait:
-                self.win_skype = self.get_skype()
-                if self.win_skype is not None:
-                    break
+            if not self.isAlive():
+                try:
+                    self.start()
+                except AssertionError:
+                    raise SkypeAPIError('Skype API closed')
+            try:
+                self.wait = True
+                t = threading.Timer(timeout2float(timeout), self._attach_ftimeout)
+                if wait:
+                    t.start()
+                while self.wait:
+                    self.win_skype = self.get_skype()
+                    if self.win_skype is not None:
+                        break
+                    else:
+                        time.sleep(1.0)
                 else:
-                    time.sleep(1.0)
-            else:
-                raise SkypeAPIError('Skype attach timeout')
+                    raise SkypeAPIError('Skype attach timeout')
+            finally:
+                t.cancel()
+            command = Command('NAME %s' % self.friendly_name, '', True, timeout)
+            self.send_command(command, True)
+            if command.Reply != 'OK':
+                self.win_skype = None
+                self.set_attachment_status(apiAttachRefused)
+                return
+            self.send_command(Command('PROTOCOL %s' % self.protocol), True)
+            self.set_attachment_status(apiAttachSuccess)
         finally:
-            t.cancel()
-        command = Command('NAME %s' % self.friendly_name, '', True, timeout)
-        self.send_command(command, True)
-        if command.Reply != 'OK':
-            self.win_skype = None
-            self.set_attachment_status(apiAttachRefused)
-            return
-        self.send_command(Command('PROTOCOL %s' % self.protocol), True)
-        self.set_attachment_status(apiAttachSuccess)
+            self.release()
 
     def is_running(self):
         return (self.get_skype() is not None)
@@ -369,7 +375,7 @@ class SkypeAPI(SkypeAPIBase):
         self.push_command(command)
         self.notifier.sending_command(command)
         cmd = u'#%d %s' % (command.Id, command.Command)
-        self.dprint('-> %s', repr(cmd))
+        self.logger.debug('sending %s', repr(cmd))
         if command.Blocking:
             command._event = bevent = threading.Event()
         else:
@@ -394,7 +400,7 @@ class SkypeAPI(SkypeAPIBase):
             timer.start()
 
     def notify(self, cmd):
-        self.dprint('<- %s', repr(cmd))
+        self.logger.debug('received %s', repr(cmd))
         # Called by main loop for all received Skype commands.
         if cmd.startswith(u'#'):
             p = cmd.find(u' ')
