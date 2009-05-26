@@ -212,7 +212,7 @@ class Call(Cached):
         return int(self._Property('CONF_ID'))
 
     ConferenceId = property(_GetConferenceId,
-    doc='''ConferenceId.
+    doc='''Conference Id.
 
     :type: int
     ''')
@@ -404,7 +404,7 @@ class Call(Cached):
     ''')
 
     def _GetStatus(self):
-        return self._Property('STATUS')
+        return str(self._Property('STATUS'))
 
     def _SetStatus(self, Value):
         self._Property('STATUS', str(Value))
@@ -424,10 +424,10 @@ class Call(Cached):
     :type: unicode
     ''')
 
-    def _GetTargetIdentify(self):
-        return str(self._Property('TARGET_IDENTIFY'))
+    def _GetTargetIdentity(self):
+        return str(self._Property('TARGET_IDENTITY'))
 
-    TargetIdentify = property(_GetTargetIdentify,
+    TargetIdentity = property(_GetTargetIdentity,
     doc='''Target number for incoming SkypeIn calls.
 
     :type: str

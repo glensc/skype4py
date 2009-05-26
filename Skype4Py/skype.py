@@ -106,10 +106,7 @@ class APINotifier(SkypeAPINotifier):
                     elif prop_name == 'EXPANDED':
                         skype._CallEventHandler('GroupExpanded', o, (value == 'TRUE'))
                     elif prop_name == 'NROFUSERS':
-                        # To call the event handler, the group users collection is needed. It can't be
-                        # obtained here because o.Users will send a command and that won't work from
-                        # the current API thread context. That's why another thread is needed.
-                        threading.Thread(target=lambda: skype._CallEventHandler('GroupUsers', o, o.Users)).start()
+                        skype._CallEventHandler('GroupUsers', o, int(value))
                 elif object_type == 'SMS':
                     o = SmsMessage(skype, object_id)
                     if prop_name == 'STATUS':
@@ -1552,14 +1549,18 @@ class SkypeEvents(object):
             Tells if the group is expanded (True) or collapsed (False).
         '''
 
-    def GroupUsers(self, Group, Users):
+    def GroupUsers(self, Group, Count):
         '''This event is caused by a change in a contact group members.
 
         :Parameters:
           Group : `Group`
             Group object.
-          Users : `UserCollection`
-            Group members.
+          Count : int
+            Number of group members.
+            
+        :note: This event is different from its Skype4COM equivalent in that the second
+               parameter is number of users instead of `UserCollection` object. This
+               object may be obtained using ``Group.Users`` property.
         '''
 
     def GroupVisible(self, Group, Visible):
