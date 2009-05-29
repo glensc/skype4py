@@ -128,9 +128,6 @@ class SkypeAPI(SkypeAPIBase):
                 fhwnd = None
         return fhwnd
         
-    def _attach_ftimeout(self):
-        self.wait = False
-
     def attach(self, timeout, wait=True):
         if self.skype is not None and windll.user32.IsWindow(self.skype):
             return
@@ -155,7 +152,7 @@ class SkypeAPI(SkypeAPIBase):
                     raise SkypeAPIError('Could not broadcast Skype discover message')
                 # wait (with timeout) till the WindProc() attaches
                 self.wait = True
-                t = threading.Timer(timeout2float(timeout), self._attach_ftimeout)
+                t = threading.Timer(timeout2float(timeout), lambda: setattr(self, 'wait', False))
                 if wait:
                     t.start()
                 while self.wait and self.attachment_status not in (apiAttachSuccess, apiAttachRefused):

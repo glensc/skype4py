@@ -116,9 +116,6 @@ class SkypeAPI(SkypeAPIBase):
             '/org/freedesktop/DBus',
             arg0='com.Skype.API')
 
-    def _attach_ftimeout(self):
-        self.wait = False
-
     def attach(self, timeout, wait=True):
         self.acquire()
         try:
@@ -130,7 +127,7 @@ class SkypeAPI(SkypeAPIBase):
                 pass
             try:
                 self.wait = True
-                t = threading.Timer(timeout2float(timeout), self._attach_ftimeout)
+                t = threading.Timer(timeout2float(timeout), lambda: setattr(self, 'wait', False))
                 if wait:
                     t.start()
                 while self.wait:
@@ -153,7 +150,11 @@ class SkypeAPI(SkypeAPIBase):
                 t.cancel()
             command = Command('NAME %s' % self.friendly_name, '', True, timeout)
             if self.skype_out:
-                self.send_command(command)
+                self.release()
+                try:
+                    self.send_command(command)
+                finally:
+                    self.acquire()
             if command.Reply != 'OK':
                 self.skype_out = None
                 self.set_attachment_status(apiAttachRefused)

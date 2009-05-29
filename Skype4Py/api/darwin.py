@@ -338,9 +338,6 @@ class SkypeAPI(SkypeAPIBase):
             self.set_attachment_status(apiAttachUnknown)
             self.attach()
 
-    def _attach_ftimeout(self):
-        self.wait = False
-
     def attach(self, timeout, wait=True):
         if self.attachment_status in (apiAttachPendingAuthorization, apiAttachSuccess):
             return
@@ -350,7 +347,7 @@ class SkypeAPI(SkypeAPIBase):
                 self.start()
             except AssertionError:
                 pass
-            t = threading.Timer(timeout2float(timeout), self._attach_ftimeout)
+            t = threading.Timer(timeout2float(timeout), lambda: setattr(self, 'wait', False))
             try:
                 self.init_observer()
                 self.client_id = -1

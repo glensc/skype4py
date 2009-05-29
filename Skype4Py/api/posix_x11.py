@@ -14,6 +14,7 @@ import sys
 import threading
 import os
 from ctypes import *
+
 from ctypes.util import find_library
 import time
 import logging
@@ -255,7 +256,7 @@ class SkypeAPI(SkypeAPIBase):
                             if data != '':
                                 data += str(event.xclient.data)
                             else:
-                                print 'Warning! Middle of message received with no beginning!'
+                                self.logger.warning('Middle of Skype X11 message received with no beginning!')
                         else:
                             continue
                         if len(event.xclient.data) != 20 and data:
@@ -306,9 +307,6 @@ class SkypeAPI(SkypeAPIBase):
             self.set_attachment_status(apiAttachUnknown)
             self.attach()
 
-    def _attach_ftimeout(self):
-        self.wait = False
-
     def attach(self, timeout, wait=True):
         if self.attachment_status == apiAttachSuccess:
             return
@@ -321,7 +319,7 @@ class SkypeAPI(SkypeAPIBase):
                     raise SkypeAPIError('Skype API closed')
             try:
                 self.wait = True
-                t = threading.Timer(timeout2float(timeout), self._attach_ftimeout)
+                t = threading.Timer(timeout2float(timeout), lambda: setattr(self, 'wait', False))
                 if wait:
                     t.start()
                 while self.wait:
@@ -335,7 +333,11 @@ class SkypeAPI(SkypeAPIBase):
             finally:
                 t.cancel()
             command = Command('NAME %s' % self.friendly_name, '', True, timeout)
-            self.send_command(command, True)
+            self.release()
+            try:
+                self.send_command(command, True)
+            finally:
+                self.acquire()
             if command.Reply != 'OK':
                 self.win_skype = None
                 self.set_attachment_status(apiAttachRefused)
