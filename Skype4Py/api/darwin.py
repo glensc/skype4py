@@ -411,7 +411,7 @@ class SkypeAPI(SkypeAPIBase):
     def init_observer(self):
         if self.has_observer():
             self.delete_observer()
-        self.observer = CFString(self.FriendlyName)
+        self.observer = CFString(self.friendly_name)
         self.center.add_observer(self.observer, self.SKSkypeAPINotification, 'SKSkypeAPINotification', immediate=True)
         self.center.add_observer(self.observer, self.SKSkypeWillQuit, 'SKSkypeWillQuit', immediate=True)
         self.center.add_observer(self.observer, self.SKSkypeBecameAvailable, 'SKSkypeBecameAvailable', immediate=True)
@@ -476,7 +476,7 @@ class SkypeAPI(SkypeAPIBase):
         self.logger.debug('received SKSkypeAttachResponse')
         # It seems that this notification is not called if the access is refused. Therefore we can't
         # distinguish between attach timeout and access refuse.
-        if unicode(CFString(userInfo[core.CFSTR('SKYPE_API_CLIENT_NAME')])) == self.FriendlyName:
+        if unicode(CFString(userInfo[core.CFSTR('SKYPE_API_CLIENT_NAME')])) == self.friendly_name:
             response = int(CFNumber(userInfo[core.CFSTR('SKYPE_API_ATTACH_RESPONSE')]))
             if response and self.client_id == -1:
                 self.client_id = response
