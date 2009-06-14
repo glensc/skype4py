@@ -19,7 +19,8 @@ from ctypes.util import find_library
 import time
 import logging
 
-from Skype4Py.api import Command, SkypeAPIBase, timeout2float
+from Skype4Py.api import Command, SkypeAPIBase, \
+                          timeout2float, finalize_opts
 from Skype4Py.enums import *
 from Skype4Py.errors import SkypeAPIError
 
@@ -201,8 +202,8 @@ x11.XInitThreads()
 class SkypeAPI(SkypeAPIBase):
     def __init__(self, opts):
         self.logger = logging.getLogger('Skype4Py.api.posix_x11.SkypeAPI')
-        SkypeAPIBase.__init__(self, opts)
-        self.finalize_opts(opts)
+        SkypeAPIBase.__init__(self)
+        finalize_opts(opts)
 
         # init Xlib display
         self.disp = x11.XOpenDisplay(None)

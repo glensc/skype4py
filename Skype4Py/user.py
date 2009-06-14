@@ -68,9 +68,9 @@ class User(Cached):
             return date(*strptime(value, '%Y%m%d')[:3])
 
     Birthday = property(_GetBirthday,
-    doc='''Birthday of the user.
+    doc='''Birthday of the user. None if not set.
 
-    :type: datetime.date
+    :type: datetime.date or None
     ''')
 
     def _GetBuddyStatus(self):

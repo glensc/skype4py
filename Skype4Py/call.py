@@ -390,7 +390,7 @@ class Call(Cached):
     ''')
 
     def _GetSeen(self):
-        return self._Property('SEEN') == 'TRUE'
+        return (self._Property('SEEN') == 'TRUE')
 
     def _SetSeen(self, Value):
         self._Property('SEEN', cndexp(Value, 'TRUE', 'FALSE'))

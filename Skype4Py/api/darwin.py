@@ -20,7 +20,8 @@ import threading
 import time
 import logging
 
-from Skype4Py.api import Command, SkypeAPIBase, timeout2float
+from Skype4Py.api import Command, SkypeAPIBase, \
+                          timeout2float, finalize_opts
 from Skype4Py.errors import SkypeAPIError
 from Skype4Py.enums import *
 
@@ -313,8 +314,8 @@ class SkypeAPI(SkypeAPIBase):
 
     def __init__(self, opts):
         self.logger = logging.getLogger('Skype4Py.api.darwin.SkypeAPI')
-        SkypeAPIBase.__init__(self, opts)
-        self.finalize_opts(opts)
+        SkypeAPIBase.__init__(self)
+        finalize_opts(opts)
         self.center = CFDistributedNotificationCenter()
         self.is_available = False
         self.client_id = -1

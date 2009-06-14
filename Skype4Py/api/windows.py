@@ -16,7 +16,8 @@ import time
 from ctypes import *
 import logging
 
-from Skype4Py.api import Command, SkypeAPIBase, timeout2float
+from Skype4Py.api import Command, SkypeAPIBase, \
+                          timeout2float, finalize_opts
 from Skype4Py.enums import *
 from Skype4Py.errors import SkypeAPIError
 
@@ -75,8 +76,8 @@ HWND_BROADCAST = 0xFFFF
 class SkypeAPI(SkypeAPIBase):
     def __init__(self, opts):
         self.logger = logging.getLogger('Skype4Py.api.windows.SkypeAPI')
-        SkypeAPIBase.__init__(self, opts)
-        self.finalize_opts(opts)
+        SkypeAPIBase.__init__(self)
+        finalize_opts(opts)
         self.window_class = None
         self.hwnd = None
         self.skype = None

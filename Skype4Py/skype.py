@@ -239,7 +239,12 @@ class Skype(EventHandlingBase):
         if Events:
             self._SetEventHandlerObj(Events)
 
-        self._Api = SkypeAPI(Options)
+        try:
+            self._Api = Options.pop('Api')
+            if Options:
+                raise TypeError('No options supported with custom API objects.')
+        except KeyError:
+            self._Api = SkypeAPI(Options)
         self._Api.set_notifier(APINotifier(self))
         
         Cached._CreateOwner(self)
@@ -951,14 +956,15 @@ class Skype(EventHandlingBase):
         return True
 
     def _SetCommandId(self, Value):
-        pass
+        if not Value:
+            raise SkypeError(0, 'CommandId may not be False')
 
     CommandId = property(_GetCommandId, _SetCommandId,
     doc='''Queries/sets the status of automatic command identifiers.
 
     :type: bool
 
-    :note: Currently it is always True.
+    :note: Currently the only supported value is True.
     ''')
 
     def _GetConferences(self):
@@ -976,7 +982,7 @@ class Skype(EventHandlingBase):
     ''')
 
     def _GetConnectionStatus(self):
-        return self.Variable('CONNSTATUS')
+        return str(self.Variable('CONNSTATUS'))
 
     ConnectionStatus = property(_GetConnectionStatus,
     doc='''Queries the connection status of the Skype client.
@@ -1167,7 +1173,7 @@ class Skype(EventHandlingBase):
     PredictiveDialerCountry = property(_GetPredictiveDialerCountry,
     doc='''Returns predictive dialler country as an ISO code.
 
-    :type: unicode
+    :type: str
     ''')
 
     def _GetProtocol(self):

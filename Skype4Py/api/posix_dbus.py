@@ -27,7 +27,8 @@ import threading
 import time
 import logging
 
-from Skype4Py.api import Command, SkypeAPIBase, timeout2float
+from Skype4Py.api import Command, SkypeAPIBase, \
+                          timeout2float, finalize_opts
 from Skype4Py.enums import *
 from Skype4Py.errors import SkypeAPIError
 from Skype4Py.utils import cndexp
@@ -68,7 +69,7 @@ class SkypeNotifyCallback(dbus.service.Object):
 class SkypeAPI(SkypeAPIBase):
     def __init__(self, opts):
         self.logger = logging.getLogger('Skype4Py.api.posix_dbus.SkypeAPI')
-        SkypeAPIBase.__init__(self, opts)
+        SkypeAPIBase.__init__(self)
         self.skype_in = self.skype_out = self.dbus_name_owner_watch = None
         self.bus = opts.pop('Bus', None)
         try:
@@ -86,7 +87,7 @@ class SkypeAPI(SkypeAPIBase):
         if self.bus is None:
             from dbus import SessionBus
             self.bus = SessionBus(private=True, mainloop=mainloop)
-        self.finalize_opts(opts)
+        finalize_opts(opts)
 
     def run(self):
         self.logger.info('thread started')

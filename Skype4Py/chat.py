@@ -303,7 +303,7 @@ class Chat(Cached):
     Name = property(_GetName,
     doc='''Chat name as used by Skype to identify this chat.
 
-    :type: unicode
+    :type: str
     ''')
 
     def _GetOptions(self):
@@ -443,7 +443,7 @@ class ChatMessage(Cached):
     ''')
 
     def _GetChat(self):
-        return Chat(self.ChatName, self._Owner)
+        return Chat(self._Owner, self.ChatName)
 
     Chat = property(_GetChat,
     doc='''Chat this message was posted on.

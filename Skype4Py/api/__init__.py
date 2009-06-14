@@ -21,7 +21,7 @@ from Skype4Py.enums import apiAttachUnknown
 from Skype4Py.errors import SkypeAPIError
 
 
-__all__ = ['Command', 'SkypeAPINotifier', 'SkypeAPIBase', 'timeout2float', 'SkypeAPI']
+__all__ = ['Command', 'SkypeAPINotifier', 'SkypeAPI']
 
 
 class Command(object):
@@ -90,7 +90,7 @@ class SkypeAPINotifier(object):
 
 
 class SkypeAPIBase(threading.Thread):
-    def __init__(self, opts):
+    def __init__(self):
         threading.Thread.__init__(self, name='Skype4Py API thread')
         self.setDaemon(True)
         if not hasattr(self, 'logger'):
@@ -107,10 +107,6 @@ class SkypeAPIBase(threading.Thread):
 
     def _not_implemented(self):
         raise SkypeAPIError('Function not implemented')
-        
-    def finalize_opts(self, opts):
-        if opts:
-            raise TypeError('Unexpected option(s): %s' % ', '.join(opts.keys()))
         
     def set_notifier(self, notifier):
         self.notifier = notifier
@@ -168,7 +164,7 @@ class SkypeAPIBase(threading.Thread):
     def shutdown(self):
         self._not_implemented()
 
-    def send_command(self, Command):
+    def send_command(self, command):
         self._not_implemented()
 
     def security_context_enabled(self, context):
@@ -194,6 +190,15 @@ def timeout2float(timeout):
     if isinstance(timeout, float):
         return timeout
     return timeout / 1000.0
+
+
+def finalize_opts(opts):
+    '''Convinient function called after popping all options from a dictionary.
+    If there are any items left, a TypeError exception is raised listing all
+    unexpected keys in the error message.
+    '''
+    if opts:
+        raise TypeError('Unexpected option(s): %s' % ', '.join(opts.keys()))
 
 
 # Select appropriate low-level Skype API module

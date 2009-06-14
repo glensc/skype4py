@@ -279,7 +279,7 @@ class CallChannel(object):
     Stream = property(_GetStream,
     doc='''Underlying APP2APP stream object.
 
-    @type: `ApplicationStream`
+    :type: `ApplicationStream`
     ''')
 
     def _GetType(self):

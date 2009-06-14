@@ -492,8 +492,8 @@ class EventHandlingBase(object):
             instances of the current class.
         '''
         def make_event(event):
-            return property(lambda self: self._GetDefaultEventHandler(Event),
-                             lambda self, Value: self._SetDefaultEventHandler(Event, Value))
+            return property(lambda self: self._GetDefaultEventHandler(event),
+                             lambda self, Value: self._SetDefaultEventHandler(event, Value))
         for event in dir(Class):
             if not event.startswith('_'):
                 setattr(cls, 'On%s' % event, make_event(event))
