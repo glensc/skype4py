@@ -256,7 +256,7 @@ class Client(object):
     def Shutdown(self):
         '''Closes Skype application.
         '''
-        self._Skype._API.shutdown()
+        self._Skype._Api.shutdown()
 
     def Start(self, Minimized=False, Nosplash=False):
         '''Starts Skype application.
@@ -267,7 +267,7 @@ class Client(object):
           Nosplash : bool
             If True, no splash screen is displayed upon startup.
         '''
-        self._Skype._API.startup(Minimized, Nosplash)
+        self._Skype._Api.startup(Minimized, Nosplash)
 
     def _Get_Skype(self):
         skype = self._SkypeRef()
@@ -278,7 +278,7 @@ class Client(object):
     _Skype = property(_Get_Skype)
 
     def _GetIsRunning(self):
-        return self._Skype._API.is_running()
+        return self._Skype._Api.is_running()
 
     IsRunning = property(_GetIsRunning,
     doc='''Tells if Skype client is running.
