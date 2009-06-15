@@ -21,7 +21,7 @@ import time
 import logging
 
 from Skype4Py.api import Command, SkypeAPIBase, \
-                          timeout2float, finalize_opts
+                         timeout2float, finalize_opts
 from Skype4Py.errors import SkypeAPIError
 from Skype4Py.enums import *
 
@@ -70,15 +70,15 @@ class CoreFoundation(object):
         if path is None:
             raise ImportError('Could not find CoreFoundation.framework')
         self.lib = cdll.LoadLibrary(path)
-        corestrs = []
+        self.strs = []
 
     def CFSTR(self, s):
         s = unicode(s)
-        for cfs in corestrs:
+        for cfs in self.strs:
             if unicode(cfs) == s:
                 return cfs
         cfs = CFString(s)
-        corestrs.append(cfs)
+        self.strs.append(cfs)
         return cfs
 
 

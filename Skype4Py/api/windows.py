@@ -17,7 +17,7 @@ from ctypes import *
 import logging
 
 from Skype4Py.api import Command, SkypeAPIBase, \
-                          timeout2float, finalize_opts
+                         timeout2float, finalize_opts
 from Skype4Py.enums import *
 from Skype4Py.errors import SkypeAPIError
 
