@@ -103,8 +103,8 @@ class Chat(Cached):
         :return: Message object
         :rtype: `ChatMessage`
         '''
-        return ChatMessage(chop(self._Owner._DoCommand('CHATMESSAGE %s %s' % (self.Name,
-            tounicode(MessageText))), 2)[1], self._Owner)
+        return ChatMessage(self._Owner, chop(self._Owner._DoCommand('CHATMESSAGE %s %s' % (self.Name,
+            tounicode(MessageText))), 2)[1])
 
     def SetPassword(self, Password, Hint=''):
         '''Sets the chat password.

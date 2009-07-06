@@ -24,13 +24,18 @@ from Skype4Py.errors import SkypeAPIError
 __all__ = ['Command', 'SkypeAPINotifier', 'SkypeAPI']
 
 
+DEFAULT_PROTOCOL = 5
+DEFAULT_FRIENDLYNAME = u'Skype4Py'
+DEFAULT_TIMEOUT = 30000
+
+
 class Command(object):
     '''Represents an API command. Use `Skype.Command` to instantiate.
 
     To send a command to Skype, use `Skype.SendCommand`.
     '''
 
-    def __init__(self, Command, Expected=u'', Blocking=False, Timeout=30000, Id=-1):
+    def __init__(self, Command, Expected=u'', Blocking=False, Timeout=DEFAULT_TIMEOUT, Id=-1):
         '''Use `Skype.Command` to instantiate the object instead of doing it directly.
         '''
 
@@ -96,8 +101,8 @@ class SkypeAPIBase(threading.Thread):
         if not hasattr(self, 'logger'):
             # Create a logger if the subclass hasn't done it already.
             self.logger = logging.getLogger('Skype4Py.api.SkypeAPIBase')
-        self.friendly_name = u'Skype4Py'
-        self.protocol = 5
+        self.friendly_name = DEFAULT_FRIENDLYNAME
+        self.protocol = DEFAULT_PROTOCOL
         self.commands = {}
         # This lock is the main mechanism to make Skype4Py thread-safe.
         self.rlock = threading.RLock()

@@ -252,7 +252,8 @@ class Skype(EventHandlingBase):
         self._Cache = True
         self.ResetCache()
         
-        self._Timeout = 30000
+        from api import DEFAULT_TIMEOUT
+        self._Timeout = DEFAULT_TIMEOUT
 
         self._Convert = Conversion(self)
         self._Client = Client(self)
@@ -276,7 +277,7 @@ class Skype(EventHandlingBase):
             self._CallEventHandler('Error', command, int(errnum), errstr)
             raise SkypeError(int(errnum), errstr)
         if not command.Reply.startswith(command.Expected):
-            raise SkypeError(0, 'Unexpected reply from Skype, got [%s], expected [%s]' % \
+            raise SkypeError(0, 'Unexpected reply from Skype, got [%s], expected [%s (...)]' % \
                 (command.Reply, command.Expected))
         return command.Reply
 
@@ -480,12 +481,14 @@ class Skype(EventHandlingBase):
           Type : `enums`.clt*
             Call type.
         '''
-        self._DoCommand('CLEAR CALLHISTORY %s %s' % (str(Type), Username))
+        cmd = 'CLEAR CALLHISTORY %s %s' % (str(Type), Username)
+        self._DoCommand(cmd, cmd)
 
     def ClearChatHistory(self):
         '''Clears the chat history.
         '''
-        self._DoCommand('CLEAR CHATHISTORY')
+        cmd = 'CLEAR CHATHISTORY'
+        self._DoCommand(cmd, cmd)
 
     def ClearVoicemailHistory(self):
         '''Clears the voicemail history.
@@ -516,8 +519,8 @@ class Skype(EventHandlingBase):
 
         :see: `SendCommand`
         '''
-        from API import Command as COMMAND
-        return COMMAND(Command, Reply, Block, Timeout, Id)
+        from api import Command as CommandClass
+        return CommandClass(Command, Reply, Block, Timeout, Id)
 
     def Conference(self, Id=0):
         '''Queries a call conference object.
@@ -801,9 +804,9 @@ class Skype(EventHandlingBase):
         :rtype: `SmsMessage`
         '''
         sms = self.CreateSms(smsMessageTypeOutgoing, *TargetNumbers)
-        for prop, value in Properties.items():
-            if hasattr(sms, prop):
-                setattr(sms, prop, value)
+        for name, value in Properties.items():
+            if isinstance(getattr(sms.__class__, name, None), property):
+                setattr(sms, name, value)
             else:
                 raise TypeError('Unknown property: %s' % prop)
         sms.Send()
@@ -816,8 +819,7 @@ class Skype(EventHandlingBase):
           Username : str
             Skypename of the user.
 
-        :return: A voicemail object.
-        :rtype: `Voicemail`
+        :note: Should return a `Voicemail` object. This is not implemented yet.
         '''
         if self._Api.protocol >= 6:
             self._DoCommand('CALLVOICEMAIL %s' % Username)
@@ -834,6 +836,8 @@ class Skype(EventHandlingBase):
         :return: A user object.
         :rtype: `user.User`
         '''
+        if not Username:
+            Username = self.CurrentUserHandle
         o = User(self, Username)
         o.OnlineStatus # Test if such a user exists.
         return o
