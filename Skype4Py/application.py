@@ -20,6 +20,9 @@ class Application(Cached):
     def _Alter(self, AlterName, Args=None):
         return self._Owner._Alter('APPLICATION', self.Name, AlterName, Args)
 
+    def _Init(self):
+        self._MakeOwner()
+
     def _Property(self, PropName, Set=None):
         return self._Owner._Property('APPLICATION', self.Name, PropName, Set)
 
