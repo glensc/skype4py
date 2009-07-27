@@ -62,11 +62,11 @@ class CallChannelManager(EventHandlingBase):
         if Events:
             self._SetEventHandlerObj(Events)
 
-        self._Skype = Skype # May be None until Connect is called.
         self._App = None
         self._Name = u'CallChannelManager'
         self._ChannelType = cctReliable
         self._Channels = []
+        self.Connect(Skype)
 
     def _ApplicationDatagram(self, App, Stream, Text):
         if App == self._App:

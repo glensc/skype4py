@@ -151,7 +151,7 @@ class ApplicationStream(Cached):
         return self.DataLength
 
     def __repr__(self):
-        return Cached.__repr__(self, 'Application')
+        return Cached.__repr__(self, 'Handle')
 
     def Disconnect(self):
         '''Disconnects the stream.

@@ -3,11 +3,124 @@
 __docformat__ = 'restructuredtext en'
 
 
+from types import NoneType
+
 from utils import *
 from enums import *
 
 
-class Call(Cached):
+class DeviceMixin(object):
+    def _Device(self, Name, DeviceType=None, Set=NoneType):
+        args = args2dict(self._Property(Name, Cache=False))
+        if Set is NoneType:
+            for dev, value in args.items():
+                try:
+                    args[dev] = int(value)
+                except ValueError:
+                    pass
+            if DeviceType is None:
+                return args
+            return args.get(DeviceType, None)
+        elif DeviceType is None:
+            raise TypeError('DeviceType must be specified if Set is used')
+        if Set:
+            args[DeviceType] = tounicode(Set)
+        else:
+            args.pop(DeviceType, None)
+        for dev, value in args.items():
+            args[dev] = quote(value, True)
+        self._Alter('SET_%s' % Name,
+                    ', '.join('%s=%s' % item for item in args.items()))
+
+    def CaptureMicDevice(self, DeviceType=None, Set=NoneType):
+        '''Queries or sets the mic capture device.
+
+        :Parameters:
+          DeviceType : `enums`.callIoDeviceType* or None
+            Mic capture device type.
+          Set
+            Value the device should be set to or None if it should be deactivated.
+
+        Querying all active devices:
+            Devices = CaptureMicDevice()
+          
+          Returns a mapping of device types to their values. Only active devices are
+          returned.
+          
+        Querying a specific device:
+            Value = CaptureMicDevice(DeviceType)
+          
+          Returns a device value for the given DeviceType.
+          
+        Setting a device value:
+            CaptureMicDevice(DeviceType, Value)
+          
+          If Value is None, the device will be deactivated.
+
+        :note: This command functions for active calls only.
+        '''
+        return self._Device('CAPTURE_MIC', DeviceType, Set)
+
+    def InputDevice(self, DeviceType=None, Set=NoneType):
+        '''Queries or sets the sound input device.
+
+        :Parameters:
+          DeviceType : `enums`.callIoDeviceType* or None
+            Sound input device type.
+          Set
+            Value the device should be set to or None if it should be deactivated.
+
+        Querying all active devices:
+            Devices = InputDevice()
+          
+          Returns a mapping of device types to their values. Only active devices are
+          returned.
+          
+        Querying a specific device:
+            Value = InputDevice(DeviceType)
+          
+          Returns a device value for the given DeviceType.
+          
+        Setting a device value:
+            InputDevice(DeviceType, Value)
+
+          If Value is None, the device will be deactivated.
+
+        :note: This command functions for active calls only.
+        '''
+        return self._Device('INPUT', DeviceType, Set)
+
+    def OutputDevice(self, DeviceType=None, Set=NoneType):
+        '''Queries or sets the sound output device.
+
+        :Parameters:
+          DeviceType : `enums`.callIoDeviceType* or None
+            Sound output device type.
+          Set
+            Value the device should be set to or None if it should be deactivated.
+
+        Querying all active devices:
+            Devices = OutputDevice()
+          
+          Returns a mapping of device types to their values. Only active devices are
+          returned.
+          
+        Querying a specific device:
+            Value = OutputDevice(DeviceType)
+          
+          Returns a device value for the given DeviceType.
+          
+        Setting a device value:
+            OutputDevice(DeviceType, Value)
+
+          If Value is None, the device will be deactivated.
+
+        :note: This command functions for active calls only.
+        '''
+        return self._Device('OUTPUT', DeviceType, Set)
+
+
+class Call(Cached, DeviceMixin):
     '''Represents a voice/video call.
     '''
     _ValidateHandle = int
@@ -41,36 +154,6 @@ class Call(Cached):
         '''
         return self._Property('CAN_TRANSFER %s' % Target) == 'TRUE'
 
-    def CaptureMicDevice(self, DeviceType=None, Set=None):
-        '''Queries or sets the mic capture device.
-
-        :Parameters:
-          DeviceType : `enums`.callIoDeviceType* or None
-            Mic capture device type or None.
-          Set : unicode, int or None
-            Value the device should be set to or None.
-
-        :return: If DeviceType and Set are None, returns a dictionary of device types and their
-                 values. Dictionary contains only those device types, whose values were set. If the
-                 DeviceType is not None but Set is None, returns the current value of the device or
-                 None if the device wasn't set. If Set is not None, sets a new value for the device.
-        :rtype: unicode, dict or None
-
-        :note: This command functions for active calls only.
-        '''
-        if Set is None: # get
-            args = args2dict(self._Property('CAPTURE_MIC', Cache=False))
-            for t in args:
-                if t == callIoDeviceTypePort:
-                    args[t] = int(args[t])
-            if DeviceType is None: # get active devices
-                return args
-            return args.get(DeviceType, None)
-        elif DeviceType is not None: # set
-            self._Alter('SET_CAPTURE_MIC', '%s=%s' % (DeviceType, quote(tounicode(Set), True)))
-        else:
-            raise TypeError('DeviceType must be specified if Set is used')
-
     def Finish(self):
         '''Ends the call.
         '''
@@ -85,36 +168,6 @@ class Call(Cached):
         '''Puts the call on hold.
         '''
         self._Property('STATUS', 'ONHOLD')
-
-    def InputDevice(self, DeviceType=None, Set=None):
-        '''Queries or sets the sound input device.
-
-        :Parameters:
-          DeviceType : `enums`.callIoDeviceType* or None
-            Sound input device type or None.
-          Set : unicode, int or None
-            Value the device should be set to or None.
-
-        :return: If DeviceType and Set are None, returns a dictionary of device types and their
-                 values. Dictionary contains only those device types, whose values were set. If the
-                 DeviceType is not None but Set is None, returns the current value of the device or
-                 None if the device wasn't set. If Set is not None, sets a new value for the device.
-        :rtype: unicode, dict or None
-
-        :note: This command functions for active calls only.
-        '''
-        if Set is None: # get
-            args = args2dict(self._Property('INPUT', Cache=False))
-            for t in args:
-                if t == callIoDeviceTypePort:
-                    args[t] = int(args[t])
-            if DeviceType is None: # get active devices
-                return args
-            return args.get(DeviceType, None)
-        elif DeviceType is not None: # set
-            self._Alter('SET_INPUT', '%s=%s' % (DeviceType, quote(tounicode(Set), True)))
-        else:
-            raise TypeError('DeviceType must be specified if Set is used')
 
     def Join(self, Id):
         '''Joins with another call to form a conference.
@@ -134,36 +187,6 @@ class Call(Cached):
         '''Marks the call as seen.
         '''
         self.Seen = True
-
-    def OutputDevice(self, DeviceType=None, Set=None):
-        '''Queries or sets the sound output device.
-
-        :Parameters:
-          DeviceType : `enums`.callIoDeviceType* or None
-            Sound output device type or None.
-          Set : unicode, int or None
-            Value the device should be set to or None.
-
-        :return: If DeviceType and Set are None, returns a dictionary of device types and their
-                 values. Dictionary contains only those device types, whose values were set. If the
-                 DeviceType is not None but Set is None, returns the current value of the device or
-                 None if the device wasn't set. If Set is not None, sets a new value for the device.
-        :rtype: unicode, dict or None
-
-        :note: This command functions for active calls only.
-        '''
-        if Set is None: # get
-            args = args2dict(self._Property('OUTPUT', Cache=False))
-            for t in args:
-                if t == callIoDeviceTypePort:
-                    args[t] = int(args[t])
-            if DeviceType is None: # get active devices
-                return args
-            return args.get(DeviceType, None)
-        elif DeviceType is not None: # set
-            self._Alter('SET_OUTPUT', '%s=%s' % (DeviceType, quote(tounicode(Set), True)))
-        else:
-            raise TypeError('DeviceType must be specified if Set is used')
 
     def RedirectToVoicemail(self):
         '''Redirects a call to voicemail.

@@ -27,7 +27,7 @@ def tounicode(s):
     '''
     if isinstance(s, unicode):
         return s
-    return s.decode('utf-8')
+    return str(s).decode('utf-8')
     
     
 def path2unicode(path):
