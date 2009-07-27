@@ -172,13 +172,15 @@ class SkypeAPI(SkypeAPIBase):
             finally:
                 if fhwnd:
                     windll.user32.SetForegroundWindow(fhwnd)
-            # check if we got the Skype window's hwnd
-            if self.skype is not None:
-                self.send_command(Command('PROTOCOL %s' % self.protocol))
-            elif not self.wait:
-                raise SkypeAPIError('Skype attach timeout')
         finally:
             self.release()
+        # check if we got the Skype window's hwnd
+        if self.skype is not None:
+            command = Command('PROTOCOL %s' % self.protocol, Blocking=True)
+            self.send_command(command)
+            self.protocol = int(command.Reply.rsplit(None, 1)[-1])
+        elif not self.wait:
+            raise SkypeAPIError('Skype attach timeout')
 
     def is_running(self):
         # TZap is for Skype 4.0, tSk for 3.8 series

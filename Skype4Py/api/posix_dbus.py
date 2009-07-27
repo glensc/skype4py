@@ -160,10 +160,12 @@ class SkypeAPI(SkypeAPIBase):
                 self.skype_out = None
                 self.set_attachment_status(apiAttachRefused)
                 return
-            self.send_command(Command('PROTOCOL %s' % self.protocol))
             self.set_attachment_status(apiAttachSuccess)
         finally:
             self.release()
+        command = Command('PROTOCOL %s' % self.protocol, Blocking=True)
+        self.send_command(command)
+        self.protocol = int(command.Reply.rsplit(None, 1)[-1])
 
     def is_running(self):
         try:

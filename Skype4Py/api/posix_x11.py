@@ -343,10 +343,12 @@ class SkypeAPI(SkypeAPIBase):
                 self.win_skype = None
                 self.set_attachment_status(apiAttachRefused)
                 return
-            self.send_command(Command('PROTOCOL %s' % self.protocol), True)
             self.set_attachment_status(apiAttachSuccess)
         finally:
             self.release()
+        command = Command('PROTOCOL %s' % self.protocol, Blocking=True)
+        self.send_command(command, True)
+        self.protocol = int(command.Reply.rsplit(None, 1)[-1])
 
     def is_running(self):
         return (self.get_skype() is not None)

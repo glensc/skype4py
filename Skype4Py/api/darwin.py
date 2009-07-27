@@ -364,9 +364,11 @@ class SkypeAPI(SkypeAPIBase):
             if not self.wait:
                 self.set_attachment_status(apiAttachUnknown)
                 raise SkypeAPIError('Skype attach timeout')
-            self.send_command(Command('PROTOCOL %s' % self.protocol))
         finally:
             self.release()
+        command = Command('PROTOCOL %s' % self.protocol, Blocking=True)
+        self.send_command(command)
+        self.protocol = int(command.Reply.rsplit(None, 1)[-1])
 
     def is_running(self):
         try:
