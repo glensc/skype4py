@@ -50,7 +50,7 @@ class FileTransfer(Cached):
     ''')
 
     def _GetFileName(self):
-        return os.path.split(self.FilePath)[1]
+        return os.path.basename(self.FilePath)
 
     FileName = property(_GetFileName,
     doc='''Name of the transferred file.
