@@ -17,7 +17,8 @@ class Chat(Cached):
         return Cached.__repr__(self, 'Name')
 
     def _Alter(self, AlterName, Args=None):
-        return self._Owner._Alter('CHAT', self.Name, AlterName, Args, 'ALTER CHAT %s' % AlterName)
+        return self._Owner._Alter('CHAT', self.Name, AlterName, Args,
+                                  'ALTER CHAT %s %s' % (self.Name, AlterName))
 
     def _Property(self, PropName, Value=None, Cache=True):
         return self._Owner._Property('CHAT', self.Name, PropName, Value, Cache)
@@ -65,23 +66,23 @@ class Chat(Cached):
         '''
         self._Alter('JOIN')
 
-    def Kick(self, Handle):
-        '''Kicks a member from chat.
+    def Kick(self, *Handles):
+        '''Kicks member(s) from chat.
 
         :Parameters:
-          Handle : str
-            Skype username.
+          Handles : str
+            Skype username(s).
         '''
-        self._Alter('KICK', Handle)
+        self._Alter('KICK', ', '.join(Handles))
 
-    def KickBan(self, Handle):
-        '''Kicks and bans a member from chat.
+    def KickBan(self, *Handles):
+        '''Kicks and bans member(s) from chat.
 
         :Parameters:
-          Handle : str
-            Skype username.
+          Handles : str
+            Skype username(s).
         '''
-        self._Alter('KICKBAN', Handle)
+        self._Alter('KICKBAN', ', '.join(Handles))
 
     def Leave(self):
         '''Leaves the chat.
@@ -368,19 +369,10 @@ class Chat(Cached):
     # Note. When TOPICXML is set, the value is stripped of XML tags and updated in TOPIC.
 
     def _GetTopic(self):
-        try:
-            topicxml = self._Property('TOPICXML')
-            if topicxml:
-                return topicxml
-        except SkypeError:
-            pass
         return self._Property('TOPIC')
 
     def _SetTopic(self, Value):
-        try:
-            self._Alter('SETTOPICXML', tounicode(Value))
-        except SkypeError:
-            self._Alter('SETTOPIC', tounicode(Value))
+        self._Alter('SETTOPIC', tounicode(Value))
 
     Topic = property(_GetTopic, _SetTopic,
     doc='''Chat topic.
@@ -392,7 +384,7 @@ class Chat(Cached):
         return self._Property('TOPICXML')
 
     def _SetTopicXML(self, Value):
-        self._Property('TOPICXML', Value)
+        self._Alter('SETTOPICXML', tounicode(Value))
 
     TopicXML = property(_GetTopicXML, _SetTopicXML,
     doc='''Chat topic in XML format.
@@ -620,7 +612,8 @@ class ChatMember(Cached):
         return Cached.__repr__(self, 'Id')
 
     def _Alter(self, AlterName, Args=None):
-        return self._Owner._Alter('CHATMEMBER', self.Id, AlterName, Args, 'ALTER CHATMEMBER %s' % AlterName)
+        return self._Owner._Alter('CHATMEMBER', self.Id, AlterName, Args,
+                                  'ALTER CHATMEMBER %s %s' % (self.Id, AlterName))
 
     def _Property(self, PropName, Value=None, Cache=True):
         return self._Owner._Property('CHATMEMBER', self.Id, PropName, Value, Cache)
@@ -635,10 +628,12 @@ class ChatMember(Cached):
         :return: True if the new role can be applied, False otherwise.
         :rtype: bool
         '''
-        return (self._Alter('CANSETROLETO', Role) == 'TRUE')
+        t = self._Owner._Alter('CHATMEMBER', self.Id, 'CANSETROLETO', Role,
+                               'ALTER CHATMEMBER CANSETROLETO')
+        return (chop(t, 1)[-1] == 'TRUE')
 
     def _GetChat(self):
-        return Chat(self._Property('CHATNAME'), self._Owner)
+        return Chat(self._Owner, self._Property('CHATNAME'))
 
     Chat = property(_GetChat,
     doc='''Chat this member belongs to.
