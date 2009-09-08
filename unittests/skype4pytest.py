@@ -100,34 +100,28 @@ class TestCase(unittest.TestCase):
 
 def suite():
     import applicationtest
-    import callchanneltest
     import calltest
     import chattest
     import clienttest
-    import conversiontest
     import filetransfertest
     import profiletest
     import settingstest
     import skypetest
     import smstest
     import usertest
-    #import utilstest
     import voicemailtest
 
     return unittest.TestSuite([
         applicationtest.suite(),
-        callchanneltest.suite(),
         calltest.suite(),
         chattest.suite(),
         clienttest.suite(),
-        conversiontest.suite(),
         filetransfertest.suite(),
         profiletest.suite(),
         settingstest.suite(),
         skypetest.suite(),
         smstest.suite(),
         usertest.suite(),
-        #utilstest.suite(),
         voicemailtest.suite(),
     ])
 

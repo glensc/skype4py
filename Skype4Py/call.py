@@ -140,7 +140,8 @@ class Call(Cached, DeviceMixin):
     def Answer(self):
         '''Answers the call.
         '''
-        self._Property('STATUS', 'INPROGRESS')
+        #self._Property('STATUS', 'INPROGRESS')
+        self._Alter('ANSWER')
 
     def CanTransfer(self, Target):
         '''Queries if a call can be transferred to a contact or phone number.
@@ -157,7 +158,8 @@ class Call(Cached, DeviceMixin):
     def Finish(self):
         '''Ends the call.
         '''
-        self._Property('STATUS', 'FINISHED')
+        #self._Property('STATUS', 'FINISHED')
+        self._Alter('END', 'HANGUP')
 
     def Forward(self):
         '''Forwards a call.
@@ -167,7 +169,8 @@ class Call(Cached, DeviceMixin):
     def Hold(self):
         '''Puts the call on hold.
         '''
-        self._Property('STATUS', 'ONHOLD')
+        #self._Property('STATUS', 'ONHOLD')
+        self._Alter('HOLD')
 
     def Join(self, Id):
         '''Joins with another call to form a conference.
@@ -179,6 +182,7 @@ class Call(Cached, DeviceMixin):
         :return: Conference object.
         :rtype: `Conference`
         '''
+        #self._Alter('JOIN_CONFERENCE', Id)
         reply = self._Owner._DoCommand('SET CALL %s JOIN_CONFERENCE %s' % (self.Id, Id),
             'CALL %s CONF_ID' % self.Id)
         return Conference(self._Owner, reply.split()[-1])
@@ -196,7 +200,8 @@ class Call(Cached, DeviceMixin):
     def Resume(self):
         '''Resumes the held call.
         '''
-        self.Answer()
+        #self.Answer()
+        self._Alter('RESUME')
 
     def StartVideoReceive(self):
         '''Starts video receive.
@@ -310,7 +315,7 @@ class Call(Cached, DeviceMixin):
 
     def _GetParticipants(self):
         count = int(self._Property('CONF_PARTICIPANTS_COUNT'))
-        return ParticipantCollection(self._Owner, xrange(count))
+        return ParticipantCollection(self, xrange(count))
 
     Participants = property(_GetParticipants,
     doc='''Participants of a conference call not hosted by the user.
@@ -571,11 +576,12 @@ class Participant(Cached):
         return Cached.__repr__(self, 'Id', 'Idx', 'Handle')
 
     def _Property(self, Prop):
+        # Prop: 0 = user name, 1 = call type, 2 = call status, 3 = display name
         reply = self._Owner._Property('CONF_PARTICIPANT %d' % self.Idx)
         return chop(reply, 3)[Prop]
 
     def _GetCall(self):
-        return self._Call
+        return self._Owner
 
     Call = property(_GetCall,
     doc='''Call object.
@@ -620,7 +626,7 @@ class Participant(Cached):
     ''')
 
     def _GetId(self):
-        return self._Call.Id
+        return self._Owner.Id
 
     Id = property(_GetId,
     doc='''Call Id.
