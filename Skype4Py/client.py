@@ -156,7 +156,8 @@ class Client(object):
           Params : unicode
             One or more optional parameters.
         '''
-        self._Skype._DoCommand('OPEN %s %s' % (Name, tounicode(' '.join(Params))))
+        params = filter(None, (str(Name),) + Params)
+        self._Skype._DoCommand('OPEN %s' % tounicode(' '.join(params)))
 
     def OpenDialpadTab(self):
         '''Opens dial pad tab.
@@ -172,7 +173,7 @@ class Client(object):
           Folder : str
             Path to initial directory.
         '''
-        self.OpenDialog('FILETRANSFER', Username, 'IN %s' % path2unicode(Folder))
+        self.OpenDialog('FILETRANSFER', Username, 'IN', path2unicode(Folder))
 
     def OpenGettingStartedWizard(self):
         '''Opens getting started wizard.
@@ -237,7 +238,7 @@ class Client(object):
           SmsId : int
             SMS message Id.
         '''
-        self.OpenDialog('SMS', SmsId)
+        self.OpenDialog('SMS', str(SmsId))
 
     def OpenUserInfoDialog(self, Username):
         '''Opens user information dialog.
@@ -299,7 +300,7 @@ class Client(object):
     ''')
 
     def _GetWindowState(self):
-        return self._Skype.Variable('WINDOWSTATE')
+        return str(self._Skype.Variable('WINDOWSTATE'))
 
     def _SetWindowState(self, Value):
         self._Skype.Variable('WINDOWSTATE', Value)
@@ -316,10 +317,10 @@ class PluginEvent(object):
     '''
     def __init__(self, Skype, Id):
         self._Skype = Skype
-        self._Id = Id
+        self._Id = tounicode(Id)
 
     def __repr__(self):
-        return '<%s with Id=%s>' % (Cached.__repr__(self)[1:-1], repr(self.Id))
+        return '<%s with Id=%s>' % (object.__repr__(self)[1:-1], repr(self.Id))
 
     def Delete(self):
         '''Deletes the event from the events pane in the Skype client.
@@ -341,7 +342,7 @@ class PluginMenuItem(object):
     '''
     def __init__(self, Skype, Id, Caption, Hint, Enabled):
         self._Skype = Skype
-        self._Id = Id
+        self._Id = tounicode(Id)
         self._CacheDict = {}
         self._CacheDict['CAPTION'] = tounicode(Caption)
         self._CacheDict['HINT'] = tounicode(Hint)
