@@ -99,7 +99,7 @@ def args2dict(s):
         t, s = chop(s, 1, '=')
         if s.startswith('"'):
             # XXX: This function is used to parse strings from Skype. The question is,
-            # how does it escape the double-quotes. The code below implements the
+            # how does Skype escape the double-quotes. The code below implements the
             # VisualBasic technique ("" -> ").
             i = 0
             while True:
@@ -113,6 +113,8 @@ def args2dict(s):
                     break
             if i > 0:
                 d[t] = s[1:i].replace('""', '"')
+                if s[i+1:i+3] == ', ':
+                    i += 2
                 s = s[i+1:]
             else:
                 d[t] = s
