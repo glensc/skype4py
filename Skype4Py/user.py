@@ -148,7 +148,7 @@ class User(Cached):
     Handle = property(_GetHandle,
     doc='''Skypename of the user.
 
-    :type: unicode
+    :type: str
     ''')
 
     def _GetFullName(self):
