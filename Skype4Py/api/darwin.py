@@ -220,7 +220,7 @@ class CFDictionary(CFType):
         return d
 
     def __getitem__(self, key):
-        return core.CFType(c_void_p(core.lib.CFDictionaryGetValue(self, key)))
+        return CFType(c_void_p(core.lib.CFDictionaryGetValue(self, key)))
 
     def __len__(self):
         return core.lib.CFDictionaryGetCount(self)
