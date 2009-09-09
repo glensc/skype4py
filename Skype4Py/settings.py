@@ -66,10 +66,10 @@ class Settings(object):
             Path to new ringtone or None if the current path should be queried.
 
         :return: Current path if Set=None, None otherwise.
-        :rtype: unicode or None
+        :rtype: str or None
         '''
         if Set is None:
-            return self._Skype._Property('RINGTONE', Id)
+            return unicode2path(self._Skype._Property('RINGTONE', Id, ''))
         self._Skype._Property('RINGTONE', Id, '', path2unicode(Set))
 
     def RingToneStatus(self, Id=1, Set=None):
