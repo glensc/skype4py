@@ -113,7 +113,7 @@ class CFType(object):
         return self.handle
 
     def __del__(self):
-        if self.owner:
+        if self.owner and core:
             core.lib.CFRelease(self)
         self.handle = None
 
