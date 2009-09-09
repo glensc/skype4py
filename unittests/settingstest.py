@@ -15,8 +15,8 @@ class SettingsTest(skype4pytest.TestCase):
         from warnings import simplefilter
         self.api.enqueue('SET AVATAR 1 c:\\spam.jpg',
                          'AVATAR 1 c:\\spam.jpg')
+        simplefilter('ignore')
         try:
-            simplefilter('ignore')
             self.obj.Avatar(1, 'c:\\spam.jpg')
         finally:
             simplefilter('default')

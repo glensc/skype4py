@@ -544,7 +544,7 @@ class ChatMessage(Cached):
             raise SkypeError(0, 'Seen can only be set to True')
 
     Seen = property(fset=_SetSeen,
-    doc='''Marks a missed chat message as seen.
+    doc='''Marks a missed chat message as seen. Accepts only True value.
 
     :type: bool
 

@@ -28,6 +28,11 @@ class SmsMessage(Cached):
         '''
         self._Owner._DoCommand('DELETE SMS %s' % self.Id)
 
+    def MarkAsSeen(self):
+        '''Marks this SMS message as seen.
+        '''
+        self._Owner._DoCommand('SET SMS %s SEEN' % self.Id)
+ 
     def Send(self):
         '''Sends this SMS message.
         '''
@@ -65,7 +70,7 @@ class SmsMessage(Cached):
     ''')
 
     def _GetFailureReason(self):
-        return self._Property('FAILUREREASON')
+        return str(self._Property('FAILUREREASON'))
 
     FailureReason = property(_GetFailureReason,
     doc='''Reason an SMS message failed. Read this if `Status` == `enums.smsMessageStatusFailed`.
@@ -161,16 +166,23 @@ class SmsMessage(Cached):
     ''')
 
     def _SetSeen(self, Value):
-        self._Property('SEEN', cndexp(Value, 'TRUE', 'FALSE'))
+        from warnings import warn
+        warn('SmsMessage.Seen = x: Use SmsMessage.MarkAsSeen() instead.', DeprecationWarning, stacklevel=2)
+        if Value:
+            self.MarkAsSeen()
+        else:
+            raise SkypeError(0, 'Seen can only be set to True')
 
     Seen = property(fset=_SetSeen,
-    doc='''Read status of the SMS message.
+    doc='''Set the read status of the SMS message. Accepts only True value.
 
     :type: bool
+
+    :deprecated: Extremely unpythonic, use `MarkAsSeen` instead.
     ''')
 
     def _GetStatus(self):
-        return self._Property('STATUS')
+        return str(self._Property('STATUS'))
 
     Status = property(_GetStatus,
     doc='''SMS message status.
@@ -179,7 +191,7 @@ class SmsMessage(Cached):
     ''')
 
     def _GetTargetNumbers(self):
-        return split(self._Property('TARGET_NUMBERS'), ', ')
+        return tuple(split(self._Property('TARGET_NUMBERS'), ', '))
 
     def _SetTargetNumbers(self, Value):
         self._Property('TARGET_NUMBERS', ', '.join(Value))
