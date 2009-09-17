@@ -160,6 +160,8 @@ else:
 
 
 # setup Xlib function prototypes
+x11.XCheckIfEvent.argtype = (DisplayP, XEventP, POINTER(PREDICATE), c_void_p)
+x11.XCheckIfEvent.restype = Bool
 x11.XCloseDisplay.argtypes = (DisplayP,)
 x11.XCloseDisplay.restype = None
 x11.XCreateSimpleWindow.argtypes = (DisplayP, Window, c_int, c_int, c_uint,
@@ -171,8 +173,6 @@ x11.XDeleteProperty.argtypes = (DisplayP, Window, Atom)
 x11.XDeleteProperty.restype = None
 x11.XDestroyWindow.argtypes = (DisplayP, Window)
 x11.XDestroyWindow.restype = None
-x11.XPending.argtypes = (DisplayP,)
-x11.XPending.restype = c_int
 x11.XGetAtomName.argtypes = (DisplayP, Atom)
 x11.XGetAtomName.restype = c_char_p
 x11.XGetErrorText.argtypes = (DisplayP, c_int, c_char_p, c_int)
@@ -180,14 +180,14 @@ x11.XGetErrorText.restype = None
 x11.XGetWindowProperty.argtypes = (DisplayP, Window, Atom, c_long, c_long, Bool,
         Atom, AtomP, c_int_p, c_ulong_p, c_ulong_p, POINTER(POINTER(Window)))
 x11.XGetWindowProperty.restype = c_int
-x11.XIfEvent.argtype = (DisplayP, XEventP, POINTER(PREDICATE), c_void_p)
-x11.XIfEvent.restype = None
 x11.XInitThreads.argtypes = ()
 x11.XInitThreads.restype = Status
 x11.XInternAtom.argtypes = (DisplayP, c_char_p, Bool)
 x11.XInternAtom.restype = Atom
 x11.XOpenDisplay.argtypes = (c_char_p,)
 x11.XOpenDisplay.restype = DisplayP
+x11.XPending.argtypes = (DisplayP,)
+x11.XPending.restype = c_int
 x11.XSelectInput.argtypes = (DisplayP, Window, c_long)
 x11.XSelectInput.restype = None
 x11.XSendEvent.argtypes = (DisplayP, Window, Bool, c_long, XEventP)
@@ -235,8 +235,8 @@ class SkypeAPI(SkypeAPIBase):
     def event_predicate(self, display, eventp, arg):
         event = eventp.contents
         return ((event.type == ClientMessage and event.xclient.format == 8 and
-                 event.xclient.message_type in (self.atom_msg_begin, self.atom_msg)) or
-                event.type == PropertyNotify)
+                 event.xclient.message_type in (self.atom_msg_begin, self.atom_msg) and
+                 event.xclient.window == self.win_self) or event.type == PropertyNotify)
 
     def run(self):
         self.logger.info('thread started')
@@ -244,8 +244,10 @@ class SkypeAPI(SkypeAPIBase):
         event = XEvent()
         data = ''
         while not self.loop_break:
-            pending = x11.XPending(self.disp)
-            if not pending:
+            x11.XLockDisplay(self.disp)
+            got_event = x11.XCheckIfEvent(self.disp, byref(event), PREDICATE(self.event_predicate), None)
+            x11.XUnlockDisplay(self.disp)
+            if not got_event:
                 self.loop_event.wait(self.loop_timeout)
                 if self.loop_event.isSet():
                     self.loop_timeout = 0.0001
@@ -254,35 +256,31 @@ class SkypeAPI(SkypeAPIBase):
                 self.loop_event.clear()
                 continue
             self.loop_timeout = 0.0001
-            for i in xrange(pending):
-                x11.XLockDisplay(self.disp)
-                x11.XIfEvent(self.disp, byref(event), PREDICATE(self.event_predicate), None)
-                x11.XUnlockDisplay(self.disp)
-                # events we get here are already prefiltered by the predicate function
-                if event.type == ClientMessage:
-                    if event.xclient.message_type == self.atom_msg_begin:
-                        data = str(event.xclient.data)
-                    else: # event.xclient.message_type == self.atom_msg
-                        if data != '':
-                            data += str(event.xclient.data)
-                        else:
-                            self.logger.warning('Middle of Skype X11 message received with no beginning!')
-                    if len(event.xclient.data) != 20 and data:
-                        self.notify(data.decode('utf-8'))
-                        data = ''
-                else: # event.type == PropertyNotify
-                    if x11.XGetAtomName(self.disp, event.xproperty.atom) == '_SKYPE_INSTANCE':
-                        if event.xproperty.state == PropertyNewValue:
-                            self.win_skype = self.get_skype()
-                            # changing attachment status can cause an event handler to be fired, in
-                            # turn it could try to call Attach() and doing this immediately seems to
-                            # confuse Skype (command '#0 NAME xxx' returns '#0 CONNSTATUS OFFLINE' :D);
-                            # to fix this, we give Skype some time to initialize itself
-                            time.sleep(1.0)
-                            self.set_attachment_status(apiAttachAvailable)
-                        elif event.xproperty.state == PropertyDelete:
-                            self.win_skype = None
-                            self.set_attachment_status(apiAttachNotAvailable)
+            # events we get here are already prefiltered by the predicate function
+            if event.type == ClientMessage:
+                if event.xclient.message_type == self.atom_msg_begin:
+                    data = str(event.xclient.data)
+                else: # event.xclient.message_type == self.atom_msg
+                    if data != '':
+                        data += str(event.xclient.data)
+                    else:
+                        self.logger.warning('Middle of Skype X11 message received with no beginning!')
+                if len(event.xclient.data) != 20 and data:
+                    self.notify(data.decode('utf-8'))
+                    data = ''
+            else: # event.type == PropertyNotify
+                if x11.XGetAtomName(self.disp, event.xproperty.atom) == '_SKYPE_INSTANCE':
+                    if event.xproperty.state == PropertyNewValue:
+                        self.win_skype = self.get_skype()
+                        # changing attachment status can cause an event handler to be fired, in
+                        # turn it could try to call Attach() and doing this immediately seems to
+                        # confuse Skype (command '#0 NAME xxx' returns '#0 CONNSTATUS OFFLINE' :D);
+                        # to fix this, we give Skype some time to initialize itself
+                        time.sleep(1.0)
+                        self.set_attachment_status(apiAttachAvailable)
+                    elif event.xproperty.state == PropertyDelete:
+                        self.win_skype = None
+                        self.set_attachment_status(apiAttachNotAvailable)
         self.logger.info('thread finished')
    
     def get_skype(self):
