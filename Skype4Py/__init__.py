@@ -1,4 +1,4 @@
-'''
+"""
 Skype4Py is a multiplatform Skype API wrapper for Python.
 
 1. Usage.
@@ -87,7 +87,7 @@ Skype4Py is a multiplatform Skype API wrapper for Python.
 :see: The Skype4Py website: https://developer.skype.com/wiki/Skype4Py
 :license: BSD License (see the accompanying LICENSE file for more information)
 :copyright: |copy| 2007-2009 Arkadiusz Wahlig
-'''
+"""
 __docformat__ = 'restructuredtext en'
 
 
@@ -99,7 +99,7 @@ import logging
 
 
 __version__ = '1.0.31.1'
-'''The version of Skype4Py.'''
+"""The version of Skype4Py."""
 
 
 class NullHandler(logging.Handler):

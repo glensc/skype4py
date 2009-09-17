@@ -1,5 +1,5 @@
-'''Data channels for calls.
-'''
+"""Data channels for calls.
+"""
 __docformat__ = 'restructuredtext en'
 
 
@@ -12,7 +12,7 @@ from errors import SkypeError
 
 
 class CallChannelManager(EventHandlingBase):
-    '''Instantiate this class to create a call channel manager. A call channel manager will
+    """Instantiate this class to create a call channel manager. A call channel manager will
     automatically create a data channel (based on the APP2APP protocol) for voice calls.
 
     1. Usage.
@@ -40,7 +40,7 @@ class CallChannelManager(EventHandlingBase):
 
        The use of events is explained in `EventHandlingBase` class which
        is a superclass of this class.
-    '''
+    """
 
     def __del__(self):
         if getattr(self, '_App', None):
@@ -51,13 +51,13 @@ class CallChannelManager(EventHandlingBase):
             self._Skype.UnregisterEventHandler('ApplicationDatagram', self._OnApplicationDatagram)
 
     def __init__(self, Events=None, Skype=None):
-        '''Initializes the object.
+        """Initializes the object.
         
         :Parameters:
           Events
             An optional object with event handlers. See `EventHandlingBase` for more
             information on events.
-        '''
+        """
         EventHandlingBase.__init__(self)
         if Events:
             self._SetEventHandlerObj(Events)
@@ -112,7 +112,7 @@ class CallChannelManager(EventHandlingBase):
                     break
 
     def Connect(self, Skype):
-        '''Connects this call channel manager instance to Skype. This is the first thing you should
+        """Connects this call channel manager instance to Skype. This is the first thing you should
         do after creating this object.
 
         :Parameters:
@@ -120,19 +120,19 @@ class CallChannelManager(EventHandlingBase):
             The Skype object.
 
         :see: `Disconnect`
-        '''
+        """
         self._Skype = Skype
         self._Skype.RegisterEventHandler('CallStatus', self._CallStatus)
         del self._Channels[:]
 
     def CreateApplication(self, ApplicationName=None):
-        '''Creates an APP2APP application context. The application is automatically created using
+        """Creates an APP2APP application context. The application is automatically created using
         `application.Application.Create` method.
         
         :Parameters:
           ApplicationName : unicode
             Application name. Initial name, when the manager is created, is ``u'CallChannelManager'``.
-        '''
+        """
         if ApplicationName is not None:
             self.Name = tounicode(ApplicationName)
         self._App = self._Skype.Application(self.Name)
@@ -143,10 +143,10 @@ class CallChannelManager(EventHandlingBase):
         self._CallEventHandler('Created', self)
 
     def Disconnect(self):
-        '''Disconnects from the Skype instance.
+        """Disconnects from the Skype instance.
         
         :see: `Connect`
-        '''
+        """
         self._Skype.UnregisterEventHandler('CallStatus', self._CallStatus)
         self._Skype = None
 
@@ -154,10 +154,10 @@ class CallChannelManager(EventHandlingBase):
         return CallChannelCollection(self, self._Channels[:])
 
     Channels = property(_GetChannels,
-    doc='''All call data channels.
+    doc="""All call data channels.
 
     :type: `CallChannelCollection`
-    ''')
+    """)
 
     def _GetChannelType(self):
         return self._ChannelType
@@ -166,19 +166,19 @@ class CallChannelManager(EventHandlingBase):
         self._ChannelType = str(Value)
 
     ChannelType = property(_GetChannelType, _SetChannelType,
-    doc='''Queries/sets the default channel type.
+    doc="""Queries/sets the default channel type.
 
     :type: `enums`.cct*
-    ''')
+    """)
 
     def _GetCreated(self):
         return (not not self._App)
 
     Created = property(_GetCreated,
-    doc='''Returns True if the application context has been created.
+    doc="""Returns True if the application context has been created.
 
     :type: bool
-    ''')
+    """)
 
     def _GetName(self):
         return self._Name
@@ -187,38 +187,38 @@ class CallChannelManager(EventHandlingBase):
         self._Name = tounicode(Value)
 
     Name = property(_GetName, _SetName,
-    doc='''Queries/sets the application context name.
+    doc="""Queries/sets the application context name.
 
     :type: unicode
-    ''')
+    """)
 
 
 class CallChannelManagerEvents(object):
-    '''Events defined in `CallChannelManager`.
+    """Events defined in `CallChannelManager`.
 
     See `EventHandlingBase` for more information on events.
-    '''
+    """
 
     def Channels(self, Manager, Channels):
-        '''This event is triggered when list of call channels changes.
+        """This event is triggered when list of call channels changes.
 
         :Parameters:
           Manager : `CallChannelManager`
             The call channel manager object.
           Channels : tuple of `CallChannel`
             Updated list of call channels.
-        '''
+        """
 
     def Created(self, Manager):
-        '''This event is triggered when the application context has successfully been created.
+        """This event is triggered when the application context has successfully been created.
 
         :Parameters:
           Manager : `CallChannelManager`
             The call channel manager object.
-        '''
+        """
 
     def Message(self, Manager, Channel, Message):
-        '''This event is triggered when a call channel message has been received.
+        """This event is triggered when a call channel message has been received.
 
         :Parameters:
           Manager : `CallChannelManager`
@@ -227,27 +227,27 @@ class CallChannelManagerEvents(object):
             The call channel object receiving the message.
           Message : `CallChannelMessage`
             The received message.
-        '''
+        """
 
 
 CallChannelManager._AddEvents(CallChannelManagerEvents)
 
 
 class CallChannel(object):
-    '''Represents a call channel.
-    '''
+    """Represents a call channel.
+    """
     _ValidateHandle = staticmethod(lambda x: x)
 
     def __repr__(self):
         return Cached.__repr__(self, 'Manager', 'Call', 'Stream')
 
     def SendTextMessage(self, Text):
-        '''Sends a text message over channel.
+        """Sends a text message over channel.
 
         :Parameters:
           Text : unicode
             Text to send.
-        '''
+        """
         if self.Type == cctReliable:
             self.Stream.Write(Text)
         elif self.Type == cctDatagram:
@@ -259,28 +259,28 @@ class CallChannel(object):
         return self._Handle['call']
 
     Call = property(_GetCall,
-    doc='''The call object associated with this channel.
+    doc="""The call object associated with this channel.
 
     :type: `Call`
-    ''')
+    """)
 
     def _GetManager(self):
         return self._Owner
 
     Manager = property(_GetManager,
-    doc='''The call channel manager object.
+    doc="""The call channel manager object.
 
     :type: `CallChannelManager`
-    ''')
+    """)
 
     def _GetStream(self):
         return self._Handle['stream']
 
     Stream = property(_GetStream,
-    doc='''Underlying APP2APP stream object.
+    doc="""Underlying APP2APP stream object.
 
     :type: `ApplicationStream`
-    ''')
+    """)
 
     def _GetType(self):
         return self._Handle.get('type', self.Manager.ChannelType)
@@ -289,10 +289,10 @@ class CallChannel(object):
         self._Handle['type'] = str(Value)
 
     Type = property(_GetType, _SetType,
-    doc='''Type of this channel.
+    doc="""Type of this channel.
 
     :type: `enums`.cct*
-    ''')
+    """)
 
 
 class CallChannelCollection(CachedCollection):
@@ -300,16 +300,16 @@ class CallChannelCollection(CachedCollection):
 
 
 class CallChannelMessage(object):
-    '''Represents a call channel message.
-    '''
+    """Represents a call channel message.
+    """
 
     def __init__(self, Text):
-        '''Initializes the object.
+        """Initializes the object.
 
         :Parameters:
           Text : unicode
             The message text.
-        '''
+        """
         self._Text = tounicode(Text)
 
     def _GetText(self):
@@ -319,7 +319,7 @@ class CallChannelMessage(object):
         self._Text = tounicode(Value)
 
     Text = property(_GetText, _SetText,
-    doc='''Queries/sets the message text.
+    doc="""Queries/sets the message text.
 
     :type: unicode
-    ''')
+    """)

@@ -1,5 +1,5 @@
-'''APP2APP protocol.
-'''
+"""APP2APP protocol.
+"""
 __docformat__ = 'restructuredtext en'
 
 
@@ -10,8 +10,8 @@ from user import *
 
 
 class Application(Cached):
-    '''Represents an application in APP2APP protocol. Use `skype.Skype.Application` to instantiate.
-    '''
+    """Represents an application in APP2APP protocol. Use `skype.Skype.Application` to instantiate.
+    """
     _ValidateHandle = staticmethod(tounicode)
 
     def __repr__(self):
@@ -34,7 +34,7 @@ class Application(Cached):
                 self._Connect_Event.set()
 
     def Connect(self, Username, WaitConnected=False):
-        '''Connects application to user.
+        """Connects application to user.
 
         :Parameters:
           Username : str
@@ -45,7 +45,7 @@ class Application(Cached):
         :return: If ``WaitConnected`` is True, returns the stream which can be used to send the
                  data. Otherwise returns None.
         :rtype: `ApplicationStream` or None
-        '''
+        """
         if WaitConnected:
             self._Connect_Event = threading.Event()
             self._Connect_Stream = [None]
@@ -63,17 +63,17 @@ class Application(Cached):
             self._Alter('CONNECT', Username)
 
     def Create(self):
-        '''Creates the APP2APP application in Skype client.
-        '''
+        """Creates the APP2APP application in Skype client.
+        """
         self._Owner._DoCommand('CREATE APPLICATION %s' % self.Name)
 
     def Delete(self):
-        '''Deletes the APP2APP application in Skype client.
-        '''
+        """Deletes the APP2APP application in Skype client.
+        """
         self._Owner._DoCommand('DELETE APPLICATION %s' % self.Name)
 
     def SendDatagram(self, Text, Streams=None):
-        '''Sends datagram to application streams.
+        """Sends datagram to application streams.
 
         :Parameters:
           Text : unicode
@@ -81,7 +81,7 @@ class Application(Cached):
           Streams : sequence of `ApplicationStream`
             Streams to send the datagram to or None if all currently connected streams should be
             used.
-        '''
+        """
         if Streams is None:
             Streams = self.Streams
         for s in Streams:
@@ -91,60 +91,60 @@ class Application(Cached):
         return UserCollection(self._Owner, split(self._Property('CONNECTABLE')))
 
     ConnectableUsers = property(_GetConnectableUsers,
-    doc='''All connectible users.
+    doc="""All connectible users.
 
     :type: `UserCollection`
-    ''')
+    """)
 
     def _GetConnectingUsers(self):
         return UserCollection(self._Owner, split(self._Property('CONNECTING')))
 
     ConnectingUsers = property(_GetConnectingUsers,
-    doc='''All users connecting at the moment.
+    doc="""All users connecting at the moment.
 
     :type: `UserCollection`
-    ''')
+    """)
 
     def _GetName(self):
         return self._Handle
 
     Name = property(_GetName,
-    doc='''Name of the application.
+    doc="""Name of the application.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetReceivedStreams(self):
         return ApplicationStreamCollection(self, (x.split('=')[0] for x in split(self._Property('RECEIVED'))))
 
     ReceivedStreams = property(_GetReceivedStreams,
-    doc='''All streams that received data and can be read.
+    doc="""All streams that received data and can be read.
 
     :type: `ApplicationStreamCollection`
-    ''')
+    """)
 
     def _GetSendingStreams(self):
         return ApplicationStreamCollection(self, (x.split('=')[0] for x in split(self._Property('SENDING'))))
 
     SendingStreams = property(_GetSendingStreams,
-    doc='''All streams that send data and at the moment.
+    doc="""All streams that send data and at the moment.
 
     :type: `ApplicationStreamCollection`
-    ''')
+    """)
 
     def _GetStreams(self):
         return ApplicationStreamCollection(self, split(self._Property('STREAMS')))
 
     Streams = property(_GetStreams,
-    doc='''All currently connected application streams.
+    doc="""All currently connected application streams.
 
     :type: `ApplicationStreamCollection`
-    ''')
+    """)
 
 
 class ApplicationStream(Cached):
-    '''Represents an application stream in APP2APP protocol.
-    '''
+    """Represents an application stream in APP2APP protocol.
+    """
     _ValidateHandle = str
 
     def __len__(self):
@@ -154,38 +154,38 @@ class ApplicationStream(Cached):
         return Cached.__repr__(self, 'Handle')
 
     def Disconnect(self):
-        '''Disconnects the stream.
-        '''
+        """Disconnects the stream.
+        """
         self.Application._Alter('DISCONNECT', self.Handle)
 
     close = Disconnect
 
     def Read(self):
-        '''Reads data from stream.
+        """Reads data from stream.
 
         :return: Read data or an empty string if none were available.
         :rtype: unicode
-        '''
+        """
         return self.Application._Alter('READ', self.Handle)
 
     read = Read
 
     def SendDatagram(self, Text):
-        '''Sends datagram to stream.
+        """Sends datagram to stream.
 
         :Parameters:
           Text : unicode
             Datagram to send.
-        '''
+        """
         self.Application._Alter('DATAGRAM', '%s %s' % (self.Handle, tounicode(Text)))
 
     def Write(self, Text):
-        '''Writes data to stream.
+        """Writes data to stream.
 
         :Parameters:
           Text : unicode
             Data to send.
-        '''
+        """
         self.Application._Alter('WRITE', '%s %s' % (self.Handle, tounicode(Text)))
 
     write = Write
@@ -194,19 +194,19 @@ class ApplicationStream(Cached):
         return self._Owner
 
     Application = property(_GetApplication,
-    doc='''Application this stream belongs to.
+    doc="""Application this stream belongs to.
 
     :type: `Application`
-    ''')
+    """)
 
     def _GetApplicationName(self):
         return self.Application.Name
 
     ApplicationName = property(_GetApplicationName,
-    doc='''Name of the application this stream belongs to. Same as ``ApplicationStream.Application.Name``.
+    doc="""Name of the application this stream belongs to. Same as ``ApplicationStream.Application.Name``.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetDataLength_GetStreamLength(self, Type):
         for s in split(self.Application._Property(Type)):
@@ -224,28 +224,28 @@ class ApplicationStream(Cached):
         return 0
 
     DataLength = property(_GetDataLength,
-    doc='''Number of bytes awaiting in the read buffer.
+    doc="""Number of bytes awaiting in the read buffer.
 
     :type: int
-    ''')
+    """)
 
     def _GetHandle(self):
         return self._Handle
 
     Handle = property(_GetHandle,
-    doc='''Stream handle in u'<Skypename>:<n>' format.
+    doc="""Stream handle in u'<Skypename>:<n>' format.
 
     :type: str
-    ''')
+    """)
 
     def _GetPartnerHandle(self):
         return self.Handle.split(':')[0]
 
     PartnerHandle = property(_GetPartnerHandle,
-    doc='''Skypename of the user this stream is connected to.
+    doc="""Skypename of the user this stream is connected to.
 
     :type: str
-    ''')
+    """)
 
 
 class ApplicationStreamCollection(CachedCollection):

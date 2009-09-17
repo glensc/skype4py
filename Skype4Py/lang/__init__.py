@@ -1,5 +1,5 @@
-'''Language translations.
-'''
+"""Language translations.
+"""
 
 import ar
 import bg

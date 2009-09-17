@@ -1,5 +1,5 @@
-'''Current user profile.
-'''
+"""Current user profile.
+"""
 __docformat__ = 'restructuredtext en'
 
 
@@ -9,17 +9,17 @@ from utils import *
 
 
 class Profile(object):
-    '''Represents the profile of currently logged in user. Access using
+    """Represents the profile of currently logged in user. Access using
     `skype.Skype.CurrentUserProfile`.
-    '''
+    """
 
     def __init__(self, Skype):
-        '''__init__.
+        """__init__.
 
         :Parameters:
           Skype : `Skype`
             Skype object.
-        '''
+        """
         self._SkypeRef = weakref.ref(Skype)
 
     def _Property(self, PropName, Set=None):
@@ -40,56 +40,56 @@ class Profile(object):
         self._Property('ABOUT', Value)
 
     About = property(_GetAbout, _SetAbout,
-    doc='''"About" field of the profile.
+    doc=""""About" field of the profile.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetBalance(self):
         return int(self._Property('PSTN_BALANCE'))
 
     Balance = property(_GetBalance,
-    doc='''Skype credit balance. Note that the precision of profile balance value is currently
+    doc="""Skype credit balance. Note that the precision of profile balance value is currently
     fixed at 2 decimal places, regardless of currency or any other settings. Use `BalanceValue`
     to get the balance expressed in currency.
 
     :type: int
 
     :see: `BalanceCurrency`, `BalanceToText`, `BalanceValue`
-    ''')
+    """)
 
     def _GetBalanceCurrency(self):
         return self._Property('PSTN_BALANCE_CURRENCY')
 
     BalanceCurrency = property(_GetBalanceCurrency,
-    doc='''Skype credit balance currency.
+    doc="""Skype credit balance currency.
 
     :type: unicode
 
     :see: `Balance`, `BalanceToText`, `BalanceValue`
-    ''')
+    """)
 
     def _GetBalanceToText(self):
         return (u'%s %.2f' % (self.BalanceCurrency, self.BalanceValue)).strip()
 
     BalanceToText = property(_GetBalanceToText,
-    doc='''Skype credit balance as properly formatted text with currency.
+    doc="""Skype credit balance as properly formatted text with currency.
 
     :type: unicode
 
     :see: `Balance`, `BalanceCurrency`, `BalanceValue`
-    ''')
+    """)
 
     def _GetBalanceValue(self):
         return float(self._Property('PSTN_BALANCE')) / 100
 
     BalanceValue = property(_GetBalanceValue,
-    doc='''Skype credit balance expressed in currency.
+    doc="""Skype credit balance expressed in currency.
 
     :type: float
 
     :see: `Balance`, `BalanceCurrency`, `BalanceToText`
-    ''')
+    """)
 
     def _GetBirthday(self):
         value = self._Property('BIRTHDAY')
@@ -105,10 +105,10 @@ class Profile(object):
             self._Property('BIRTHDAY', 0)
 
     Birthday = property(_GetBirthday, _SetBirthday,
-    doc='''"Birthday" field of the profile.
+    doc=""""Birthday" field of the profile.
 
     :type: datetime.date
-    ''')
+    """)
 
     def _GetCallApplyCF(self):
         return (self._Property('CALL_APPLY_CF') == 'TRUE')
@@ -117,10 +117,10 @@ class Profile(object):
         self._Property('CALL_APPLY_CF', cndexp(Value, 'TRUE', 'FALSE'))
 
     CallApplyCF = property(_GetCallApplyCF, _SetCallApplyCF,
-    doc='''Tells if call forwarding is enabled in the profile.
+    doc="""Tells if call forwarding is enabled in the profile.
 
     :type: bool
-    ''')
+    """)
 
     def _GetCallForwardRules(self):
         return str(self._Property('CALL_FORWARD_RULES'))
@@ -129,10 +129,10 @@ class Profile(object):
         self._Property('CALL_FORWARD_RULES', Value)
 
     CallForwardRules = property(_GetCallForwardRules, _SetCallForwardRules,
-    doc='''Call forwarding rules of the profile.
+    doc="""Call forwarding rules of the profile.
 
     :type: str
-    ''')
+    """)
 
     def _GetCallNoAnswerTimeout(self):
         return int(self._Property('CALL_NOANSWER_TIMEOUT'))
@@ -141,11 +141,11 @@ class Profile(object):
         self._Property('CALL_NOANSWER_TIMEOUT', Value)
 
     CallNoAnswerTimeout = property(_GetCallNoAnswerTimeout, _SetCallNoAnswerTimeout,
-    doc='''Number of seconds a call will ring without being answered before it
+    doc="""Number of seconds a call will ring without being answered before it
     stops ringing.
 
     :type: int
-    ''')
+    """)
 
     def _GetCallSendToVM(self):
         return (self._Property('CALL_SEND_TO_VM') == 'TRUE')
@@ -154,10 +154,10 @@ class Profile(object):
         self._Property('CALL_SEND_TO_VM', cndexp(Value, 'TRUE', 'FALSE'))
 
     CallSendToVM = property(_GetCallSendToVM, _SetCallSendToVM,
-    doc='''Tells whether calls will be sent to the voicemail.
+    doc="""Tells whether calls will be sent to the voicemail.
 
     :type: bool
-    ''')
+    """)
 
     def _GetCity(self):
         return self._Property('CITY')
@@ -166,10 +166,10 @@ class Profile(object):
         self._Property('CITY', Value)
 
     City = property(_GetCity, _SetCity,
-    doc='''"City" field of the profile.
+    doc=""""City" field of the profile.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetCountry(self):
         return chop(self._Property('COUNTRY'))[0]
@@ -178,10 +178,10 @@ class Profile(object):
         self._Property('COUNTRY', Value)
 
     Country = property(_GetCountry, _SetCountry,
-    doc='''"Country" field of the profile.
+    doc=""""Country" field of the profile.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetFullName(self):
         return self._Property('FULLNAME')
@@ -190,10 +190,10 @@ class Profile(object):
         self._Property('FULLNAME', Value)
 
     FullName = property(_GetFullName, _SetFullName,
-    doc='''"Full name" field of the profile.
+    doc=""""Full name" field of the profile.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetHomepage(self):
         return self._Property('HOMEPAGE')
@@ -202,19 +202,19 @@ class Profile(object):
         self._Property('HOMEPAGE', Value)
 
     Homepage = property(_GetHomepage, _SetHomepage,
-    doc='''"Homepage" field of the profile.
+    doc=""""Homepage" field of the profile.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetIPCountry(self):
         return str(self._Property('IPCOUNTRY'))
 
     IPCountry = property(_GetIPCountry,
-    doc='''ISO country code queried by IP address.
+    doc="""ISO country code queried by IP address.
 
     :type: str
-    ''')
+    """)
 
     def _GetLanguages(self):
         return [str(x) for x in split(self._Property('LANGUAGES'))]
@@ -223,10 +223,10 @@ class Profile(object):
         self._Property('LANGUAGES', ' '.join(Value))
 
     Languages = property(_GetLanguages, _SetLanguages,
-    doc='''"ISO language codes of the profile.
+    doc=""""ISO language codes of the profile.
 
     :type: list of str
-    ''')
+    """)
 
     def _GetMoodText(self):
         return self._Property('MOOD_TEXT')
@@ -235,10 +235,10 @@ class Profile(object):
         self._Property('MOOD_TEXT', Value)
 
     MoodText = property(_GetMoodText, _SetMoodText,
-    doc='''"Mood text" field of the profile.
+    doc=""""Mood text" field of the profile.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetPhoneHome(self):
         return self._Property('PHONE_HOME')
@@ -247,10 +247,10 @@ class Profile(object):
         self._Property('PHONE_HOME', Value)
 
     PhoneHome = property(_GetPhoneHome, _SetPhoneHome,
-    doc='''"Phone home" field of the profile.
+    doc=""""Phone home" field of the profile.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetPhoneMobile(self):
         return self._Property('PHONE_MOBILE')
@@ -259,10 +259,10 @@ class Profile(object):
         self._Property('PHONE_MOBILE', Value)
 
     PhoneMobile = property(_GetPhoneMobile, _SetPhoneMobile,
-    doc='''"Phone mobile" field of the profile.
+    doc=""""Phone mobile" field of the profile.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetPhoneOffice(self):
         return self._Property('PHONE_OFFICE')
@@ -271,10 +271,10 @@ class Profile(object):
         self._Property('PHONE_OFFICE', Value)
 
     PhoneOffice = property(_GetPhoneOffice, _SetPhoneOffice,
-    doc='''"Phone office" field of the profile.
+    doc=""""Phone office" field of the profile.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetProvince(self):
         return self._Property('PROVINCE')
@@ -283,10 +283,10 @@ class Profile(object):
         self._Property('PROVINCE', Value)
 
     Province = property(_GetProvince, _SetProvince,
-    doc='''"Province" field of the profile.
+    doc=""""Province" field of the profile.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetRichMoodText(self):
         return self._Property('RICH_MOOD_TEXT')
@@ -295,12 +295,12 @@ class Profile(object):
         self._Property('RICH_MOOD_TEXT', Value)
 
     RichMoodText = property(_GetRichMoodText, _SetRichMoodText,
-    doc='''Rich mood text of the profile.
+    doc="""Rich mood text of the profile.
 
     :type: unicode
 
     :see: https://developer.skype.com/Docs/ApiDoc/SET_PROFILE_RICH_MOOD_TEXT
-    ''')
+    """)
 
     def _GetSex(self):
         return str(self._Property('SEX'))
@@ -309,10 +309,10 @@ class Profile(object):
         self._Property('SEX', Value)
 
     Sex = property(_GetSex, _SetSex,
-    doc='''"Sex" field of the profile.
+    doc=""""Sex" field of the profile.
 
     :type: `enums`.usex*
-    ''')
+    """)
 
     def _GetTimezone(self):
         return int(self._Property('TIMEZONE'))
@@ -321,17 +321,17 @@ class Profile(object):
         self._Property('TIMEZONE', Value)
 
     Timezone = property(_GetTimezone, _SetTimezone,
-    doc='''Timezone of the current profile in minutes from GMT.
+    doc="""Timezone of the current profile in minutes from GMT.
 
     :type: int
-    ''')
+    """)
 
     def _GetValidatedSmsNumbers(self):
         return [str(x) for x in split(self._Property('SMS_VALIDATED_NUMBERS'), ', ')]
 
     ValidatedSmsNumbers = property(_GetValidatedSmsNumbers,
-    doc='''List of phone numbers the user has registered for usage in reply-to
+    doc="""List of phone numbers the user has registered for usage in reply-to
     field of SMS messages.
 
     :type: list of str
-    ''')
+    """)

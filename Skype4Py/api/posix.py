@@ -1,4 +1,4 @@
-'''
+"""
 Low level *Skype for Linux* interface.
 
 This module handles the options that you can pass to `Skype.__init__` for Linux machines.
@@ -18,7 +18,7 @@ The options include:
     Uses *DBus* (*python-dbus*).
 
     Look into `api.posix_dbus` for additional options.
-'''
+"""
 __docformat__ = 'restructuredtext en'
 
 

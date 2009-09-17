@@ -1,4 +1,4 @@
-'''
+"""
 Low level *Skype for Mac OS X* interface implemented using *Carbon
 distributed notifications*. Uses direct *Carbon*/*CoreFoundation*
 calls through the *ctypes* module.
@@ -9,7 +9,7 @@ This module handles the options that you can pass to
 No further options are currently supported.
 
 Thanks to **Eion Robb** for reversing *Skype for Mac* API protocol.
-'''
+"""
 __docformat__ = 'restructuredtext en'
 
 
@@ -30,8 +30,8 @@ __all__ = ['SkypeAPI']
 
 
 class Carbon(object):
-    '''Represents the Carbon.framework.
-    '''
+    """Represents the Carbon.framework.
+    """
 
     def __init__(self):
         path = find_library('Carbon')
@@ -49,10 +49,10 @@ class Carbon(object):
 
 
 class EventLoop(object):
-    '''Represents an EventLoop from Carbon.framework.
+    """Represents an EventLoop from Carbon.framework.
 
     :see: http://developer.apple.com/documentation/Carbon/Reference/Carbon_Event_Manager_Ref/
-    '''
+    """
 
     def __init__(self, handle):
         self.handle = handle
@@ -62,8 +62,8 @@ class EventLoop(object):
 
 
 class CoreFoundation(object):
-    '''Represents the CoreFoundation.framework.
-    '''
+    """Represents the CoreFoundation.framework.
+    """
 
     def __init__(self):
         path = find_library('CoreFoundation')
@@ -83,10 +83,10 @@ class CoreFoundation(object):
 
 
 class CFType(object):
-    '''Fundamental type for all CoreFoundation types.
+    """Fundamental type for all CoreFoundation types.
 
     :see: http://developer.apple.com/documentation/CoreFoundation/Reference/CFTypeRef/
-    '''
+    """
 
     def __init__(self, cast=None):
         self.handle = None
@@ -125,12 +125,12 @@ class CFType(object):
 
 
 class CFString(CFType):
-    '''CoreFoundation string type.
+    """CoreFoundation string type.
 
     Supports Python unicode type only. String is immutable.
 
     :see: http://developer.apple.com/documentation/CoreFoundation/Reference/CFStringRef/
-    '''
+    """
 
     def __init__(self, cast):
         if isinstance(cast, (str, unicode)):
@@ -163,12 +163,12 @@ class CFString(CFType):
 
 
 class CFNumber(CFType):
-    '''CoreFoundation number type.
+    """CoreFoundation number type.
 
     Supports Python int type only. Number is immutable.
 
     :see: http://developer.apple.com/documentation/CoreFoundation/Reference/CFNumberRef/
-    '''
+    """
 
     def __init__(self, cast):
         if isinstance(cast, (int, long)):
@@ -189,10 +189,10 @@ class CFNumber(CFType):
 
 
 class CFDictionary(CFType):
-    '''CoreFoundation immutable dictionary type.
+    """CoreFoundation immutable dictionary type.
 
     :see: http://developer.apple.com/documentation/CoreFoundation/Reference/CFDictionaryRef/
-    '''
+    """
 
     def __init__(self, cast):
         if isinstance(cast, dict):
@@ -227,10 +227,10 @@ class CFDictionary(CFType):
 
 
 class CFDistributedNotificationCenter(CFType):
-    '''CoreFoundation distributed notification center type.
+    """CoreFoundation distributed notification center type.
 
     :see: http://developer.apple.com/documentation/CoreFoundation/Reference/CFNotificationCenterRef/
-    '''
+    """
 
     CFNotificationCallback = CFUNCTYPE(None, c_void_p, c_void_p, c_void_p, c_void_p, c_void_p)
 
@@ -306,11 +306,11 @@ if not getattr(sys, 'skype4py_setup', False):
 
 
 class SkypeAPI(SkypeAPIBase):
-    '''
+    """
     :note: Code based on Pidgin Skype Plugin source
            (http://code.google.com/p/skype4pidgin/).
            Permission was granted by the author.
-    '''
+    """
 
     def __init__(self, opts):
         self.logger = logging.getLogger('Skype4Py.api.darwin.SkypeAPI')

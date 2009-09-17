@@ -1,5 +1,5 @@
-'''Main Skype interface.
-'''
+"""Main Skype interface.
+"""
 __docformat__ = 'restructuredtext en'
 
 
@@ -193,7 +193,7 @@ class APINotifier(SkypeAPINotifier):
 
 
 class Skype(EventHandlingBase):
-    '''The main class which you have to instantiate to get access to the Skype client
+    """The main class which you have to instantiate to get access to the Skype client
     running currently in the background.
 
     1. Usage.
@@ -218,10 +218,10 @@ class Skype(EventHandlingBase):
 
        The use of events is explained in the `EventHandlingBase` class
        which is a superclass of this class.
-    '''
+    """
 
     def __init__(self, Events=None, **Options):
-        '''Initializes the object.
+        """Initializes the object.
         
         :Parameters:
           Events
@@ -231,7 +231,7 @@ class Skype(EventHandlingBase):
             Additional options for the low-level API handler. See the `Skype4Py.api`
             subpackage for supported options. Available options may depend on the
             current platform.
-        '''
+        """
         self._Logger = logging.getLogger('Skype4Py.skype.Skype')
         self._Logger.info('object created')
 
@@ -261,8 +261,8 @@ class Skype(EventHandlingBase):
         self._Profile = Profile(self)
 
     def __del__(self):
-        '''Frees all resources.
-        '''
+        """Frees all resources.
+        """
         if hasattr(self, '_Api'):
             self._Api.close()
 
@@ -336,7 +336,7 @@ class Skype(EventHandlingBase):
         return split(chop(str(self._DoCommand(cmd)))[-1], ', ')
 
     def ApiSecurityContextEnabled(self, Context):
-        '''Queries if an API security context for Internet Explorer is enabled.
+        """Queries if an API security context for Internet Explorer is enabled.
 
         :Parameters:
           Context : unicode
@@ -346,11 +346,11 @@ class Skype(EventHandlingBase):
         :rtype: bool
 
         :warning: This functionality isn't supported by Skype4Py.
-        '''
+        """
         self._Api.security_context_enabled(Context)
 
     def Application(self, Name):
-        '''Queries an application object.
+        """Queries an application object.
 
         :Parameters:
           Name : unicode
@@ -358,7 +358,7 @@ class Skype(EventHandlingBase):
             
         :return: The application object.
         :rtype: `application.Application`
-        '''
+        """
         return Application(self, Name)
 
     def _AsyncSearchUsersReplyHandler(self, Command):
@@ -371,7 +371,7 @@ class Skype(EventHandlingBase):
                 del self._AsyncSearchUsersCommands
 
     def AsyncSearchUsers(self, Target):
-        '''Asynchronously searches for Skype users.
+        """Asynchronously searches for Skype users.
 
         :Parameters:
           Target : unicode
@@ -380,7 +380,7 @@ class Skype(EventHandlingBase):
         :return: A search identifier. It will be passed along with the results to the
                  `SkypeEvents.AsyncSearchUsersFinished` event after the search is completed.
         :rtype: int
-        '''
+        """
         if not hasattr(self, '_AsyncSearchUsersCommands'):
             self._AsyncSearchUsersCommands = []
             self.RegisterEventHandler('Reply', self._AsyncSearchUsersReplyHandler)
@@ -391,7 +391,7 @@ class Skype(EventHandlingBase):
         return command.Id
 
     def Attach(self, Protocol=5, Wait=True):
-        '''Establishes a connection to Skype.
+        """Establishes a connection to Skype.
 
         :Parameters:
           Protocol : int
@@ -399,7 +399,7 @@ class Skype(EventHandlingBase):
           Wait : bool
             If set to False, blocks forever until the connection is established. Otherwise, timeouts
             after the `Timeout`.
-        '''
+        """
         try:
             self._Api.protocol = Protocol
             self._Api.attach(self.Timeout, Wait)
@@ -408,7 +408,7 @@ class Skype(EventHandlingBase):
             raise
 
     def Call(self, Id=0):
-        '''Queries a call object.
+        """Queries a call object.
 
         :Parameters:
           Id : int
@@ -416,13 +416,13 @@ class Skype(EventHandlingBase):
 
         :return: Call object.
         :rtype: `call.Call`
-        '''
+        """
         o = Call(self, Id)
         o.Status # Test if such a call exists.
         return o
 
     def Calls(self, Target=''):
-        '''Queries calls in call history.
+        """Queries calls in call history.
 
         :Parameters:
           Target : str
@@ -430,7 +430,7 @@ class Skype(EventHandlingBase):
 
         :return: Call objects.
         :rtype: `CallCollection`
-        '''
+        """
         return CallCollection(self, self._Search('CALLS', Target))
 
     def _ChangeUserStatus_UserStatus(self, Status):
@@ -438,7 +438,7 @@ class Skype(EventHandlingBase):
             self._ChangeUserStatus_Event.set()
 
     def ChangeUserStatus(self, Status):
-        '''Changes the online status for the current user.
+        """Changes the online status for the current user.
 
         :Parameters:
           Status : `enums`.cus*
@@ -446,7 +446,7 @@ class Skype(EventHandlingBase):
 
         :note: This function waits until the online status changes. Alternatively, use the
                `CurrentUserStatus` property to perform an immediate change of status.
-        '''
+        """
         if self.CurrentUserStatus.upper() == Status.upper():
             return
         self._ChangeUserStatus_Event = threading.Event()
@@ -458,7 +458,7 @@ class Skype(EventHandlingBase):
         del self._ChangeUserStatus_Event, self._ChangeUserStatus_Status
 
     def Chat(self, Name=''):
-        '''Queries a chat object.
+        """Queries a chat object.
 
         :Parameters:
           Name : str
@@ -466,13 +466,13 @@ class Skype(EventHandlingBase):
 
         :return: A chat object.
         :rtype: `chat.Chat`
-        '''
+        """
         o = Chat(self, Name)
         o.Status # Tests if such a chat really exists.
         return o
 
     def ClearCallHistory(self, Username='ALL', Type=chsAllCalls):
-        '''Clears the call history.
+        """Clears the call history.
 
         :Parameters:
           Username : str
@@ -480,23 +480,23 @@ class Skype(EventHandlingBase):
             be removed.
           Type : `enums`.clt*
             Call type.
-        '''
+        """
         cmd = 'CLEAR CALLHISTORY %s %s' % (str(Type), Username)
         self._DoCommand(cmd, cmd)
 
     def ClearChatHistory(self):
-        '''Clears the chat history.
-        '''
+        """Clears the chat history.
+        """
         cmd = 'CLEAR CHATHISTORY'
         self._DoCommand(cmd, cmd)
 
     def ClearVoicemailHistory(self):
-        '''Clears the voicemail history.
-        '''
+        """Clears the voicemail history.
+        """
         self._DoCommand('CLEAR VOICEMAILHISTORY')
 
     def Command(self, Command, Reply=u'', Block=False, Timeout=30000, Id=-1):
-        '''Creates an API command object.
+        """Creates an API command object.
 
         :Parameters:
           Command : unicode
@@ -518,12 +518,12 @@ class Skype(EventHandlingBase):
         :rtype: `Command`
 
         :see: `SendCommand`
-        '''
+        """
         from api import Command as CommandClass
         return CommandClass(Command, Reply, Block, Timeout, Id)
 
     def Conference(self, Id=0):
-        '''Queries a call conference object.
+        """Queries a call conference object.
 
         :Parameters:
           Id : int
@@ -531,14 +531,14 @@ class Skype(EventHandlingBase):
 
         :return: A conference object.
         :rtype: `Conference`
-        '''
+        """
         o = Conference(self, Id)
         if Id <= 0 or not o.Calls:
             raise SkypeError(0, 'Unknown conference')
         return o
 
     def CreateChatUsingBlob(self, Blob):
-        '''Returns existing or joins a new chat using given blob.
+        """Returns existing or joins a new chat using given blob.
 
         :Parameters:
           Blob : str
@@ -546,11 +546,11 @@ class Skype(EventHandlingBase):
 
         :return: A chat object
         :rtype: `chat.Chat`
-        '''
+        """
         return Chat(self, chop(self._DoCommand('CHAT CREATEUSINGBLOB %s' % Blob), 2)[1])
 
     def CreateChatWith(self, *Usernames):
-        '''Creates a chat with one or more users.
+        """Creates a chat with one or more users.
 
         :Parameters:
           Usernames : str
@@ -560,11 +560,11 @@ class Skype(EventHandlingBase):
         :rtype: `Chat`
 
         :see: `Chat.AddMembers`
-        '''
+        """
         return Chat(self, chop(self._DoCommand('CHAT CREATE %s' % ', '.join(Usernames)), 2)[1])
 
     def CreateGroup(self, GroupName):
-        '''Creates a custom contact group.
+        """Creates a custom contact group.
 
         :Parameters:
           GroupName : unicode
@@ -574,7 +574,7 @@ class Skype(EventHandlingBase):
         :rtype: `Group`
 
         :see: `DeleteGroup`
-        '''
+        """
         groups = self.CustomGroups
         self._DoCommand('CREATE GROUP %s' % tounicode(GroupName))
         for g in self.CustomGroups:
@@ -583,7 +583,7 @@ class Skype(EventHandlingBase):
         raise SkypeError(0, 'Group creating failed')
 
     def CreateSms(self, MessageType, *TargetNumbers):
-        '''Creates an SMS message.
+        """Creates an SMS message.
 
         :Parameters:
           MessageType : `enums`.smsMessageType*
@@ -593,11 +593,11 @@ class Skype(EventHandlingBase):
 
         :return: An sms message object.
         :rtype: `SmsMessage`
-        '''
+        """
         return SmsMessage(self, chop(self._DoCommand('CREATE SMS %s %s' % (MessageType, ', '.join(TargetNumbers))), 2)[1])
 
     def DeleteGroup(self, GroupId):
-        '''Deletes a custom contact group.
+        """Deletes a custom contact group.
 
         Users in the contact group are moved to the All Contacts (hardwired) contact group.
 
@@ -606,22 +606,22 @@ class Skype(EventHandlingBase):
             Group identifier. Get it from `Group.Id`.
 
         :see: `CreateGroup`
-        '''
+        """
         self._DoCommand('DELETE GROUP %s' % GroupId)
 
     def EnableApiSecurityContext(self, Context):
-        '''Enables an API security context for Internet Explorer scripts.
+        """Enables an API security context for Internet Explorer scripts.
 
         :Parameters:
           Context : unicode
             combination of API security context values.
 
         :warning: This functionality isn't supported by Skype4Py.
-        '''
+        """
         self._Api.enable_security_context(Context)
 
     def FindChatUsingBlob(self, Blob):
-        '''Returns existing chat using given blob.
+        """Returns existing chat using given blob.
 
         :Parameters:
           Blob : str
@@ -629,11 +629,11 @@ class Skype(EventHandlingBase):
 
         :return: A chat object
         :rtype: `chat.Chat`
-        '''
+        """
         return Chat(self, chop(self._DoCommand('CHAT FINDUSINGBLOB %s' % Blob), 2)[1])
 
     def Greeting(self, Username=''):
-        '''Queries the greeting used as voicemail.
+        """Queries the greeting used as voicemail.
 
         :Parameters:
           Username : str
@@ -641,7 +641,7 @@ class Skype(EventHandlingBase):
 
         :return: A voicemail object.
         :rtype: `Voicemail`
-        '''
+        """
         for v in self.Voicemails:
             if Username and v.PartnerHandle != Username:
                 continue
@@ -649,7 +649,7 @@ class Skype(EventHandlingBase):
                 return v
 
     def Message(self, Id=0):
-        '''Queries a chat message object.
+        """Queries a chat message object.
 
         :Parameters:
           Id : int
@@ -657,13 +657,13 @@ class Skype(EventHandlingBase):
 
         :return: A chat message object.
         :rtype: `ChatMessage`
-        '''
+        """
         o = ChatMessage(self, Id)
         o.Status # Test if such an id is known.
         return o
 
     def Messages(self, Target=''):
-        '''Queries chat messages which were sent/received by the user.
+        """Queries chat messages which were sent/received by the user.
 
         :Parameters:
           Target : str
@@ -671,11 +671,11 @@ class Skype(EventHandlingBase):
 
         :return: Chat message objects.
         :rtype: `ChatMessageCollection`
-        '''
+        """
         return ChatMessageCollection(self, self._Search('CHATMESSAGES', Target))
 
     def PlaceCall(self, *Targets):
-        '''Places a call to a single user or creates a conference call.
+        """Places a call to a single user or creates a conference call.
 
         :Parameters:
           Targets : str
@@ -684,7 +684,7 @@ class Skype(EventHandlingBase):
 
         :return: A call object.
         :rtype: `call.Call`
-        '''
+        """
         calls = self.ActiveCalls
         reply = self._DoCommand('CALL %s' % ', '.join(Targets))
         # Skype for Windows returns the call status which gives us the call Id;
@@ -698,7 +698,7 @@ class Skype(EventHandlingBase):
         raise SkypeError(0, 'Placing call failed')
 
     def Privilege(self, Name):
-        '''Queries the Skype services (privileges) enabled for the Skype client.
+        """Queries the Skype services (privileges) enabled for the Skype client.
 
         :Parameters:
           Name : str
@@ -706,11 +706,11 @@ class Skype(EventHandlingBase):
 
         :return: True if the privilege is available, False otherwise.
         :rtype: bool
-        '''
+        """
         return (self._Property('PRIVILEGE', '', Name.upper()) == 'TRUE')
 
     def Profile(self, Property, Set=None):
-        '''Queries/sets user profile properties.
+        """Queries/sets user profile properties.
 
         :Parameters:
           Property : str
@@ -722,11 +722,11 @@ class Skype(EventHandlingBase):
 
         :return: Property value if Set=None, None otherwise.
         :rtype: unicode or None
-        '''
+        """
         return self._Property('PROFILE', '', Property, Set)
 
     def Property(self, ObjectType, ObjectId, PropName, Set=None):
-        '''Queries/sets the properties of an object.
+        """Queries/sets the properties of an object.
 
         :Parameters:
           ObjectType : str
@@ -740,20 +740,20 @@ class Skype(EventHandlingBase):
 
         :return: Property value if Set=None, None otherwise.
         :rtype: unicode or None
-        '''
+        """
         return self._Property(ObjectType, ObjectId, PropName, Set)
 
     def ResetCache(self):
-        '''Deletes all command cache entries.
+        """Deletes all command cache entries.
 
         This method clears the Skype4Py's internal command cache which means that all objects will forget
         their property values and querying them will trigger a code to get them from Skype client (and
         cache them again).
-        '''
+        """
         self._CacheDict = {}
 
     def SearchForUsers(self, Target):
-        '''Searches for users.
+        """Searches for users.
 
         :Parameters:
           Target : unicode
@@ -761,16 +761,16 @@ class Skype(EventHandlingBase):
 
         :return: Found users.
         :rtype: `UserCollection`
-        '''
+        """
         return UserCollection(self, self._Search('USERS', tounicode(Target)))
 
     def SendCommand(self, Command):
-        '''Sends an API command.
+        """Sends an API command.
 
         :Parameters:
           Command : `Command`
             Command to send. Use `Command` method to create a command.
-        '''
+        """
         try:
             self._Api.send_command(Command)
         except SkypeAPIError:
@@ -778,7 +778,7 @@ class Skype(EventHandlingBase):
             raise
 
     def SendMessage(self, Username, Text):
-        '''Sends a chat message.
+        """Sends a chat message.
 
         :Parameters:
           Username : str
@@ -788,11 +788,11 @@ class Skype(EventHandlingBase):
 
         :return: A chat message object.
         :rtype: `ChatMessage`
-        '''
+        """
         return self.CreateChatWith(Username).SendMessage(Text)
 
     def SendSms(self, *TargetNumbers, **Properties):
-        '''Creates and sends an SMS message.
+        """Creates and sends an SMS message.
 
         :Parameters:
           TargetNumbers : str
@@ -802,7 +802,7 @@ class Skype(EventHandlingBase):
 
         :return: An sms message object. The message is already sent at this point.
         :rtype: `SmsMessage`
-        '''
+        """
         sms = self.CreateSms(smsMessageTypeOutgoing, *TargetNumbers)
         for name, value in Properties.items():
             if isinstance(getattr(sms.__class__, name, None), property):
@@ -813,21 +813,21 @@ class Skype(EventHandlingBase):
         return sms
 
     def SendVoicemail(self, Username):
-        '''Sends a voicemail to a specified user.
+        """Sends a voicemail to a specified user.
 
         :Parameters:
           Username : str
             Skypename of the user.
 
         :note: Should return a `Voicemail` object. This is not implemented yet.
-        '''
+        """
         if self._Api.protocol >= 6:
             self._DoCommand('CALLVOICEMAIL %s' % Username)
         else:
             self._DoCommand('VOICEMAIL %s' % Username)
 
     def User(self, Username=''):
-        '''Queries a user object.
+        """Queries a user object.
 
         :Parameters:
           Username : str
@@ -835,7 +835,7 @@ class Skype(EventHandlingBase):
 
         :return: A user object.
         :rtype: `user.User`
-        '''
+        """
         if not Username:
             Username = self.CurrentUserHandle
         o = User(self, Username)
@@ -843,7 +843,7 @@ class Skype(EventHandlingBase):
         return o
 
     def Variable(self, Name, Set=None):
-        '''Queries/sets Skype general parameters.
+        """Queries/sets Skype general parameters.
 
         :Parameters:
           Name : str
@@ -853,11 +853,11 @@ class Skype(EventHandlingBase):
 
         :return: Variable value if Set=None, None otherwise.
         :rtype: unicode or None
-        '''
+        """
         return self._Property(Name, '', '', Set)
 
     def Voicemail(self, Id):
-        '''Queries the voicemail object.
+        """Queries the voicemail object.
 
         :Parameters:
           Id : int
@@ -865,7 +865,7 @@ class Skype(EventHandlingBase):
 
         :return: A voicemail object.
         :rtype: `Voicemail`
-        '''
+        """
         o = Voicemail(self, Id)
         o.Type # Test if such a voicemail exists.
         return o
@@ -874,56 +874,56 @@ class Skype(EventHandlingBase):
         return CallCollection(self, self._Search('ACTIVECALLS'))
 
     ActiveCalls = property(_GetActiveCalls,
-    doc='''Queries a list of active calls.
+    doc="""Queries a list of active calls.
 
     :type: `CallCollection`
-    ''')
+    """)
 
     def _GetActiveChats(self):
         return ChatCollection(self, self._Search('ACTIVECHATS'))
 
     ActiveChats = property(_GetActiveChats,
-    doc='''Queries a list of active chats.
+    doc="""Queries a list of active chats.
 
     :type: `ChatCollection`
-    ''')
+    """)
 
     def _GetActiveFileTransfers(self):
         return FileTransferCollection(self, self._Search('ACTIVEFILETRANSFERS'))
 
     ActiveFileTransfers = property(_GetActiveFileTransfers,
-    doc='''Queries currently active file transfers.
+    doc="""Queries currently active file transfers.
 
     :type: `FileTransferCollection`
-    ''')
+    """)
 
     def _GetApiWrapperVersion(self):
         from Skype4Py import __version__
         return __version__
 
     ApiWrapperVersion = property(_GetApiWrapperVersion,
-    doc='''Returns Skype4Py version.
+    doc="""Returns Skype4Py version.
 
     :type: str
-    ''')
+    """)
 
     def _GetAttachmentStatus(self):
         return self._Api.attachment_status
 
     AttachmentStatus = property(_GetAttachmentStatus,
-    doc='''Queries the attachment status of the Skype client.
+    doc="""Queries the attachment status of the Skype client.
 
     :type: `enums`.apiAttach*
-    ''')
+    """)
 
     def _GetBookmarkedChats(self):
         return ChatCollection(self, self._Search('BOOKMARKEDCHATS'))
 
     BookmarkedChats = property(_GetBookmarkedChats,
-    doc='''Queries a list of bookmarked chats.
+    doc="""Queries a list of bookmarked chats.
 
     :type: `ChatCollection`
-    ''')
+    """)
 
     def _GetCache(self):
         return self._Cache
@@ -932,29 +932,29 @@ class Skype(EventHandlingBase):
         self._Cache = bool(Value)
 
     Cache = property(_GetCache, _SetCache,
-    doc='''Queries/sets the status of internal cache. The internal API cache is used
+    doc="""Queries/sets the status of internal cache. The internal API cache is used
     to cache Skype object properties and global parameters.
 
     :type: bool
-    ''')
+    """)
 
     def _GetChats(self):
         return ChatCollection(self, self._Search('CHATS'))
 
     Chats = property(_GetChats,
-    doc='''Queries a list of chats.
+    doc="""Queries a list of chats.
 
     :type: `ChatCollection`
-    ''')
+    """)
 
     def _GetClient(self):
         return self._Client
 
     Client = property(_GetClient,
-    doc='''Queries the user interface control object.
+    doc="""Queries the user interface control object.
 
     :type: `Client`
-    ''')
+    """)
 
     def _GetCommandId(self):
         return True
@@ -964,12 +964,12 @@ class Skype(EventHandlingBase):
             raise SkypeError(0, 'CommandId may not be False')
 
     CommandId = property(_GetCommandId, _SetCommandId,
-    doc='''Queries/sets the status of automatic command identifiers.
+    doc="""Queries/sets the status of automatic command identifiers.
 
     :type: bool
 
     :note: Currently the only supported value is True.
-    ''')
+    """)
 
     def _GetConferences(self):
         cids = []
@@ -980,55 +980,55 @@ class Skype(EventHandlingBase):
         return ConferenceCollection(self, cids)
 
     Conferences = property(_GetConferences,
-    doc='''Queries a list of call conferences.
+    doc="""Queries a list of call conferences.
 
     :type: `ConferenceCollection`
-    ''')
+    """)
 
     def _GetConnectionStatus(self):
         return str(self.Variable('CONNSTATUS'))
 
     ConnectionStatus = property(_GetConnectionStatus,
-    doc='''Queries the connection status of the Skype client.
+    doc="""Queries the connection status of the Skype client.
 
     :type: `enums`.con*
-    ''')
+    """)
 
     def _GetConvert(self):
         return self._Convert
 
     Convert = property(_GetConvert,
-    doc='''Queries the conversion object.
+    doc="""Queries the conversion object.
 
     :type: `Conversion`
-    ''')
+    """)
 
     def _GetCurrentUser(self):
         return User(self, self.CurrentUserHandle)
 
     CurrentUser = property(_GetCurrentUser,
-    doc='''Queries the current user object.
+    doc="""Queries the current user object.
 
     :type: `user.User`
-    ''')
+    """)
 
     def _GetCurrentUserHandle(self):
         return str(self.Variable('CURRENTUSERHANDLE'))
 
     CurrentUserHandle = property(_GetCurrentUserHandle,
-    doc='''Queries the Skypename of the current user.
+    doc="""Queries the Skypename of the current user.
 
     :type: str
-    ''')
+    """)
 
     def _GetCurrentUserProfile(self):
         return self._Profile
 
     CurrentUserProfile = property(_GetCurrentUserProfile,
-    doc='''Queries the user profile object.
+    doc="""Queries the user profile object.
 
     :type: `Profile`
-    ''')
+    """)
 
     def _GetCurrentUserStatus(self):
         return str(self.Variable('USERSTATUS'))
@@ -1037,28 +1037,28 @@ class Skype(EventHandlingBase):
         self.Variable('USERSTATUS', str(Value))
 
     CurrentUserStatus = property(_GetCurrentUserStatus, _SetCurrentUserStatus,
-    doc='''Queries/sets the online status of the current user.
+    doc="""Queries/sets the online status of the current user.
 
     :type: `enums`.ols*
-    ''')
+    """)
 
     def _GetCustomGroups(self):
         return GroupCollection(self, self._Search('GROUPS', 'CUSTOM'))
 
     CustomGroups = property(_GetCustomGroups,
-    doc='''Queries the list of custom contact groups. Custom groups are contact groups defined by the user.
+    doc="""Queries the list of custom contact groups. Custom groups are contact groups defined by the user.
 
     :type: `GroupCollection`
-    ''')
+    """)
 
     def _GetFileTransfers(self):
         return FileTransferCollection(self, self._Search('FILETRANSFERS'))
 
     FileTransfers = property(_GetFileTransfers,
-    doc='''Queries all file transfers.
+    doc="""Queries all file transfers.
 
     :type: `FileTransferCollection`
-    ''')
+    """)
 
     def _GetFocusedContacts(self):
         # we have to use _DoCommand() directly because for unknown reason the API returns
@@ -1066,10 +1066,10 @@ class Skype(EventHandlingBase):
         return UserCollection(self, split(chop(self._DoCommand('GET CONTACTS_FOCUSED', 'CONTACTS FOCUSED'), 2)[-1]))
 
     FocusedContacts = property(_GetFocusedContacts,
-    doc='''Queries a list of contacts selected in the contacts list.
+    doc="""Queries a list of contacts selected in the contacts list.
 
     :type: `UserCollection`
-    ''')
+    """)
 
     def _GetFriendlyName(self):
         return self._Api.friendly_name
@@ -1078,83 +1078,83 @@ class Skype(EventHandlingBase):
         self._Api.set_friendly_name(tounicode(Value))
 
     FriendlyName = property(_GetFriendlyName, _SetFriendlyName,
-    doc='''Queries/sets a "friendly" name for an application.
+    doc="""Queries/sets a "friendly" name for an application.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetFriends(self):
         return UserCollection(self, self._Search('FRIENDS'))
 
     Friends = property(_GetFriends,
-    doc='''Queries the users in a contact list.
+    doc="""Queries the users in a contact list.
 
     :type: `UserCollection`
-    ''')
+    """)
 
     def _GetGroups(self):
         return GroupCollection(self, self._Search('GROUPS', 'ALL'))
 
     Groups = property(_GetGroups,
-    doc='''Queries the list of all contact groups.
+    doc="""Queries the list of all contact groups.
 
     :type: `GroupCollection`
-    ''')
+    """)
 
     def _GetHardwiredGroups(self):
         return GroupCollection(self, self._Search('GROUPS', 'HARDWIRED'))
 
     HardwiredGroups = property(_GetHardwiredGroups,
-    doc='''Queries the list of hardwired contact groups. Hardwired groups are "smart" contact groups,
+    doc="""Queries the list of hardwired contact groups. Hardwired groups are "smart" contact groups,
     defined by Skype, that cannot be removed.
 
     :type: `GroupCollection`
-    ''')
+    """)
 
     def _GetMissedCalls(self):
         return CallCollection(self, self._Search('MISSEDCALLS'))
 
     MissedCalls = property(_GetMissedCalls,
-    doc='''Queries a list of missed calls.
+    doc="""Queries a list of missed calls.
 
     :type: `CallCollection`
-    ''')
+    """)
 
     def _GetMissedChats(self):
         return ChatCollection(self, self._Search('MISSEDCHATS'))
 
     MissedChats = property(_GetMissedChats,
-    doc='''Queries a list of missed chats.
+    doc="""Queries a list of missed chats.
 
     :type: `ChatCollection`
-    ''')
+    """)
 
     def _GetMissedMessages(self):
         return ChatMessageCollection(self, self._Search('MISSEDCHATMESSAGES'))
 
     MissedMessages = property(_GetMissedMessages,
-    doc='''Queries a list of missed chat messages.
+    doc="""Queries a list of missed chat messages.
 
     :type: `ChatMessageCollection`
-    ''')
+    """)
 
     def _GetMissedSmss(self):
         return SmsMessageCollection(self, self._Search('MISSEDSMSS'))
 
     MissedSmss = property(_GetMissedSmss,
-    doc='''Requests a list of all missed SMS messages.
+    doc="""Requests a list of all missed SMS messages.
 
     :type: `SmsMessageCollection`
-    ''')
+    """)
 
     def _GetMissedVoicemails(self):
         return VoicemailCollection(self, self._Search('MISSEDVOICEMAILS'))
 
     MissedVoicemails = property(_GetMissedVoicemails,
-    doc='''Requests a list of missed voicemails.
+    doc="""Requests a list of missed voicemails.
 
     :type: `VoicemailCollection`
-    ''')
+    """)
 
     def _GetMute(self):
         return self.Variable('MUTE') == 'ON'
@@ -1163,22 +1163,22 @@ class Skype(EventHandlingBase):
         self.Variable('MUTE', cndexp(Value, 'ON', 'OFF'))
 
     Mute = property(_GetMute, _SetMute,
-    doc='''Queries/sets the mute status of the Skype client.
+    doc="""Queries/sets the mute status of the Skype client.
 
     Type: bool
     Note: This value can be set only when there is an active call.
 
     :type: bool
-    ''')
+    """)
 
     def _GetPredictiveDialerCountry(self):
         return str(self.Variable('PREDICTIVE_DIALER_COUNTRY'))
 
     PredictiveDialerCountry = property(_GetPredictiveDialerCountry,
-    doc='''Returns predictive dialler country as an ISO code.
+    doc="""Returns predictive dialler country as an ISO code.
 
     :type: str
-    ''')
+    """)
 
     def _GetProtocol(self):
         return self._Api.protocol
@@ -1188,28 +1188,28 @@ class Skype(EventHandlingBase):
         self._Api.protocol = int(Value)
 
     Protocol = property(_GetProtocol, _SetProtocol,
-    doc='''Queries/sets the protocol version used by the Skype client.
+    doc="""Queries/sets the protocol version used by the Skype client.
 
     :type: int
-    ''')
+    """)
 
     def _GetRecentChats(self):
         return ChatCollection(self, self._Search('RECENTCHATS'))
 
     RecentChats = property(_GetRecentChats,
-    doc='''Queries a list of recent chats.
+    doc="""Queries a list of recent chats.
 
     :type: `ChatCollection`
-    ''')
+    """)
 
     def _GetSettings(self):
         return self._Settings
 
     Settings = property(_GetSettings,
-    doc='''Queries the settings for Skype general parameters.
+    doc="""Queries the settings for Skype general parameters.
 
     :type: `Settings`
-    ''')
+    """)
 
     def _GetSilentMode(self):
         return self._Property('SILENT_MODE', '', '', Cache=False) == 'ON'
@@ -1218,19 +1218,19 @@ class Skype(EventHandlingBase):
         self._Property('SILENT_MODE', '', '', cndexp(Value, 'ON', 'OFF'), Cache=False)
 
     SilentMode = property(_GetSilentMode, _SetSilentMode,
-    doc='''Returns/sets Skype silent mode status.
+    doc="""Returns/sets Skype silent mode status.
 
     :type: bool
-    ''')
+    """)
 
     def _GetSmss(self):
         return SmsMessageCollection(self, self._Search('SMSS'))
 
     Smss = property(_GetSmss,
-    doc='''Requests a list of all SMS messages.
+    doc="""Requests a list of all SMS messages.
 
     :type: `SmsMessageCollection`
-    ''')
+    """)
 
     def _GetTimeout(self):
         return self._Timeout
@@ -1242,7 +1242,7 @@ class Skype(EventHandlingBase):
         self._Timeout = Value
 
     Timeout = property(_GetTimeout, _SetTimeout,
-    doc='''Queries/sets the wait timeout value. This timeout value applies to every command sent
+    doc="""Queries/sets the wait timeout value. This timeout value applies to every command sent
     to the Skype API and to attachment requests (see `Attach`). If a response is not received
     during the timeout period, an `SkypeAPIError` exception is raised.
     
@@ -1255,54 +1255,54 @@ class Skype(EventHandlingBase):
     The default value is 30000 milliseconds (int).
 
     :type: float, int or long
-    ''')
+    """)
 
     def _GetUsersWaitingAuthorization(self):
         return UserCollection(self, self._Search('USERSWAITINGMYAUTHORIZATION'))
 
     UsersWaitingAuthorization = property(_GetUsersWaitingAuthorization,
-    doc='''Queries the list of users waiting for authorization.
+    doc="""Queries the list of users waiting for authorization.
 
     :type: `UserCollection`
-    ''')
+    """)
 
     def _GetVersion(self):
         return str(self.Variable('SKYPEVERSION'))
 
     Version = property(_GetVersion,
-    doc='''Queries the application version of the Skype client.
+    doc="""Queries the application version of the Skype client.
 
     :type: str
-    ''')
+    """)
 
     def _GetVoicemails(self):
         return VoicemailCollection(self, self._Search('VOICEMAILS'))
 
     Voicemails = property(_GetVoicemails,
-    doc='''Queries a list of voicemails.
+    doc="""Queries a list of voicemails.
 
     :type: `VoicemailCollection`
-    ''')
+    """)
 
 
 class SkypeEvents(object):
-    '''Events defined in `Skype`.
+    """Events defined in `Skype`.
 
     See `EventHandlingBase` for more information on events.
-    '''
+    """
 
     def ApplicationConnecting(self, App, Users):
-        '''This event is triggered when list of users connecting to an application changes.
+        """This event is triggered when list of users connecting to an application changes.
 
         :Parameters:
           App : `Application`
             Application object.
           Users : `UserCollection`
             Connecting users.
-        '''
+        """
 
     def ApplicationDatagram(self, App, Stream, Text):
-        '''This event is caused by the arrival of an application datagram.
+        """This event is caused by the arrival of an application datagram.
 
         :Parameters:
           App : `Application`
@@ -1311,40 +1311,40 @@ class SkypeEvents(object):
             Application stream that received the datagram.
           Text : unicode
             The datagram text.
-        '''
+        """
 
     def ApplicationReceiving(self, App, Streams):
-        '''This event is triggered when list of application receiving streams changes.
+        """This event is triggered when list of application receiving streams changes.
 
         :Parameters:
           App : `Application`
             Application object.
           Streams : `ApplicationStreamCollection`
             Application receiving streams.
-        '''
+        """
 
     def ApplicationSending(self, App, Streams):
-        '''This event is triggered when list of application sending streams changes.
+        """This event is triggered when list of application sending streams changes.
 
         :Parameters:
           App : `Application`
             Application object.
           Streams : `ApplicationStreamCollection`
             Application sending streams.
-        '''
+        """
 
     def ApplicationStreams(self, App, Streams):
-        '''This event is triggered when list of application streams changes.
+        """This event is triggered when list of application streams changes.
 
         :Parameters:
           App : `Application`
             Application object.
           Streams : `ApplicationStreamCollection`
             Application streams.
-        '''
+        """
 
     def AsyncSearchUsersFinished(self, Cookie, Users):
-        '''This event occurs when an asynchronous search is completed.
+        """This event occurs when an asynchronous search is completed.
 
         :Parameters:
           Cookie : int
@@ -1353,50 +1353,50 @@ class SkypeEvents(object):
             Found users.
 
         :see: `Skype.AsyncSearchUsers`
-        '''
+        """
 
     def AttachmentStatus(self, Status):
-        '''This event is caused by a change in the status of an attachment to the Skype API.
+        """This event is caused by a change in the status of an attachment to the Skype API.
 
         :Parameters:
           Status : `enums`.apiAttach*
             New attachment status.
-        '''
+        """
 
     def AutoAway(self, Automatic):
-        '''This event is caused by a change of auto away status.
+        """This event is caused by a change of auto away status.
 
         :Parameters:
           Automatic : bool
             New auto away status.
-        '''
+        """
 
     def CallDtmfReceived(self, Call, Code):
-        '''This event is caused by a call DTMF event.
+        """This event is caused by a call DTMF event.
 
         :Parameters:
           Call : `Call`
             Call object.
           Code : str
             Received DTMF code.
-        '''
+        """
 
     def CallHistory(self):
-        '''This event is caused by a change in call history.
-        '''
+        """This event is caused by a change in call history.
+        """
 
     def CallInputStatusChanged(self, Call, Active):
-        '''This event is caused by a change in the Call voice input status change.
+        """This event is caused by a change in the Call voice input status change.
 
         :Parameters:
           Call : `Call`
             Call object.
           Active : bool
             New voice input status (active when True).
-        '''
+        """
 
     def CallSeenStatusChanged(self, Call, Seen):
-        '''This event occurs when the seen status of a call changes.
+        """This event occurs when the seen status of a call changes.
 
         :Parameters:
           Call : `Call`
@@ -1405,122 +1405,122 @@ class SkypeEvents(object):
             True if call was seen.
 
         :see: `Call.Seen`
-        '''
+        """
 
     def CallStatus(self, Call, Status):
-        '''This event is caused by a change in call status.
+        """This event is caused by a change in call status.
 
         :Parameters:
           Call : `Call`
             Call object.
           Status : `enums`.cls*
             New status of the call.
-        '''
+        """
 
     def CallTransferStatusChanged(self, Call, Status):
-        '''This event occurs when a call transfer status changes.
+        """This event occurs when a call transfer status changes.
 
         :Parameters:
           Call : `Call`
             Call object.
           Status : `enums`.cls*
             New status of the call transfer.
-        '''
+        """
 
     def CallVideoReceiveStatusChanged(self, Call, Status):
-        '''This event occurs when a call video receive status changes.
+        """This event occurs when a call video receive status changes.
 
         :Parameters:
           Call : `Call`
             Call object.
           Status : `enums`.vss*
             New video receive status of the call.
-        '''
+        """
 
     def CallVideoSendStatusChanged(self, Call, Status):
-        '''This event occurs when a call video send status changes.
+        """This event occurs when a call video send status changes.
 
         :Parameters:
           Call : `Call`
             Call object.
           Status : `enums`.vss*
             New video send status of the call.
-        '''
+        """
 
     def CallVideoStatusChanged(self, Call, Status):
-        '''This event occurs when a call video status changes.
+        """This event occurs when a call video status changes.
 
         :Parameters:
           Call : `Call`
             Call object.
           Status : `enums`.cvs*
             New video status of the call.
-        '''
+        """
 
     def ChatMemberRoleChanged(self, Member, Role):
-        '''This event occurs when a chat member role changes.
+        """This event occurs when a chat member role changes.
 
         :Parameters:
           Member : `ChatMember`
             Chat member object.
           Role : `enums`.chatMemberRole*
             New member role.
-        '''
+        """
 
     def ChatMembersChanged(self, Chat, Members):
-        '''This event occurs when a list of chat members change.
+        """This event occurs when a list of chat members change.
 
         :Parameters:
           Chat : `Chat`
             Chat object.
           Members : `UserCollection`
             Chat members.
-        '''
+        """
 
     def ChatWindowState(self, Chat, State):
-        '''This event occurs when chat window is opened or closed.
+        """This event occurs when chat window is opened or closed.
 
         :Parameters:
           Chat : `Chat`
             Chat object.
           State : bool
             True if the window was opened or False if closed.
-        '''
+        """
 
     def ClientWindowState(self, State):
-        '''This event occurs when the state of the client window changes.
+        """This event occurs when the state of the client window changes.
 
         :Parameters:
           State : `enums`.wnd*
             New window state.
-        '''
+        """
 
     def Command(self, command):
-        '''This event is triggered when a command is sent to the Skype API.
+        """This event is triggered when a command is sent to the Skype API.
 
         :Parameters:
           command : `Command`
             Command object.
-        '''
+        """
 
     def ConnectionStatus(self, Status):
-        '''This event is caused by a connection status change.
+        """This event is caused by a connection status change.
 
         :Parameters:
           Status : `enums`.con*
             New connection status.
-        '''
+        """
 
     def ContactsFocused(self, Username):
-        '''This event is caused by a change in contacts focus.
+        """This event is caused by a change in contacts focus.
 
         :Parameters:
           Username : str
             Name of the user that was focused or empty string if focus was lost.
-        '''
+        """
 
     def Error(self, command, Number, Description):
-        '''This event is triggered when an error occurs during execution of an API command.
+        """This event is triggered when an error occurs during execution of an API command.
 
         :Parameters:
           command : `Command`
@@ -1529,38 +1529,38 @@ class SkypeEvents(object):
             Error number returned by the Skype API.
           Description : unicode
             Description of the error.
-        '''
+        """
 
     def FileTransferStatusChanged(self, Transfer, Status):
-        '''This event occurs when a file transfer status changes.
+        """This event occurs when a file transfer status changes.
 
         :Parameters:
           Transfer : `FileTransfer`
             File transfer object.
           Status : `enums`.fileTransferStatus*
             New status of the file transfer.
-        '''
+        """
 
     def GroupDeleted(self, GroupId):
-        '''This event is caused by a user deleting a custom contact group.
+        """This event is caused by a user deleting a custom contact group.
 
         :Parameters:
           GroupId : int
             Id of the deleted group.
-        '''
+        """
 
     def GroupExpanded(self, Group, Expanded):
-        '''This event is caused by a user expanding or collapsing a group in the contacts tab.
+        """This event is caused by a user expanding or collapsing a group in the contacts tab.
 
         :Parameters:
           Group : `Group`
             Group object.
           Expanded : bool
             Tells if the group is expanded (True) or collapsed (False).
-        '''
+        """
 
     def GroupUsers(self, Group, Count):
-        '''This event is caused by a change in a contact group members.
+        """This event is caused by a change in a contact group members.
 
         :Parameters:
           Group : `Group`
@@ -1571,74 +1571,74 @@ class SkypeEvents(object):
         :note: This event is different from its Skype4COM equivalent in that the second
                parameter is number of users instead of `UserCollection` object. This
                object may be obtained using ``Group.Users`` property.
-        '''
+        """
 
     def GroupVisible(self, Group, Visible):
-        '''This event is caused by a user hiding/showing a group in the contacts tab.
+        """This event is caused by a user hiding/showing a group in the contacts tab.
 
         :Parameters:
           Group : `Group`
             Group object.
           Visible : bool
             Tells if the group is visible or not.
-        '''
+        """
 
     def MessageHistory(self, Username):
-        '''This event is caused by a change in message history.
+        """This event is caused by a change in message history.
 
         :Parameters:
           Username : str
             Name of the user whose message history changed.
-        '''
+        """
 
     def MessageStatus(self, Message, Status):
-        '''This event is caused by a change in chat message status.
+        """This event is caused by a change in chat message status.
 
         :Parameters:
           Message : `ChatMessage`
             Chat message object.
           Status : `enums`.cms*
             New status of the chat message.
-        '''
+        """
 
     def Mute(self, Mute):
-        '''This event is caused by a change in mute status.
+        """This event is caused by a change in mute status.
 
         :Parameters:
           Mute : bool
             New mute status.
-        '''
+        """
 
     def Notify(self, Notification):
-        '''This event is triggered whenever Skype client sends a notification.
+        """This event is triggered whenever Skype client sends a notification.
 
         :Parameters:
           Notification : unicode
             Notification string.
 
         :note: Use this event only if there is no dedicated one.
-        '''
+        """
 
     def OnlineStatus(self, User, Status):
-        '''This event is caused by a change in the online status of a user.
+        """This event is caused by a change in the online status of a user.
 
         :Parameters:
           User : `User`
             User object.
           Status : `enums`.ols*
             New online status of the user.
-        '''
+        """
 
     def PluginEventClicked(self, Event):
-        '''This event occurs when a user clicks on a plug-in event.
+        """This event occurs when a user clicks on a plug-in event.
 
         :Parameters:
           Event : `PluginEvent`
             Plugin event object.
-        '''
+        """
 
     def PluginMenuItemClicked(self, MenuItem, Users, PluginContext, ContextId):
-        '''This event occurs when a user clicks on a plug-in menu item.
+        """This event occurs when a user clicks on a plug-in menu item.
 
         :Parameters:
           MenuItem : `PluginMenuItem`
@@ -1651,87 +1651,87 @@ class SkypeEvents(object):
             Context Id. Chat name for chat context or Call ID for call context.
 
         :see: `PluginMenuItem`
-        '''
+        """
 
     def Reply(self, command):
-        '''This event is triggered when the API replies to a command object.
+        """This event is triggered when the API replies to a command object.
 
         :Parameters:
           command : `Command`
             Command object.
-        '''
+        """
 
     def SilentModeStatusChanged(self, Silent):
-        '''This event occurs when a silent mode is switched off.
+        """This event occurs when a silent mode is switched off.
 
         :Parameters:
           Silent : bool
             Skype client silent status.
-        '''
+        """
 
     def SmsMessageStatusChanged(self, Message, Status):
-        '''This event is caused by a change in the SMS message status.
+        """This event is caused by a change in the SMS message status.
 
         :Parameters:
           Message : `SmsMessage`
             SMS message object.
           Status : `enums`.smsMessageStatus*
             New status of the SMS message.
-        '''
+        """
 
     def SmsTargetStatusChanged(self, Target, Status):
-        '''This event is caused by a change in the SMS target status.
+        """This event is caused by a change in the SMS target status.
 
         :Parameters:
           Target : `SmsTarget`
             SMS target object.
           Status : `enums`.smsTargetStatus*
             New status of the SMS target.
-        '''
+        """
 
     def UserAuthorizationRequestReceived(self, User):
-        '''This event occurs when user sends you an authorization request.
+        """This event occurs when user sends you an authorization request.
 
         :Parameters:
           User : `User`
             User object.
-        '''
+        """
 
     def UserMood(self, User, MoodText):
-        '''This event is caused by a change in the mood text of the user.
+        """This event is caused by a change in the mood text of the user.
 
         :Parameters:
           User : `User`
             User object.
           MoodText : unicode
             New mood text.
-        '''
+        """
 
     def UserStatus(self, Status):
-        '''This event is caused by a user status change.
+        """This event is caused by a user status change.
 
         :Parameters:
           Status : `enums`.cus*
             New user status.
-        '''
+        """
 
     def VoicemailStatus(self, Mail, Status):
-        '''This event is caused by a change in voicemail status.
+        """This event is caused by a change in voicemail status.
 
         :Parameters:
           Mail : `Voicemail`
             Voicemail object.
           Status : `enums`.vms*
             New status of the voicemail.
-        '''
+        """
 
     def WallpaperChanged(self, Path):
-        '''This event occurs when client wallpaper changes.
+        """This event occurs when client wallpaper changes.
 
         :Parameters:
           Path : str
             Path to new wallpaper bitmap.
-        '''
+        """
 
 
 Skype._AddEvents(SkypeEvents)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 Skype4Py distutils script.
 
 Copyright (c) 2007-2009, Arkadiusz Wahlig
@@ -8,7 +8,7 @@ All rights reserved.
 
 Distributed under the BSD License, see the
 accompanying LICENSE file for more information.
-'''
+"""
 
 import sys, os
 from distutils.core import setup
@@ -31,11 +31,11 @@ from Skype4Py import __version__
 
 
 class install_lib(old_install_lib):
-    '''Handles the 'install_lib' command.
+    """Handles the 'install_lib' command.
 
     This modified version of install_lib command installs only the necessary
     platform modules from the Skype4Py.api subpackage.
-    '''
+    """
 
     def install(self):
         # The build is done here, now we have to adapt it to current platform
@@ -73,11 +73,11 @@ class install_lib(old_install_lib):
 
 
 class build_doc(Command):
-    '''Handles the 'build_doc' command.
+    """Handles the 'build_doc' command.
 
     This command builds the documentation using epydoc. The documentation is then
     zipped using zipfile standard module.
-    '''
+    """
 
     description = 'build the documentation'
     user_options = [('pdf', None, 'Builds a PDF documentation instead of a HTML one.')]

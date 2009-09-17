@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 
-'''
+"""
 SkypeTunnel.py
 
 Version 1.0.0
@@ -51,7 +51,7 @@ Now you can connect to your server by directing the client to
 
 To create an UDP tunnel, simply append '--udp' option to both
 ends of the tunnel.
-'''
+"""
 
 import socket
 import base64
@@ -112,21 +112,21 @@ else:
     stype = socket.SOCK_STREAM
 
 def StreamRead(stream):
-    '''Reads Python object from Skype application stream.'''
+    """Reads Python object from Skype application stream."""
     try:
         return pickle.loads(base64.decodestring(stream.Read()))
     except EOFError:
         return None
 
 def StreamWrite(stream, *obj):
-    '''Writes Python object to Skype application stream.'''
+    """Writes Python object to Skype application stream."""
     stream.Write(base64.encodestring(pickle.dumps(obj)))
 
 class TCPTunnel(threading.Thread):
-    '''Tunneling thread handling TCP tunnels. An instance of this class in
+    """Tunneling thread handling TCP tunnels. An instance of this class in
     created on both ends of the tunnel. Clients create at after a connection
     is detected on the main socket. Servers create it after a connection is
-    made in Skype application.'''
+    made in Skype application."""
 
     # A dictionary of all currently running tunneling threads. It is used
     # to convert tunnel IDs (comming from Skype application stream) to the
@@ -134,7 +134,7 @@ class TCPTunnel(threading.Thread):
     threads = {}
 
     def __init__(self, sock, stream, n=None):
-        '''Initializes the tunelling thread.
+        """Initializes the tunelling thread.
 
         sock - socket bound to this tunnel (either from incoming or outgoing
                connection)
@@ -143,7 +143,7 @@ class TCPTunnel(threading.Thread):
 
         n - stream ID, if None a new ID is created which is then sent to
             the other end of the tunnel
-        '''
+        """
         threading.Thread.__init__(self)
         self.setDaemon(True)
         self.sock = sock
@@ -196,7 +196,7 @@ class TCPTunnel(threading.Thread):
         del TCPTunnel.threads[self.n]
 
     def send(self, data):
-        '''Sends data to the socket bound to the tunnel.'''
+        """Sends data to the socket bound to the tunnel."""
 
         try:
             self.sock.send(data)
@@ -204,7 +204,7 @@ class TCPTunnel(threading.Thread):
             pass
 
     def close(self):
-        '''Closes the tunnel.'''
+        """Closes the tunnel."""
 
         try:
             self.sock.shutdown(socket.SHUT_RDWR)
@@ -213,10 +213,10 @@ class TCPTunnel(threading.Thread):
             pass
 
 class SkypeEvents:
-    '''This class gathers all Skype4Py event handlers.'''
+    """This class gathers all Skype4Py event handlers."""
 
     def ApplicationReceiving(self, app, streams):
-        '''Called when the list of streams with data ready to be read changes.'''
+        """Called when the list of streams with data ready to be read changes."""
 
         # we should only proceed if we are in TCP mode
         if stype != socket.SOCK_STREAM:
@@ -257,7 +257,7 @@ class SkypeEvents:
                     print 'error (%s): %s' % obj[1:2]
 
     def ApplicationDatagram(self, app, stream, text):
-        '''Called when a datagram is received over a stream.'''
+        """Called when a datagram is received over a stream."""
 
         # we should only proceed if we are in UDP mode
         if stype != socket.SOCK_DGRAM:

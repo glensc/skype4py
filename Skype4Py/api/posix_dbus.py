@@ -1,4 +1,4 @@
-'''
+"""
 Low level *Skype for Linux* interface implemented using *python-dbus* package.
 
 This module handles the options that you can pass to `Skype.__init__`
@@ -18,7 +18,7 @@ for Linux machines when the transport is set to *DBus*. See below.
   ``MainLoop`` option.
 
 :requires: Skype for Linux 2.0 (beta) or newer.
-'''
+"""
 __docformat__ = 'restructuredtext en'
 
 
@@ -52,10 +52,10 @@ else:
 
 
 class SkypeNotifyCallback(dbus.service.Object):
-    '''DBus object which exports a Notify method. This will be called by Skype for all
+    """DBus object which exports a Notify method. This will be called by Skype for all
     notifications with the notification string as a parameter. The Notify method of this
     class calls in turn the callable passed to the constructor.
-    '''
+    """
 
     def __init__(self, bus, notify):
         dbus.service.Object.__init__(self, bus, '/com/Skype/Client')

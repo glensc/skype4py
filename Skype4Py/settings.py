@@ -1,5 +1,5 @@
-'''Skype client settings.
-'''
+"""Skype client settings.
+"""
 __docformat__ = 'restructuredtext en'
 
 
@@ -10,20 +10,20 @@ from utils import *
 
 
 class Settings(object):
-    '''Represents Skype settings. Access using `skype.Skype.Settings`.
-    '''
+    """Represents Skype settings. Access using `skype.Skype.Settings`.
+    """
 
     def __init__(self, Skype):
-        '''__init__.
+        """__init__.
 
         :Parameters:
           Skype : `Skype`
             Skype
-        '''
+        """
         self._SkypeRef = weakref.ref(Skype)
 
     def Avatar(self, Id=1, Set=None):
-        '''Sets user avatar picture from file.
+        """Sets user avatar picture from file.
 
         :Parameters:
           Id : int
@@ -32,7 +32,7 @@ class Settings(object):
             New avatar file name.
 
         :deprecated: Use `LoadAvatarFromFile` instead.
-        '''
+        """
         from warnings import warn
         warn('Settings.Avatar: Use Settings.LoadAvatarFromFile instead.', DeprecationWarning, stacklevel=2)
         if Set is None:
@@ -40,24 +40,24 @@ class Settings(object):
         self.LoadAvatarFromFile(Set, Id)
 
     def LoadAvatarFromFile(self, Filename, AvatarId=1):
-        '''Loads user avatar picture from file.
+        """Loads user avatar picture from file.
 
         :Parameters:
           Filename : str
             Name of the avatar file.
           AvatarId : int
             Optional avatar Id.
-        '''
+        """
         s = 'AVATAR %s %s' % (AvatarId, path2unicode(Filename))
         self._Skype._DoCommand('SET %s' % s, s)
 
     def ResetIdleTimer(self):
-        '''Reset Skype idle timer.
-        '''
+        """Reset Skype idle timer.
+        """
         self._Skype._DoCommand('RESETIDLETIMER')
 
     def RingTone(self, Id=1, Set=None):
-        '''Returns/sets a ringtone.
+        """Returns/sets a ringtone.
 
         :Parameters:
           Id : int
@@ -67,13 +67,13 @@ class Settings(object):
 
         :return: Current path if Set=None, None otherwise.
         :rtype: str or None
-        '''
+        """
         if Set is None:
             return unicode2path(self._Skype._Property('RINGTONE', Id, ''))
         self._Skype._Property('RINGTONE', Id, '', path2unicode(Set))
 
     def RingToneStatus(self, Id=1, Set=None):
-        '''Enables/disables a ringtone.
+        """Enables/disables a ringtone.
 
         :Parameters:
           Id : int
@@ -84,20 +84,20 @@ class Settings(object):
 
         :return: Current status if Set=None, None otherwise.
         :rtype: bool
-        '''
+        """
         if Set is None:
             return (self._Skype._Property('RINGTONE', Id, 'STATUS') == 'ON')
         self._Skype._Property('RINGTONE', Id, 'STATUS', cndexp(Set, 'ON', 'OFF'))
 
     def SaveAvatarToFile(self, Filename, AvatarId=1):
-        '''Saves user avatar picture to file.
+        """Saves user avatar picture to file.
 
         :Parameters:
           Filename : str
             Destination path.
           AvatarId : int
             Avatar Id
-        '''
+        """
         s = 'AVATAR %s %s' % (AvatarId, path2unicode(Filename))
         self._Skype._DoCommand('GET %s' % s, s)
 
@@ -116,13 +116,13 @@ class Settings(object):
         self._Skype.Variable('AEC', cndexp(Value, 'ON', 'OFF'))
 
     AEC = property(_GetAEC, _SetAEC,
-    doc='''Automatic echo cancellation state.
+    doc="""Automatic echo cancellation state.
 
     :type: bool
 
     :warning: Starting with Skype for Windows 3.6, this property has no effect. It can still be set
               for backwards compatibility reasons.
-    ''')
+    """)
 
     def _GetAGC(self):
         return (self._Skype.Variable('AGC') == 'ON')
@@ -131,13 +131,13 @@ class Settings(object):
         self._Skype.Variable('AGC', cndexp(Value, 'ON', 'OFF'))
 
     AGC = property(_GetAGC, _SetAGC,
-    doc='''Automatic gain control state.
+    doc="""Automatic gain control state.
 
     :type: bool
 
     :warning: Starting with Skype for Windows 3.6, this property has no effect. It can still be set
               for backwards compatibility reasons.
-    ''')
+    """)
 
     def _GetAudioIn(self):
         return self._Skype.Variable('AUDIO_IN')
@@ -146,10 +146,10 @@ class Settings(object):
         self._Skype.Variable('AUDIO_IN', Value)
 
     AudioIn = property(_GetAudioIn, _SetAudioIn,
-    doc='''Name of an audio input device.
+    doc="""Name of an audio input device.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetAudioOut(self):
         return self._Skype.Variable('AUDIO_OUT')
@@ -158,10 +158,10 @@ class Settings(object):
         self._Skype.Variable('AUDIO_OUT', Value)
 
     AudioOut = property(_GetAudioOut, _SetAudioOut,
-    doc='''Name of an audio output device.
+    doc="""Name of an audio output device.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetAutoAway(self):
         return (self._Skype.Variable('AUTOAWAY') == 'ON')
@@ -170,10 +170,10 @@ class Settings(object):
         self._Skype.Variable('AUTOAWAY', cndexp(Value, 'ON', 'OFF'))
 
     AutoAway = property(_GetAutoAway, _SetAutoAway,
-    doc='''Auto away status.
+    doc="""Auto away status.
 
     :type: bool
-    ''')
+    """)
 
     def _GetLanguage(self):
         return str(self._Skype.Variable('UI_LANGUAGE'))
@@ -182,10 +182,10 @@ class Settings(object):
         self._Skype.Variable('UI_LANGUAGE', Value)
 
     Language = property(_GetLanguage, _SetLanguage,
-    doc='''Language of the Skype client as an ISO code.
+    doc="""Language of the Skype client as an ISO code.
 
     :type: str
-    ''')
+    """)
 
     def _GetPCSpeaker(self):
         return (self._Skype.Variable('PCSPEAKER') == 'ON')
@@ -194,10 +194,10 @@ class Settings(object):
         self._Skype.Variable('PCSPEAKER', cndexp(Value, 'ON', 'OFF'))
 
     PCSpeaker = property(_GetPCSpeaker, _SetPCSpeaker,
-    doc='''PCSpeaker status.
+    doc="""PCSpeaker status.
 
     :type: bool
-    ''')
+    """)
 
     def _GetRinger(self):
         return self._Skype.Variable('RINGER')
@@ -206,10 +206,10 @@ class Settings(object):
         self._Skype.Variable('RINGER', Value)
 
     Ringer = property(_GetRinger, _SetRinger,
-    doc='''Name of a ringer device.
+    doc="""Name of a ringer device.
 
     :type: unicode
-    ''')
+    """)
 
     def _GetVideoIn(self):
         return self._Skype.Variable('VIDEO_IN')
@@ -218,7 +218,7 @@ class Settings(object):
         self._Skype.Variable('VIDEO_IN', Value)
 
     VideoIn = property(_GetVideoIn, _SetVideoIn,
-    doc='''Name of a video input device.
+    doc="""Name of a video input device.
 
     :type: unicode
-    ''')
+    """)

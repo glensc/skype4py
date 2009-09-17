@@ -1,4 +1,4 @@
-'''
+"""
 Low level *Skype for Windows* interface implemented using *Windows messaging*.
 Uses direct *WinAPI* calls through *ctypes* module.
 
@@ -6,7 +6,7 @@ This module handles the options that you can pass to `Skype.__init__`
 for Windows machines.
 
 No options are currently supported.
-'''
+"""
 __docformat__ = 'restructuredtext en'
 
 

@@ -1,5 +1,5 @@
-'''Utility functions and classes used internally by Skype4Py.
-'''
+"""Utility functions and classes used internally by Skype4Py.
+"""
 __docformat__ = 'restructuredtext en'
 
 
@@ -15,7 +15,7 @@ __all__ = ['tounicode', 'path2unicode', 'unicode2path', 'chop', 'args2dict', 'qu
 
 
 def tounicode(s):
-    '''Converts a string to a unicode string. Accepts two types or arguments. An UTF-8 encoded
+    """Converts a string to a unicode string. Accepts two types or arguments. An UTF-8 encoded
     byte string or a unicode string (in the latter case, no conversion is performed).
 
     :Parameters:
@@ -24,14 +24,14 @@ def tounicode(s):
 
     :return: A unicode string being the result of the conversion.
     :rtype: unicode
-    '''
+    """
     if isinstance(s, unicode):
         return s
     return str(s).decode('utf-8')
     
     
 def path2unicode(path):
-    '''Decodes a file/directory path from the current file system encoding to unicode.
+    """Decodes a file/directory path from the current file system encoding to unicode.
 
     :Parameters:
       path : str
@@ -39,12 +39,12 @@ def path2unicode(path):
 
     :return: Decoded path.
     :rtype: unicode
-    '''
+    """
     return path.decode(sys.getfilesystemencoding())
     
 
 def unicode2path(path):
-    '''Encodes a file/directory path from unicode to the current file system encoding.
+    """Encodes a file/directory path from unicode to the current file system encoding.
 
     :Parameters:
       path : unicode
@@ -52,12 +52,12 @@ def unicode2path(path):
 
     :return: Encoded path.
     :rtype: str
-    '''
+    """
     return path.encode(sys.getfilesystemencoding())
 
 
 def chop(s, n=1, d=None):
-    '''Chops initial words from a string and returns a list of them and the rest of the string.
+    """Chops initial words from a string and returns a list of them and the rest of the string.
     The returned list is guaranteed to be n+1 long. If too little words are found in the string,
     a ValueError exception is raised.
 
@@ -72,7 +72,7 @@ def chop(s, n=1, d=None):
     :return: A list of n first words from the string followed by the rest of the string (``[w1, w2,
              ..., wn, rest_of_string]``).
     :rtype: list of: str or unicode
-    '''
+    """
 
     spl = s.split(d, n)
     if len(spl) == n:
@@ -83,7 +83,7 @@ def chop(s, n=1, d=None):
 
 
 def args2dict(s):
-    '''Converts a string or comma-separated 'ARG="a value"' or 'ARG=value2' strings
+    """Converts a string or comma-separated 'ARG="a value"' or 'ARG=value2' strings
     into a dictionary.
 
     :Parameters:
@@ -92,7 +92,7 @@ def args2dict(s):
 
     :return: ``{'ARG': 'value'}`` dictionary.
     :rtype: dict
-    '''
+    """
 
     d = {}
     while s:
@@ -131,7 +131,7 @@ def args2dict(s):
 
 
 def quote(s, always=False):
-    '''Adds double-quotes to string if it contains spaces.
+    """Adds double-quotes to string if it contains spaces.
 
     :Parameters:
       s : str or unicode
@@ -142,7 +142,7 @@ def quote(s, always=False):
     :return: If the given string contains spaces or <always> is True, returns the string enclosed in
              double-quotes. Otherwise returns the string unchanged.
     :rtype: str or unicode
-    '''
+    """
 
     if always or ' ' in s:
         return '"%s"' % s.replace('"', '""') # VisualBasic double-quote escaping.
@@ -150,7 +150,7 @@ def quote(s, always=False):
 
 
 def split(s, d=None):
-    '''Splits a string.
+    """Splits a string.
 
     :Parameters:
       s : str or unicode
@@ -163,7 +163,7 @@ def split(s, d=None):
 
     :note: This function works like ``s.split(d)`` except that it always returns an empty list
            instead of ``['']`` for empty strings.
-    '''
+    """
 
     if s:
         return s.split(d)
@@ -171,7 +171,7 @@ def split(s, d=None):
 
 
 def cndexp(condition, truevalue, falsevalue):
-    '''Simulates a conditional expression known from C or Python 2.5.
+    """Simulates a conditional expression known from C or Python 2.5.
 
     :Parameters:
       condition : any
@@ -183,7 +183,7 @@ def cndexp(condition, truevalue, falsevalue):
 
     :return: Either truevalue or falsevalue depending on condition.
     :rtype: same as type of truevalue or falsevalue
-    '''
+    """
 
     if condition:
         return truevalue
@@ -192,7 +192,7 @@ def cndexp(condition, truevalue, falsevalue):
 
 class EventSchedulerThread(threading.Thread):
     def __init__(self, name, after, handlers, args, kwargs):
-        '''Initializes the object.
+        """Initializes the object.
         
         :Parameters:
           name : str
@@ -209,7 +209,7 @@ class EventSchedulerThread(threading.Thread):
 
         :note: When the thread is started (using the ``start`` method), it iterates over
                the handlers and calls them with the supplied arguments.
-        '''
+        """
         threading.Thread.__init__(self, name='Skype4Py %s event scheduler' % name)
         self.setDaemon(False)
         self.after = after
@@ -226,7 +226,7 @@ class EventSchedulerThread(threading.Thread):
 
 
 class EventHandlingBase(object):
-    '''This class is used as a base by all classes implementing event handlers.
+    """This class is used as a base by all classes implementing event handlers.
 
     Look at known subclasses (above in epydoc) to see which classes will allow you to
     attach your own callables (event handlers) to certain events occurring in them.
@@ -348,13 +348,13 @@ class EventHandlingBase(object):
     expected to be removed by the Python's garbage collector which should always be present as
     the library is expected to work in a relatively resource rich environment which is needed
     by the Skype client anyway.
-    '''
+    """
     # Initialized by the _AddEvents() class method.
     _EventNames = []
 
     def __init__(self):
-        '''Initializes the object.
-        '''
+        """Initializes the object.
+        """
         # Event -> EventSchedulerThread object mapping. Use WeakValueDictionary to let the
         # threads be freed after they are finished.
         self._EventThreads = weakref.WeakValueDictionary()
@@ -368,7 +368,7 @@ class EventHandlingBase(object):
             self._EventHandlers[event] = []
 
     def _CallEventHandler(self, Event, *Args, **KwArgs):
-        '''Calls all event handlers defined for given Event, additional parameters
+        """Calls all event handlers defined for given Event, additional parameters
         will be passed unchanged to event handlers, all event handlers are fired on
         separate threads.
         
@@ -379,7 +379,7 @@ class EventHandlingBase(object):
             Positional arguments for the event handlers.
           KwArgs
             Keyword arguments for the event handlers.
-        '''
+        """
         if Event not in self._EventHandlers:
             raise ValueError('%s is not a valid %s event name' % (Event, self.__class__.__name__))
         args = map(repr, Args) + ['%s=%s' % (key, repr(value)) for key, value in KwArgs.items()]
@@ -406,7 +406,7 @@ class EventHandlingBase(object):
             thread.start()
 
     def RegisterEventHandler(self, Event, Target):
-        '''Registers any callable as an event handler.
+        """Registers any callable as an event handler.
 
         :Parameters:
           Event : str
@@ -418,7 +418,7 @@ class EventHandlingBase(object):
         :rtype: bool
 
         :see: `UnregisterEventHandler`
-        '''
+        """
         if not callable(Target):
             raise TypeError('%s is not callable' % repr(Target))
         if Event not in self._EventHandlers:
@@ -430,7 +430,7 @@ class EventHandlingBase(object):
         return True
 
     def UnregisterEventHandler(self, Event, Target):
-        '''Unregisters an event handler previously registered with `RegisterEventHandler`.
+        """Unregisters an event handler previously registered with `RegisterEventHandler`.
 
         :Parameters:
           Event : str
@@ -443,7 +443,7 @@ class EventHandlingBase(object):
         :rtype: bool
 
         :see: `RegisterEventHandler`
-        '''
+        """
         if not callable(Target):
             raise TypeError('%s is not callable' % repr(Target))
         if Event not in self._EventHandlers:
@@ -473,26 +473,26 @@ class EventHandlingBase(object):
             return None
 
     def _SetEventHandlerObject(self, Object):
-        '''Registers an object as events handler, object should contain methods with names
+        """Registers an object as events handler, object should contain methods with names
         corresponding to event names, only one object may be registered at a time.
         
         :Parameters:
           Object
             Object to register. May be None in which case the currently registered object
             will be unregistered.
-        '''
+        """
         self._EventHandlerObject = Object
         self.__Logger.info('set object: %s', repr(Object))
 
     @classmethod
     def _AddEvents(cls, Class):
-        '''Adds events based on the attributes of the given ``...Events`` class.
+        """Adds events based on the attributes of the given ``...Events`` class.
         
         :Parameters:
           Class : class
             An `...Events` class whose methods define events that may occur in the
             instances of the current class.
-        '''
+        """
         def make_event(event):
             return property(lambda self: self._GetDefaultEventHandler(event),
                              lambda self, Value: self._SetDefaultEventHandler(event, Value))
@@ -503,7 +503,7 @@ class EventHandlingBase(object):
 
 
 class Cached(object):
-    '''Base class for all cached objects.
+    """Base class for all cached objects.
 
     Every object has an owning object a handle. Owning object is where the cache is
     maintained, handle identifies an object of given type.
@@ -514,7 +514,7 @@ class Cached(object):
 
     Because the ``__init__`` method will be called no matter if the object already
     existed or not, it is recommended to use the `_Init` method instead.
-    '''
+    """
     # Subclasses have to define a type/classmethod/staticmethod called
     # _ValidateHandle(Handle)
     # which is called by classmethod__new__ to validate the handle passed to
@@ -536,13 +536,13 @@ class Cached(object):
             raise TypeError('%s is not a cached objects owner' % repr(Owner))
             
     def _Init(self):
-        '''Initializes the cached object. Receives all the arguments passed to the
+        """Initializes the cached object. Receives all the arguments passed to the
         constructor The default implementation stores the ``Owner`` in
         ``self._Owner`` and ``Handle`` in ``self._Handle``.
         
         This method should be used instead of ``__init__`` to prevent double
         initialization.
-        '''
+        """
 
     def __copy__(self):
         return self
@@ -554,24 +554,24 @@ class Cached(object):
             ', '.join('%s=%s' % (name, repr(getattr(self, name))) for name in Attrs))
         
     def _MakeOwner(self):
-        '''Prepares the object for use as an owner for other cached objects.
-        '''
+        """Prepares the object for use as an owner for other cached objects.
+        """
         self._CreateOwner(self)
 
     @staticmethod
     def _CreateOwner(Object):
-        '''Prepares any object for use as an owner for cached objects.
+        """Prepares any object for use as an owner for cached objects.
         
         :Parameters:
           Object
             Object that should be turned into a cached objects owner.
-        '''
+        """
         Object._ObjectCache = weakref.WeakValueDictionary()
 
 
 class CachedCollection(object):
-    '''
-    '''
+    """
+    """
     _CachedType = Cached
     
     def __init__(self, Owner, Handles=[], Items=[]):
@@ -651,53 +651,53 @@ class CachedCollection(object):
         return obj
 
     def append(self, item):
-        '''
-        '''
+        """
+        """
         self._AssertItem(item)
         self._Handles.append(item._Handle)
 
     def count(self, item):
-        '''
-        '''
+        """
+        """
         self._AssertItem(item)
         return self._Handles.count(item._Handle)
 
     def index(self, item):
-        '''
-        '''
+        """
+        """
         self._AssertItem(item)
         return self._Handles.index(item._Handle)
 
     def extend(self, seq):
-        '''
-        '''
+        """
+        """
         self.__iadd__(seq)
 
     def insert(self, index, item):
-        '''
-        '''
+        """
+        """
         self._AssertItem(item)
         self._Handles.insert(index, item._Handle)
 
     def pop(self, pos=-1):
-        '''
-        '''
+        """
+        """
         return self._CachedType(self._Owner, self._Handles.pop(pos))
 
     def remove(self, item):
-        '''
-        '''
+        """
+        """
         self._AssertItem(item)
         self._Handles.remove(item._Handle)
 
     def reverse(self):
-        '''
-        '''
+        """
+        """
         self._Handles.reverse()
 
     def sort(self, cmp=None, key=None, reverse=False):
-        '''
-        '''
+        """
+        """
         if key is None:
             wrapper = lambda x: self._CachedType(self._Owner, x)
         else:
@@ -705,28 +705,28 @@ class CachedCollection(object):
         self._Handles.sort(cmp, wrapper, reverse)
 
     def Add(self, Item):
-        '''
-        '''
+        """
+        """
         self.append(Item)
 
     def Remove(self, Index):
-        '''
-        '''
+        """
+        """
         del self[Index]
 
     def RemoveAll(self):
-        '''
-        '''
+        """
+        """
         del self[:]
 
     def Item(self, Index):
-        '''
-        '''
+        """
+        """
         return self[Index]
 
     def _GetCount(self):
         return len(self)
 
     Count = property(_GetCount,
-    doc='''
-    ''')
+    doc="""
+    """)

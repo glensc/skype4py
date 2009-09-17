@@ -1,4 +1,4 @@
-'''
+"""
 Low level *Skype for Linux* interface implemented using *XWindows messaging*.
 Uses direct *Xlib* calls through *ctypes* module.
 
@@ -6,7 +6,7 @@ This module handles the options that you can pass to `Skype.__init__`
 for Linux machines when the transport is set to *X11*.
 
 No further options are currently supported.
-'''
+"""
 __docformat__ = 'restructuredtext en'
 
 
@@ -216,7 +216,7 @@ class SkypeAPI(SkypeAPIBase):
             raise SkypeAPIError('Could not open XDisplay')
         self.win_root = x11.XDefaultRootWindow(self.disp)
         self.win_self = x11.XCreateSimpleWindow(self.disp, self.win_root,
-                                    100, 100, 100, 100, 1, 0, 0)
+                                                100, 100, 100, 100, 1, 0, 0)
         x11.XSelectInput(self.disp, self.win_root, PropertyChangeMask)
         self.win_skype = self.get_skype()
         ctrl = 'SKYPECONTROLAPI_MESSAGE'
@@ -290,7 +290,7 @@ class SkypeAPI(SkypeAPIBase):
         self.logger.info('thread finished')
    
     def get_skype(self):
-        '''Returns Skype window ID or None if Skype not running.'''
+        """Returns Skype window ID or None if Skype not running."""
         skype_inst = x11.XInternAtom(self.disp, '_SKYPE_INSTANCE', True)
         if not skype_inst:
             return

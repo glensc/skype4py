@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # SkypeUsers.py
 
-'''Displays the Skype contact list in a wxPython frame.
+"""Displays the Skype contact list in a wxPython frame.
 Clicking on a contact, pops up a dialog with user
 details.
-'''
+"""
 
 import wx, wx.lib.dialogs
 import Skype4Py

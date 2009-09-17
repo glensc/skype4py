@@ -1,4 +1,4 @@
-'''
+"""
 Skype4Py constants.
 
 **Warning!** Remember that all constants defined here are available at
@@ -11,7 +11,7 @@ Example:
     import Skype4Py
 
     status = Skype4Py.apiAttachSuccess
-'''
+"""
 __docformat__ = 'restructuredtext en'
 
 

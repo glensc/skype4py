@@ -1,4 +1,4 @@
-'''
+"""
 Low-level Skype API definitions.
 
 This module imports one of the:
@@ -10,7 +10,7 @@ This module imports one of the:
 submodules based on the current platform.
 
 The submodule name is available in the `platform` variable.
-'''
+"""
 __docformat__ = 'restructuredtext en'
 
 
@@ -32,53 +32,53 @@ DEFAULT_TIMEOUT = 30000
 
 
 class Command(object):
-    '''Represents an API command. Use `Skype.Command` to instantiate.
+    """Represents an API command. Use `Skype.Command` to instantiate.
 
     To send a command to Skype, use `Skype.SendCommand`.
-    '''
+    """
 
     def __init__(self, Command, Expected=u'', Blocking=False, Timeout=DEFAULT_TIMEOUT, Id=-1):
-        '''Use `Skype.Command` to instantiate the object instead of doing it directly.
-        '''
+        """Use `Skype.Command` to instantiate the object instead of doing it directly.
+        """
 
         self.Blocking = Blocking
-        '''If set to True, `Skype.SendCommand` will block until the reply is received.
+        """If set to True, `Skype.SendCommand` will block until the reply is received.
         
-        :type: bool'''
+        :type: bool"""
 
         self.Command = tounicode(Command)
-        '''Command string.
+        """Command string.
         
-        :type: unicode'''
+        :type: unicode"""
 
         self.Expected = tounicode(Expected)
-        '''Expected reply.
+        """Expected reply.
         
-        :type: unicode'''
+        :type: unicode"""
 
         self.Id = Id
-        '''Command Id.
+        """Command Id.
         
-        :type: int'''
+        :type: int"""
 
         self.Reply = u''
-        '''Reply after the command has been sent and Skype has replied.
+        """Reply after the command has been sent and Skype has replied.
         
-        :type: unicode'''
+        :type: unicode"""
 
         self.Timeout = Timeout
-        '''Timeout if Blocking == True.
+        """Timeout if Blocking == True.
         
-        :type: int'''
+        :type: int"""
 
     def __repr__(self):
         return '<%s with Command=%s, Blocking=%s, Reply=%s, Id=%s>' % \
             (object.__repr__(self)[1:-1], repr(self.Command), self.Blocking, repr(self.Reply), self.Id)
 
     def timeout2float(self):
-        '''A wrapper for `api.timeout2float` function. Returns the converted
+        """A wrapper for `api.timeout2float` function. Returns the converted
         `Timeout` property.
-        '''
+        """
         return timeout2float(self.Timeout)
 
 
@@ -182,7 +182,7 @@ class SkypeAPIBase(threading.Thread):
 
 
 def timeout2float(timeout):
-    '''Converts a timeout expressed in milliseconds or seconds into a timeout expressed
+    """Converts a timeout expressed in milliseconds or seconds into a timeout expressed
     in seconds using a floating point number.
     
     :Parameters:
@@ -193,17 +193,17 @@ def timeout2float(timeout):
     
     :return: The timeout expressed in number of seconds (or fractions thereof).
     :rtype: float
-    '''
+    """
     if isinstance(timeout, float):
         return timeout
     return timeout / 1000.0
 
 
 def finalize_opts(opts):
-    '''Convinient function called after popping all options from a dictionary.
+    """Convinient function called after popping all options from a dictionary.
     If there are any items left, a TypeError exception is raised listing all
     unexpected keys in the error message.
-    '''
+    """
     if opts:
         raise TypeError('Unexpected option(s): %s' % ', '.join(opts.keys()))
 
