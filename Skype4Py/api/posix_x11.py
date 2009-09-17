@@ -256,8 +256,9 @@ class SkypeAPI(SkypeAPIBase):
             self.loop_timeout = 0.0001
             for i in xrange(pending):
                 x11.XLockDisplay(self.disp)
-                x11.XIfEvent(self.disp, byref(event), PREDICATE(self.event_preficate), None)
+                x11.XIfEvent(self.disp, byref(event), PREDICATE(self.event_predicate), None)
                 x11.XUnlockDisplay(self.disp)
+                # events we get here are already prefiltered by the predicate function
                 if event.type == ClientMessage:
                     if event.xclient.message_type == self.atom_msg_begin:
                         data = str(event.xclient.data)
