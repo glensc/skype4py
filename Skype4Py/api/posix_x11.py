@@ -176,7 +176,7 @@ x11.XDestroyWindow.restype = None
 x11.XFree.argtypes = (c_void_p,)
 x11.XFree.restype = None
 x11.XGetAtomName.argtypes = (DisplayP, Atom)
-x11.XGetAtomName.restype = c_char_p
+x11.XGetAtomName.restype = c_void_p
 x11.XGetErrorText.argtypes = (DisplayP, c_int, c_char_p, c_int)
 x11.XGetErrorText.restype = None
 x11.XGetWindowProperty.argtypes = (DisplayP, Window, Atom, c_long, c_long, Bool,
@@ -272,9 +272,9 @@ class SkypeAPI(SkypeAPIBase):
                     self.notify(data.decode('utf-8'))
                     data = ''
             else: # event.type == PropertyNotify
-                name = x11.XGetAtomName(display, event.xproperty.atom)
-                is_inst = (name == '_SKYPE_INSTANCE')
-                x11.XFree(name)
+                namep = x11.XGetAtomName(self.disp, event.xproperty.atom)
+                is_inst = (c_char_p(namep).value == '_SKYPE_INSTANCE')
+                x11.XFree(namep)
                 if is_inst:
                     if event.xproperty.state == PropertyNewValue:
                         self.win_skype = self.get_skype()
