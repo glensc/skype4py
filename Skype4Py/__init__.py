@@ -25,6 +25,9 @@ Skype4Py is a multiplatform Skype API wrapper for Python.
    - Constants
      
      Everything from the `Skype4Py.enums` module.
+
+     `platform`, either `'windows'`, `'posix'` or `'darwin'` depending
+     on the current platform (Windows, Linux, Mac OS X).
      
    - Errors
    
@@ -95,6 +98,7 @@ from skype import Skype
 from callchannel import CallChannelManager
 from errors import SkypeError, SkypeAPIError
 from enums import *
+from api import platform
 import logging
 
 
