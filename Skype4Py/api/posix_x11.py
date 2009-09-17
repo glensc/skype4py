@@ -135,6 +135,9 @@ class XEvent(Union):
 
 XEventP = POINTER(XEvent)
 
+# predicate function prototype for XIfEvent()
+PREDICATE = CFUNCTYPE(Bool, DisplayP, XEventP, c_void_p)
+
 
 if getattr(sys, 'skype4py_setup', False):
     # we get here if we're building docs; to let the module import without
@@ -177,12 +180,12 @@ x11.XGetErrorText.restype = None
 x11.XGetWindowProperty.argtypes = (DisplayP, Window, Atom, c_long, c_long, Bool,
         Atom, AtomP, c_int_p, c_ulong_p, c_ulong_p, POINTER(POINTER(Window)))
 x11.XGetWindowProperty.restype = c_int
+x11.XIfEvent.argtype = (DisplayP, XEventP, POINTER(PREDICATE), c_void_p)
+x11.XIfEvent.restype = None
 x11.XInitThreads.argtypes = ()
 x11.XInitThreads.restype = Status
 x11.XInternAtom.argtypes = (DisplayP, c_char_p, Bool)
 x11.XInternAtom.restype = Atom
-x11.XNextEvent.argtypes = (DisplayP, XEventP)
-x11.XNextEvent.restype = None
 x11.XOpenDisplay.argtypes = (c_char_p,)
 x11.XOpenDisplay.restype = DisplayP
 x11.XSelectInput.argtypes = (DisplayP, Window, c_long)
@@ -229,6 +232,12 @@ class SkypeAPI(SkypeAPIBase):
                     x11.XDestroyWindow(self.disp, self.win_self)
                 x11.XCloseDisplay(self.disp)
 
+    def event_predicate(self, display, eventp, arg):
+        event = eventp.contents
+        return ((event.type == ClientMessage and event.xclient.format == 8 and
+                 event.xclient.message_type in (self.atom_msg_begin, self.atom_msg)) or
+                event.type == PropertyNotify)
+
     def run(self):
         self.logger.info('thread started')
         # main loop
@@ -247,23 +256,20 @@ class SkypeAPI(SkypeAPIBase):
             self.loop_timeout = 0.0001
             for i in xrange(pending):
                 x11.XLockDisplay(self.disp)
-                x11.XNextEvent(self.disp, byref(event))
+                x11.XIfEvent(self.disp, byref(event), PREDICATE(self.event_preficate), None)
                 x11.XUnlockDisplay(self.disp)
                 if event.type == ClientMessage:
-                    if event.xclient.format == 8:
-                        if event.xclient.message_type == self.atom_msg_begin:
-                            data = str(event.xclient.data)
-                        elif event.xclient.message_type == self.atom_msg:
-                            if data != '':
-                                data += str(event.xclient.data)
-                            else:
-                                self.logger.warning('Middle of Skype X11 message received with no beginning!')
+                    if event.xclient.message_type == self.atom_msg_begin:
+                        data = str(event.xclient.data)
+                    else: # event.xclient.message_type == self.atom_msg
+                        if data != '':
+                            data += str(event.xclient.data)
                         else:
-                            continue
-                        if len(event.xclient.data) != 20 and data:
-                            self.notify(data.decode('utf-8'))
-                            data = ''
-                elif event.type == PropertyNotify:
+                            self.logger.warning('Middle of Skype X11 message received with no beginning!')
+                    if len(event.xclient.data) != 20 and data:
+                        self.notify(data.decode('utf-8'))
+                        data = ''
+                else: # event.type == PropertyNotify
                     if x11.XGetAtomName(self.disp, event.xproperty.atom) == '_SKYPE_INSTANCE':
                         if event.xproperty.state == PropertyNewValue:
                             self.win_skype = self.get_skype()

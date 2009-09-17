@@ -8,6 +8,8 @@ This module imports one of the:
 - `Skype4Py.api.windows`
 
 submodules based on the current platform.
+
+The submodule name is available in the `platform` variable.
 '''
 __docformat__ = 'restructuredtext en'
 
@@ -208,14 +210,18 @@ def finalize_opts(opts):
 
 # Select appropriate low-level Skype API module
 if getattr(sys, 'skype4py_setup', False):
-    # dummy
+    # dummy for the setup.py run
     SkypeAPI = lambda **Options: None
+    platform = ''
 elif sys.platform.startswith('win'):
     from windows import SkypeAPI
+    platform = 'windows'
 elif sys.platform == 'darwin':
     from darwin import SkypeAPI
+    platform = 'darwin'
 else:
     from posix import SkypeAPI
+    platform = 'posix'
 
 
 # Note. py2exe will include the darwin but not the posix module. This seems to be the case
