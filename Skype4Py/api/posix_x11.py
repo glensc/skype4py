@@ -236,16 +236,10 @@ class SkypeAPI(SkypeAPIBase):
 
     def event_predicate(self, display, eventp, arg):
         event = eventp.contents
-        if event.type == ClientMessage:
-            return (event.xclient.window == self.win_skype and event.xclient.format == 8 and
-                    event.xclient.message_type in (self.atom_msg_begin, self.atom_msg))
-        if event.type == PropertyNotify:
-            name = x11.XGetAtomName(display, event.xproperty.atom)
-            try:
-                return (name == '_SKYPE_INSTANCE')
-            finally:
-                x11.XFree(name)
-        return False
+        return ((event.type == ClientMessage and event.xclient.window == self.win_skype and
+                event.xclient.format == 8 and event.xclient.message_type in (self.atom_msg_begin,
+                self.atom_msg)) or (event.type == PropertyNotify and event.xproperty.window ==
+                self.win_root))
 
     def run(self):
         self.logger.info('thread started')
@@ -278,17 +272,21 @@ class SkypeAPI(SkypeAPIBase):
                     self.notify(data.decode('utf-8'))
                     data = ''
             else: # event.type == PropertyNotify
-                if event.xproperty.state == PropertyNewValue:
-                    self.win_skype = self.get_skype()
-                    # changing attachment status can cause an event handler to be fired, in
-                    # turn it could try to call Attach() and doing this immediately seems to
-                    # confuse Skype (command '#0 NAME xxx' returns '#0 CONNSTATUS OFFLINE' :D);
-                    # to fix this, we give Skype some time to initialize itself
-                    time.sleep(1.0)
-                    self.set_attachment_status(apiAttachAvailable)
-                elif event.xproperty.state == PropertyDelete:
-                    self.win_skype = None
-                    self.set_attachment_status(apiAttachNotAvailable)
+                name = x11.XGetAtomName(display, event.xproperty.atom)
+                is_inst = (name == '_SKYPE_INSTANCE')
+                x11.XFree(name)
+                if is_inst:
+                    if event.xproperty.state == PropertyNewValue:
+                        self.win_skype = self.get_skype()
+                        # changing attachment status can cause an event handler to be fired, in
+                        # turn it could try to call Attach() and doing this immediately seems to
+                        # confuse Skype (command '#0 NAME xxx' returns '#0 CONNSTATUS OFFLINE' :D);
+                        # to fix this, we give Skype some time to initialize itself
+                        time.sleep(1.0)
+                        self.set_attachment_status(apiAttachAvailable)
+                    elif event.xproperty.state == PropertyDelete:
+                        self.win_skype = None
+                        self.set_attachment_status(apiAttachNotAvailable)
         self.logger.info('thread finished')
    
     def get_skype(self):
