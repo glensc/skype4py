@@ -73,11 +73,13 @@ class SkypeAPI(SkypeAPIBase):
         # this throws a warning on newer Python versions; here we suppress it
         warnings.simplefilter('ignore')
         try:
-            self.bus = SessionBus(mainloop=DBusGMainLoop())
+            self.bus = dbus.SessionBus(mainloop=DBusGMainLoop())
         finally:
             warnings.simplefilter('default')
         
         if run_main_loop:
+            import gobject
+            gobject.threads_init()
             self.mainloop = gobject.MainLoop()
 
     def run(self):
