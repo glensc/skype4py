@@ -1,21 +1,13 @@
 """
-Low level *Skype for Linux* interface implemented using *python-dbus* package.
+Low level *Skype for Linux* interface implemented using *dbus-python* package.
 
 This module handles the options that you can pass to `Skype.__init__`
 for Linux machines when the transport is set to *DBus*. See below.
 
-- ``Bus`` (``dbus.Bus``) - DBus bus object as returned by python-dbus package.
-  If not specified, private session bus is created and used. See also the
-  ``MainLoop`` option.
-  
-- ``MainLoop`` - DBus mainloop object. Use only without specifying the ``Bus``
-  option (if you need, pass the mainloop object to the bus constructor). If
-  neither ``Bus`` or ``MainLoop`` are specified, glib mainloop is used. In such
-  case, the mainloop is automatically run on a separate thread upon attaching
-  to the Skype client. If you want to use glib mainloop but you want to run the
-  loop yourself (for example because your GUI toolkit does it for you, like
-  *PyGTK* does), pass the ``dbus.mainloop.glib.DBusGMainLoop`` object as the
-  ``MainLoop`` option.
+- ``RunMainLoop`` - If set to False, Skype4Py won't start the GLib main loop.
+  This loop is normally started on a separate thread to handle communication
+  with the Skype client. Set this option to False if you plan to run the
+  loop yourself or if, for example, your GUI framework does it for you.
 
 :requires: Skype for Linux 2.0 (beta) or newer.
 """
@@ -25,6 +17,7 @@ __docformat__ = 'restructuredtext en'
 import sys
 import threading
 import time
+import warnings
 import logging
 
 from Skype4Py.api import Command, SkypeAPIBase, \
@@ -48,10 +41,12 @@ if getattr(sys, 'skype4py_setup', False):
             def method(*args, **kwargs):
                 return lambda *args, **kwargs: None
 else:
-    import dbus, dbus.service
+    import dbus
+    import dbus.service
+    from dbus.mainloop.glib import DBusGMainLoop
 
 
-class SkypeNotifyCallback(dbus.service.Object):
+class SkypeNotify(dbus.service.Object):
     """DBus object which exports a Notify method. This will be called by Skype for all
     notifications with the notification string as a parameter. The Notify method of this
     class calls in turn the callable passed to the constructor.
@@ -70,24 +65,20 @@ class SkypeAPI(SkypeAPIBase):
     def __init__(self, opts):
         self.logger = logging.getLogger('Skype4Py.api.posix_dbus.SkypeAPI')
         SkypeAPIBase.__init__(self)
-        self.skype_in = self.skype_out = self.dbus_name_owner_watch = None
-        self.bus = opts.pop('Bus', None)
-        try:
-            mainloop = opts.pop('MainLoop')
-            if self.bus is not None:
-                raise TypeError('Bus and MainLoop cannot be used at the same time!')
-        except KeyError:
-            if self.bus is None:
-                import dbus.mainloop.glib
-                import gobject
-                gobject.threads_init()
-                dbus.mainloop.glib.threads_init()
-                mainloop = dbus.mainloop.glib.DBusGMainLoop()
-                self.mainloop = gobject.MainLoop()
-        if self.bus is None:
-            from dbus import SessionBus
-            self.bus = SessionBus(private=True, mainloop=mainloop)
+        run_main_loop = opts.pop('RunMainLoop', True)
         finalize_opts(opts)
+        self.skype_in = self.skype_out = self.dbus_name_owner_watch = None
+        
+        # dbus-python calls object.__init__() with arguments passed to SessionBus(),
+        # this throws a warning on newer Python versions; here we suppress it
+        warnings.simplefilter('ignore')
+        try:
+            self.bus = SessionBus(mainloop=DBusGMainLoop())
+        finally:
+            warnings.simplefilter('default')
+        
+        if run_main_loop:
+            self.mainloop = gobject.MainLoop()
 
     def run(self):
         self.logger.info('thread started')
@@ -110,6 +101,7 @@ class SkypeAPI(SkypeAPIBase):
             self.send_command(Command('NAME %s' % friendly_name))
 
     def start_watcher(self):
+        # starts a signal receiver detecting Skype being closed/opened
         self.dbus_name_owner_watch = self.bus.add_signal_receiver(self.dbus_name_owner_changed,
             'NameOwnerChanged',
             'org.freedesktop.DBus',
@@ -138,7 +130,7 @@ class SkypeAPI(SkypeAPIBase):
                         if not self.skype_out:
                             self.skype_out = self.bus.get_object('com.Skype.API', '/com/Skype')
                         if not self.skype_in:
-                            self.skype_in = SkypeNotifyCallback(self.bus, self.notify)
+                            self.skype_in = SkypeNotify(self.bus, self.notify)
                     except dbus.DBusException:
                         if not wait:
                             break
