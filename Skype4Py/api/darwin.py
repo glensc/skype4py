@@ -29,96 +29,42 @@ from Skype4Py.enums import *
 __all__ = ['SkypeAPI']
 
 
-class Carbon(object):
-    """Represents the Carbon.framework.
-    """
-
-    def __init__(self):
-        path = find_library('Carbon')
-        if path is None:
-            raise ImportError('Could not find Carbon.framework')
-        self.lib = cdll.LoadLibrary(path)
-        self.lib.RunCurrentEventLoop.argtypes = (c_double,)
-
-    def RunCurrentEventLoop(self, timeout=-1):
-        # timeout=-1 means forever
-        return self.lib.RunCurrentEventLoop(timeout)
-
-    def GetCurrentEventLoop(self):
-        return EventLoop(c_void_p(self.lib.GetCurrentEventLoop()))
-
-
-class EventLoop(object):
-    """Represents an EventLoop from Carbon.framework.
-
-    :see: http://developer.apple.com/documentation/Carbon/Reference/Carbon_Event_Manager_Ref/
-    """
-
-    def __init__(self, handle):
-        self.handle = handle
-
-    def quit(self):
-        carbon.lib.QuitEventLoop(self.handle)
-
-
-class CoreFoundation(object):
-    """Represents the CoreFoundation.framework.
-    """
-
-    def __init__(self):
-        path = find_library('CoreFoundation')
-        if path is None:
-            raise ImportError('Could not find CoreFoundation.framework')
-        self.lib = cdll.LoadLibrary(path)
-        self.strs = []
-
-    def CFSTR(self, s):
-        s = unicode(s)
-        for cfs in self.strs:
-            if unicode(cfs) == s:
-                return cfs
-        cfs = CFString(s)
-        self.strs.append(cfs)
-        return cfs
-
-
 class CFType(object):
     """Fundamental type for all CoreFoundation types.
 
     :see: http://developer.apple.com/documentation/CoreFoundation/Reference/CFTypeRef/
     """
 
-    def __init__(self, cast=None):
-        self.handle = None
-        self.owner = False
-        if cast is not None:
-            if isinstance(cast, CFType):
-                self.handle = cast.get_handle()
-            elif isinstance(cast, c_void_p):
-                self.handle = cast
-            elif isinstance(cast, (int, long)):
-                self.handle = c_void_p(cast)
-            else:
-                raise TypeError('illegal cast type: %s' % type(cast))
+    def __init__(self, init):
+        if isinstance(init, CFType):
+            # copy the handle and increase the use count
+            self.handle = init.get_handle()
+            coref.CFRetain(self)
+        elif isinstance(init, c_void_p):
+            self.handle = init
+        else:
+            raise TypeError('illegal init type: %s' % type(init))
 
-    def retain(self):
-        if not self.owner:
-            core.lib.CFRetain(self)
-            self.owner = True
-
-    def is_owner(self):
-        return not not self.owner
-
-    def get_handle(self):
-        return self.handle
+    @classmethod
+    def from_handle(cls, handle):
+        if isinstance(handle, (int, long)):
+            handle = c_void_p(handle)
+        return cls(handle)
 
     def __del__(self):
-        if self.owner and core:
-            core.lib.CFRelease(self)
-        self.handle = None
+        if not core:
+            return
+        if self.handle is not None:
+            coref.CFRelease(self)
 
     def __repr__(self):
         return '%s(handle=%s)' % (self.__class__.__name__, repr(self.handle))
+
+    def get_use_count(self):
+        return coref.CFGetRetainCount(self)
+
+    def get_handle(self):
+        return self.handle
 
     # allows passing CF types as ctypes function parameters
     _as_parameter_ = property(get_handle)
@@ -132,22 +78,19 @@ class CFString(CFType):
     :see: http://developer.apple.com/documentation/CoreFoundation/Reference/CFStringRef/
     """
 
-    def __init__(self, cast):
-        if isinstance(cast, (str, unicode)):
-            CFType.__init__(self)
-            s = unicode(cast).encode('utf-8')
-            self.handle = c_void_p(core.lib.CFStringCreateWithBytes(None,
-                s, len(s), 0x08000100, False))
-            self.owner = True
-        else:
-            CFType.__init__(self, cast)
+    def __init__(self, init=u''):
+        if isinstance(init, (str, unicode)):
+            s = unicode(init).encode('utf-8')
+            init = c_void_p(coref.CFStringCreateWithBytes(None,
+                                    s, len(s), 0x08000100, False))
+        CFType.__init__(self, init)
 
     def __str__(self):
-        i = core.lib.CFStringGetLength(self)
+        i = coref.CFStringGetLength(self)
         size = c_long()
-        if core.lib.CFStringGetBytes(self, 0, i, 0x08000100, 0, False, None, 0, byref(size)) > 0:
+        if coref.CFStringGetBytes(self, 0, i, 0x08000100, 0, False, None, 0, byref(size)) > 0:
             buf = create_string_buffer(size.value)
-            core.lib.CFStringGetBytes(self, 0, i, 0x08000100, 0, False, buf, size, None)
+            coref.CFStringGetBytes(self, 0, i, 0x08000100, 0, False, buf, size, None)
             return buf.value
         else:
             raise UnicodeError('CFStringGetBytes() failed')
@@ -156,7 +99,7 @@ class CFString(CFType):
         return self.__str__().decode('utf-8')
 
     def __len__(self):
-        return core.lib.CFStringGetLength(self)
+        return coref.CFStringGetLength(self)
 
     def __repr__(self):
         return 'CFString(%s)' % repr(unicode(self))
@@ -173,14 +116,14 @@ class CFNumber(CFType):
     def __init__(self, cast):
         if isinstance(cast, (int, long)):
             CFType.__init__(self)
-            self.handle = c_void_p(core.lib.CFNumberCreate(None, 3, byref(c_int(int(cast)))))
+            self.handle = c_void_p(coref.CFNumberCreate(None, 3, byref(c_int(int(cast)))))
             self.owner = True
         else:
             CFType.__init__(self, cast)
 
     def __int__(self):
         n = c_int()
-        if core.lib.CFNumberGetValue(self, 3, byref(n)):
+        if coref.CFNumberGetValue(self, 3, byref(n)):
             return n.value
         return 0
 
@@ -203,8 +146,8 @@ class CFDictionary(CFType):
             for i, (k, v) in enumerate(d.items()):
                 keys[i] = k.get_handle()
                 values[i] = v.get_handle()
-            self.handle = c_void_p(core.lib.CFDictionaryCreate(None, keys, values, len(d),
-                core.lib.kCFTypeDictionaryKeyCallBacks, core.lib.kCFTypeDictionaryValueCallBacks))
+            self.handle = c_void_p(coref.CFDictionaryCreate(None, keys, values, len(d),
+                coref.kCFTypeDictionaryKeyCallBacks, coref.kCFTypeDictionaryValueCallBacks))
             self.owner = True
         else:
             CFType.__init__(self, cast)
@@ -213,17 +156,17 @@ class CFDictionary(CFType):
         n = len(self)
         keys = (c_void_p * n)()
         values = (c_void_p * n)()
-        core.lib.CFDictionaryGetKeysAndValues(self, keys, values)
+        coref.CFDictionaryGetKeysAndValues(self, keys, values)
         d = dict()
         for i in xrange(n):
             d[core.CFType(keys[i])] = core.CFType(values[i])
         return d
 
     def __getitem__(self, key):
-        return CFType(c_void_p(core.lib.CFDictionaryGetValue(self, key)))
+        return CFType(c_void_p(coref.CFDictionaryGetValue(self, key)))
 
     def __len__(self):
-        return core.lib.CFDictionaryGetCount(self)
+        return coref.CFDictionaryGetCount(self)
 
 
 class CFDistributedNotificationCenter(CFType):
@@ -232,18 +175,18 @@ class CFDistributedNotificationCenter(CFType):
     :see: http://developer.apple.com/documentation/CoreFoundation/Reference/CFNotificationCenterRef/
     """
 
-    CFNotificationCallback = CFUNCTYPE(None, c_void_p, c_void_p, c_void_p, c_void_p, c_void_p)
+    CFNOTIFICATIONCALLBACK = CFUNCTYPE(None, c_void_p, c_void_p, c_void_p, c_void_p, c_void_p)
 
     def __init__(self):
         CFType.__init__(self)
-        self.handle = c_void_p(core.lib.CFNotificationCenterGetDistributedCenter())
+        self.handle = c_void_p(coref.CFNotificationCenterGetDistributedCenter())
         # there is only one distributed notification center per application, every
         # call to the above function returns the same object so we're not owning it
         self.owner = False
         self.callbacks = {}
-        self._callback = self.CFNotificationCallback(self._notification_callback)
+        self._c_callback = self.CFNOTIFICATIONCALLBACK(self._callback)
 
-    def _notification_callback(self, center, observer, name, obj, userInfo):
+    def _callback(self, center, observer, name, obj, userInfo):
         observer = CFString(observer)
         name = CFString(name)
         if obj:
@@ -259,9 +202,9 @@ class CFDistributedNotificationCenter(CFType):
             raise TypeError('callback must be callable')
         self.callbacks[(unicode(observer), unicode(name))] = callback
         if name is not None and not isinstance(name, CFString):
-            name = core.CFSTR(name)
+            name = CFString(name)
         if obj is not None and not isinstance(obj, CFString):
-            obj = core.CFSTR(obj)
+            obj = CFString(obj)
         if drop:
             behaviour = 1
         elif coalesce:
@@ -272,17 +215,17 @@ class CFDistributedNotificationCenter(CFType):
             behaviour = 4
         else:
             behaviour = 0
-        core.lib.CFNotificationCenterAddObserver(self, observer, self._callback,
-            name, obj, behaviour)
+        coref.CFNotificationCenterAddObserver(self, observer,
+                self._c_callback, name, obj, behaviour)
 
     def remove_observer(self, observer, name=None, obj=None):
         if not isinstance(observer, CFString):
             observer = CFString(observer)
         if name is not None and not isinstance(name, CFString):
-            name = core.CFSTR(name)
+            name = CFString(name)
         if obj is not None and not isinstance(obj, CFString):
-            obj = core.CFSTR(obj)
-        core.lib.CFNotificationCenterRemoveObserver(self, observer, name, obj)
+            obj = CFString(obj)
+        coref.CFNotificationCenterRemoveObserver(self, observer, name, obj)
         try:
             del self.callbacks[(unicode(observer), unicode(name))]
         except KeyError:
@@ -290,31 +233,40 @@ class CFDistributedNotificationCenter(CFType):
 
     def post_notification(self, name, obj=None, userInfo=None, immediate=False):
         if not isinstance(name, CFString):
-            name = core.CFSTR(name)
+            name = CFString(name)
         if obj is not None and not isinstance(obj, CFString):
-            obj = core.CFSTR(obj)
+            obj = CFString(obj)
         if userInfo is not None and not isinstance(userInfo, CFDictionary):
             userInfo = CFDictionary(userInfo)
-        core.lib.CFNotificationCenterPostNotification(self, name, obj, userInfo, immediate)
+        coref.CFNotificationCenterPostNotification(self, name, obj, userInfo, immediate)
 
 
 # create the Carbon and CoreFoundation objects
 # (only if not building the docs)
 if not getattr(sys, 'skype4py_setup', False):
-    carbon = Carbon()
-    core = CoreFoundation()
+
+    path = find_library('Carbon')
+    if path is None:
+        raise ImportError('Could not find Carbon.framework')
+    carbon = cdll.LoadLibrary(path)
+
+    path = find_library('CoreFoundation')
+    if path is None:
+        raise ImportError('Could not find CoreFoundation.framework')
+    coref = cdll.LoadLibrary(path)
 
 
 class SkypeAPI(SkypeAPIBase):
     """
     :note: Code based on Pidgin Skype Plugin source
            (http://code.google.com/p/skype4pidgin/).
-           Permission was granted by the author.
+           Permission to use granted by the author.
     """
 
     def __init__(self, opts):
         self.logger = logging.getLogger('Skype4Py.api.darwin.SkypeAPI')
         SkypeAPIBase.__init__(self)
+        run_main_loop = opts.pop('RunMainLoop', True)
         finalize_opts(opts)
         self.center = CFDistributedNotificationCenter()
         self.is_available = False
@@ -322,13 +274,13 @@ class SkypeAPI(SkypeAPIBase):
 
     def run(self):
         self.logger.info('thread started')
-        self.loop = carbon.GetCurrentEventLoop()
-        carbon.RunCurrentEventLoop()
+        self.loop = c_void_p(carbon.GetCurrentEventLoop())
+        carbon.RunCurrentEventLoop(float(-1)) # -1 means forever
         self.logger.info('thread finished')
 
     def close(self):
         if hasattr(self, 'loop'):
-            self.loop.quit()
+            carbon.QuitEventLoop(self.loop)
             self.client_id = -1
         SkypeAPIBase.close(self)
 
@@ -399,8 +351,8 @@ class SkypeAPI(SkypeAPIBase):
             command._timer = timer = threading.Timer(command.timeout2float(), self.pop_command, (command.Id,))
 
         self.logger.debug('sending %s', repr(cmd))
-        userInfo = CFDictionary({core.CFSTR('SKYPE_API_COMMAND'): CFString(cmd),
-                                 core.CFSTR('SKYPE_API_CLIENT_ID'): CFNumber(self.client_id)})
+        userInfo = CFDictionary({CFString('SKYPE_API_COMMAND'): CFString(cmd),
+                                 CFString('SKYPE_API_CLIENT_ID'): CFNumber(self.client_id)})
         self.post('SKSkypeAPICommand', userInfo)
 
         if command.Blocking:
@@ -439,10 +391,10 @@ class SkypeAPI(SkypeAPIBase):
         self.center.post_notification(name, self.observer, userInfo, immediate=True)
 
     def SKSkypeAPINotification(self, center, observer, name, obj, userInfo):
-        client_id = int(CFNumber(userInfo[core.CFSTR('SKYPE_API_CLIENT_ID')]))
+        client_id = int(CFNumber(userInfo[CFString('SKYPE_API_CLIENT_ID')]))
         if client_id != 999 and (client_id == 0 or client_id != self.client_id):
             return
-        cmd = unicode(CFString(userInfo[core.CFSTR('SKYPE_API_NOTIFICATION_STRING')]))
+        cmd = unicode(CFString(userInfo[CFString('SKYPE_API_NOTIFICATION_STRING')]))
         self.logger.debug('received %s', repr(cmd))
 
         if cmd.startswith(u'#'):
@@ -472,14 +424,14 @@ class SkypeAPI(SkypeAPIBase):
 
     def SKAvailabilityUpdate(self, center, observer, name, obj, userInfo):
         self.logger.debug('received SKAvailabilityUpdate')
-        self.is_available = not not int(CFNumber(userInfo[core.CFSTR('SKYPE_API_AVAILABILITY')]))
+        self.is_available = not not int(CFNumber(userInfo[CFString('SKYPE_API_AVAILABILITY')]))
 
     def SKSkypeAttachResponse(self, center, observer, name, obj, userInfo):
         self.logger.debug('received SKSkypeAttachResponse')
         # It seems that this notification is not called if the access is refused. Therefore we can't
         # distinguish between attach timeout and access refuse.
-        if unicode(CFString(userInfo[core.CFSTR('SKYPE_API_CLIENT_NAME')])) == self.friendly_name:
-            response = int(CFNumber(userInfo[core.CFSTR('SKYPE_API_ATTACH_RESPONSE')]))
+        if unicode(CFString(userInfo[CFString('SKYPE_API_CLIENT_NAME')])) == self.friendly_name:
+            response = int(CFNumber(userInfo[CFString('SKYPE_API_ATTACH_RESPONSE')]))
             if response and self.client_id == -1:
                 self.client_id = response
                 self.set_attachment_status(apiAttachSuccess)
