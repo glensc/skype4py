@@ -113,13 +113,10 @@ class CFNumber(CFType):
     :see: http://developer.apple.com/documentation/CoreFoundation/Reference/CFNumberRef/
     """
 
-    def __init__(self, cast):
-        if isinstance(cast, (int, long)):
-            CFType.__init__(self)
-            self.handle = c_void_p(coref.CFNumberCreate(None, 3, byref(c_int(int(cast)))))
-            self.owner = True
-        else:
-            CFType.__init__(self, cast)
+    def __init__(self, init=0):
+        if isinstance(init, (int, long)):
+            init = c_void_p(coref.CFNumberCreate(None, 3, byref(c_int(int(init)))))
+        CFType.__init__(self, init)
 
     def __int__(self):
         n = c_int()
@@ -137,20 +134,17 @@ class CFDictionary(CFType):
     :see: http://developer.apple.com/documentation/CoreFoundation/Reference/CFDictionaryRef/
     """
 
-    def __init__(self, cast):
-        if isinstance(cast, dict):
-            CFType.__init__(self)
-            d = dict(cast)
+    def __init__(self, init={}):
+        if isinstance(init, dict):
+            d = dict(init)
             keys = (c_void_p * len(d))()
             values = (c_void_p * len(d))()
             for i, (k, v) in enumerate(d.items()):
                 keys[i] = k.get_handle()
                 values[i] = v.get_handle()
-            self.handle = c_void_p(coref.CFDictionaryCreate(None, keys, values, len(d),
+            init = c_void_p(coref.CFDictionaryCreate(None, keys, values, len(d),
                 coref.kCFTypeDictionaryKeyCallBacks, coref.kCFTypeDictionaryValueCallBacks))
-            self.owner = True
-        else:
-            CFType.__init__(self, cast)
+        CFType.__init__(self, init)
 
     def get_dict(self):
         n = len(self)
@@ -178,32 +172,28 @@ class CFDistributedNotificationCenter(CFType):
     CFNOTIFICATIONCALLBACK = CFUNCTYPE(None, c_void_p, c_void_p, c_void_p, c_void_p, c_void_p)
 
     def __init__(self):
-        CFType.__init__(self)
-        self.handle = c_void_p(coref.CFNotificationCenterGetDistributedCenter())
-        # there is only one distributed notification center per application, every
-        # call to the above function returns the same object so we're not owning it
-        self.owner = False
+        CFType.__init__(self, c_void_p(coref.CFNotificationCenterGetDistributedCenter()))
+        # there is only one distributed notification center per application
         self.callbacks = {}
         self._c_callback = self.CFNOTIFICATIONCALLBACK(self._callback)
 
     def _callback(self, center, observer, name, obj, userInfo):
-        observer = CFString(observer)
-        name = CFString(name)
+        observer = CFString.from_handle(observer)
+        name = CFString.from_handle(name)
         if obj:
-            obj = CFString(obj)
+            obj = CFString.from_handle(obj)
         callback = self.callbacks[(unicode(observer), unicode(name))]
-        callback(self, observer, name, obj, CFDictionary(userInfo))
+        callback(self, observer, name, obj, CFDictionary.from_handle(userInfo))
 
     def add_observer(self, observer, callback, name=None, obj=None,
             drop=False, coalesce=False, hold=False, immediate=False):
-        if not isinstance(observer, CFString):
-            observer = CFString(observer)
         if not callable(callback):
             raise TypeError('callback must be callable')
+        observer = CFString(observer)
         self.callbacks[(unicode(observer), unicode(name))] = callback
-        if name is not None and not isinstance(name, CFString):
+        if name is not None:
             name = CFString(name)
-        if obj is not None and not isinstance(obj, CFString):
+        if obj is not None:
             obj = CFString(obj)
         if drop:
             behaviour = 1
@@ -219,11 +209,10 @@ class CFDistributedNotificationCenter(CFType):
                 self._c_callback, name, obj, behaviour)
 
     def remove_observer(self, observer, name=None, obj=None):
-        if not isinstance(observer, CFString):
-            observer = CFString(observer)
-        if name is not None and not isinstance(name, CFString):
+        observer = CFString(observer)
+        if name is not None:
             name = CFString(name)
-        if obj is not None and not isinstance(obj, CFString):
+        if obj is not None:
             obj = CFString(obj)
         coref.CFNotificationCenterRemoveObserver(self, observer, name, obj)
         try:
@@ -232,11 +221,10 @@ class CFDistributedNotificationCenter(CFType):
             pass
 
     def post_notification(self, name, obj=None, userInfo=None, immediate=False):
-        if not isinstance(name, CFString):
-            name = CFString(name)
-        if obj is not None and not isinstance(obj, CFString):
+        name = CFString(name)
+        if obj is not None:
             obj = CFString(obj)
-        if userInfo is not None and not isinstance(userInfo, CFDictionary):
+        if userInfo is not None:
             userInfo = CFDictionary(userInfo)
         coref.CFNotificationCenterPostNotification(self, name, obj, userInfo, immediate)
 
