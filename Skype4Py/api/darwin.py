@@ -52,7 +52,7 @@ class CFType(object):
         return cls(handle)
 
     def __del__(self):
-        if not core:
+        if not coref:
             return
         if self.handle is not None:
             coref.CFRelease(self)
@@ -237,6 +237,7 @@ if not getattr(sys, 'skype4py_setup', False):
     if path is None:
         raise ImportError('Could not find Carbon.framework')
     carbon = cdll.LoadLibrary(path)
+    carbon.RunCurrentEventLoop.argtypes = (c_double,)
 
     path = find_library('CoreFoundation')
     if path is None:
@@ -263,7 +264,7 @@ class SkypeAPI(SkypeAPIBase):
     def run(self):
         self.logger.info('thread started')
         self.loop = c_void_p(carbon.GetCurrentEventLoop())
-        carbon.RunCurrentEventLoop(float(-1)) # -1 means forever
+        carbon.RunCurrentEventLoop(-1) # -1 means forever
         self.logger.info('thread finished')
 
     def close(self):
