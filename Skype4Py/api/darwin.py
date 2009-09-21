@@ -36,6 +36,7 @@ class CFType(object):
     """
 
     def __init__(self, init):
+        self.owner = True
         if isinstance(init, CFType):
             # copy the handle and increase the use count
             self.handle = init.get_handle()
@@ -49,18 +50,25 @@ class CFType(object):
     def from_handle(cls, handle):
         if isinstance(handle, (int, long)):
             handle = c_void_p(handle)
-        return cls(handle)
+        obj = cls(handle)
+        obj.owner = False
+        return obj
 
     def __del__(self):
         if not coref:
             return
-        if self.handle is not None:
+        if self.owner:
             coref.CFRelease(self)
 
     def __repr__(self):
         return '%s(handle=%s)' % (self.__class__.__name__, repr(self.handle))
 
-    def get_use_count(self):
+    def retain(self):
+        if not self.owner:
+            coref.CFRetain(self)
+            self.owner = True
+
+    def get_retain_count(self):
         return coref.CFGetRetainCount(self)
 
     def get_handle(self):
