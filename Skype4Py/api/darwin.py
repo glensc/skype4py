@@ -242,13 +242,21 @@ class CFDistributedNotificationCenter(CFType):
 
 
 class EventLoop(object):
+    """Carbon event loop object for the current thread.
+    
+    The Carbon reference documentation seems to be gone from developer.apple.com, the following
+    link points to a mirror I found. I don't know how long until this one is gone too.
+    
+    :see: http://www.monen.nl/DevDoc/documentation/Carbon/Reference/Carbon_Event_Manager_Ref/index.html
+    """
+    
     def __init__(self):
         self.handle = c_void_p(carbon.GetCurrentEventLoop())
 
     @staticmethod
     def run(timeout=-1):
-        # timeout=-1 means forever
-        # returns True if aborted (eventLoopQuitErr)
+        # Timeout is expressed in seconds (float), -1 means forever.
+        # Returns True if aborted (eventLoopQuitErr).
         return (carbon.RunCurrentEventLoop(timeout) == -9876)
 
     def stop(self):
