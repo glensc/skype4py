@@ -230,9 +230,10 @@ class Skype(EventHandlingBase):
             An optional object with event handlers. See `Skype4Py.utils.EventHandlingBase`
             for more information on events.
           Options
-            Additional options for the low-level API handler. See the `Skype4Py.api`
+            Additional options for low-level API handler. See the `Skype4Py.api`
             subpackage for supported options. Available options may depend on the
-            current platform.
+            current platform. Note that the current platform can be queried using
+            `Skype4Py.platform` variable.
         """
         self._Logger = logging.getLogger('Skype4Py.skype.Skype')
         self._Logger.info('object created')

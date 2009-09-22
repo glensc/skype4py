@@ -11,13 +11,13 @@ The options include:
 
     Uses *X11* messaging through *Xlib*. This is the default if no transport is specified.
 
-    Look into `api.posix_x11` module for additional options.
+    Look into `Skype4Py.api.posix_x11` module for additional options.
 
   - ``'dbus'``
 
     Uses *DBus* thrugh *dbus-python* package (must be installed separately).
 
-    Look into `api.posix_dbus` for additional options.
+    Look into `Skype4Py.api.posix_dbus` for additional options.
 """
 __docformat__ = 'restructuredtext en'
 

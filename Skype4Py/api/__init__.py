@@ -1,15 +1,18 @@
 """
 Low-level Skype API definitions.
 
-This module imports one of the:
+This subpackage imports one of the:
 
 - `Skype4Py.api.darwin`
 - `Skype4Py.api.posix`
 - `Skype4Py.api.windows`
 
-submodules based on the current platform.
+modules based on the current platform.
 
-The submodule name is available in the `platform` variable.
+Name of the imported module in available in the `platform` variable.
+
+The modules implement the low-level Skype API and define options
+for the `Skype.__init__` constructor.
 """
 __docformat__ = 'restructuredtext en'
 
