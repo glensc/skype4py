@@ -180,6 +180,9 @@ class SkypeAPIBase(threading.Thread):
     def enable_security_context(self, context):
         self._not_implemented()
 
+    def allow_focus(self, timeout):
+        pass
+
 
 def timeout2float(timeout):
     """Converts a timeout expressed in milliseconds or seconds into a timeout expressed

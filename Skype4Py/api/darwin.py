@@ -6,7 +6,10 @@ calls through the *ctypes* module.
 This module handles the options that you can pass to
 `Skype.__init__` for *Mac OS X* machines.
 
-No further options are currently supported.
+- ``RunMainLoop`` (bool) - If set to False, Skype4Py won't start the Carbon event
+  loop. Otherwise it is started in a separate thread. The loop must be running for
+  Skype4Py events to work properly. Set this option to False if you plan to run the
+  loop yourself or if, for example, your GUI framework does it for you.
 
 Thanks to **Eion Robb** for reversing *Skype for Mac* API protocol.
 """

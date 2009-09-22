@@ -17,7 +17,8 @@ from ctypes import *
 import logging
 
 from Skype4Py.api import Command, SkypeAPIBase, \
-                         timeout2float, finalize_opts
+                         timeout2float, finalize_opts, \
+                         DEFAULT_TIMEOUT
 from Skype4Py.enums import *
 from Skype4Py.errors import SkypeAPIError
 
@@ -343,3 +344,11 @@ class SkypeAPI(SkypeAPIBase):
                     windll.user32.SetForegroundWindow(fhwnd)
         else:
             raise SkypeAPIError('Skype API error, check if Skype wasn\'t closed')
+
+    def allow_focus(self, timeout):
+        if self.skype is None:
+            self.attach(timeout)
+        process_id = c_ulong()
+        windll.user32.GetWindowThreadProcessId(self.skype, byref(process_id))
+        if process_id:
+            windll.user32.AllowSetForegroundWindow(process_id)

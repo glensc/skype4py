@@ -4,9 +4,9 @@ Low level *Skype for Linux* interface implemented using *dbus-python* package.
 This module handles the options that you can pass to `Skype.__init__`
 for Linux machines when the transport is set to *DBus*. See below.
 
-- ``RunMainLoop`` - If set to False, Skype4Py won't start the GLib main loop.
-  This loop is normally started on a separate thread to handle communication
-  with the Skype client. Set this option to False if you plan to run the
+- ``RunMainLoop`` (bool) - If set to False, Skype4Py won't start the GLib main
+  loop. Otherwise it is started in a separate thread. The loop must be running for
+  Skype4Py events to work properly. Set this option to False if you plan to run the
   loop yourself or if, for example, your GUI framework does it for you.
 
 :requires: Skype for Linux 2.0 (beta) or newer.

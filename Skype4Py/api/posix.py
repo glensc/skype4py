@@ -4,18 +4,18 @@ Low level *Skype for Linux* interface.
 This module handles the options that you can pass to `Skype.__init__` for Linux machines.
 The options include:
 
-- ``Transport`` (str) - A channel used to communicate with the Skype client.
-  Currently supported values are:
+- ``Transport`` (str) - Name of a channel used to communicate with the Skype client.
+  Currently supported values:
   
   - ``'x11'``
 
-    Uses *X11* (*Xlib*) messaging. This is the default if no transport is specified.
+    Uses *X11* messaging through *Xlib*. This is the default if no transport is specified.
 
     Look into `api.posix_x11` module for additional options.
 
   - ``'dbus'``
 
-    Uses *DBus* (*python-dbus*).
+    Uses *DBus* thrugh *dbus-python* package (must be installed separately).
 
     Look into `api.posix_dbus` for additional options.
 """

@@ -26,7 +26,7 @@ Skype4Py is a multiplatform Skype API wrapper for Python.
      
      Everything from the `Skype4Py.enums` module.
 
-     `platform`, either `'windows'`, `'posix'` or `'darwin'` depending
+     ``platform``, either ``'windows'``, ``'posix'`` or ``'darwin'`` depending
      on the current platform (Windows, Linux, Mac OS X).
      
    - Errors
@@ -102,7 +102,7 @@ from api import platform
 import logging
 
 
-__version__ = '1.0.31.1'
+__version__ = '1.0.32.0'
 """The version of Skype4Py."""
 
 

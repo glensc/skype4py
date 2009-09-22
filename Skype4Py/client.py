@@ -101,6 +101,7 @@ class Client(object):
     def Focus(self):
         """Brings the client window into focus.
         """
+        self._Skype._Api.allow_focus(self._Skype.Timeout)
         self._Skype._DoCommand('FOCUS')
 
     def Minimize(self):
@@ -156,6 +157,7 @@ class Client(object):
           Params : unicode
             One or more optional parameters.
         """
+        self._Skype._Api.allow_focus(self._Skype.Timeout)
         params = filter(None, (str(Name),) + Params)
         self._Skype._DoCommand('OPEN %s' % tounicode(' '.join(params)))
 
