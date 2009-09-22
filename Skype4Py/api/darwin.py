@@ -280,7 +280,7 @@ class SkypeAPI(SkypeAPIBase):
     def __init__(self, opts):
         self.logger = logging.getLogger('Skype4Py.api.darwin.SkypeAPI')
         SkypeAPIBase.__init__(self)
-        run_main_loop = opts.pop('RunMainLoop', True)
+        self.run_main_loop = opts.pop('RunMainLoop', True)
         finalize_opts(opts)
         self.center = CFDistributedNotificationCenter()
         self.is_available = False
@@ -288,8 +288,9 @@ class SkypeAPI(SkypeAPIBase):
 
     def run(self):
         self.logger.info('thread started')
-        self.loop = EventLoop()
-        EventLoop.run()
+        if self.run_main_loop:
+            self.loop = EventLoop()
+            EventLoop.run()
         self.logger.info('thread finished')
 
     def close(self):
@@ -324,7 +325,10 @@ class SkypeAPI(SkypeAPIBase):
                 if wait:
                     t.start()
                 while self.wait and self.attachment_status == apiAttachPendingAuthorization:
-                    time.sleep(1.0)
+                    if self.run_main_loop:
+                        time.sleep(1.0)
+                    else:
+                        EventLoop.run(1.0)
             finally:
                 t.cancel()
             if not self.wait:
@@ -370,7 +374,12 @@ class SkypeAPI(SkypeAPIBase):
         self.post('SKSkypeAPICommand', userInfo)
 
         if command.Blocking:
-            event.wait(command.timeout2float())
+            if self.run_main_loop:
+                event.wait(command.timeout2float())
+            else:
+                start = time.time()
+                while start + command.timeout2float() > time.time() and not event.isSet():
+                    EventLoop.run(1.0)
             if not event.isSet():
                 raise SkypeAPIError('Skype command timeout')
         else:
