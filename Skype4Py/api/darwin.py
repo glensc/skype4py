@@ -50,6 +50,8 @@ class CFType(object):
     def from_handle(cls, handle):
         if isinstance(handle, (int, long)):
             handle = c_void_p(handle)
+        elif not isinstance(handle, c_void_p):
+            raise TypeError('illegal handle type: %s' % type(handle))
         obj = cls(handle)
         obj.owner = False
         return obj
@@ -161,11 +163,11 @@ class CFDictionary(CFType):
         coref.CFDictionaryGetKeysAndValues(self, keys, values)
         d = dict()
         for i in xrange(n):
-            d[core.CFType(keys[i])] = core.CFType(values[i])
+            d[CFType.from_handle(keys[i])] = CFType.from_handle(values[i])
         return d
 
     def __getitem__(self, key):
-        return CFType(c_void_p(coref.CFDictionaryGetValue(self, key)))
+        return CFType.from_handle(coref.CFDictionaryGetValue(self, key))
 
     def __len__(self):
         return coref.CFDictionaryGetCount(self)
@@ -190,8 +192,9 @@ class CFDistributedNotificationCenter(CFType):
         name = CFString.from_handle(name)
         if obj:
             obj = CFString.from_handle(obj)
+        userInfo = CFDictionary.from_handle(userInfo)
         callback = self.callbacks[(unicode(observer), unicode(name))]
-        callback(self, observer, name, obj, CFDictionary.from_handle(userInfo))
+        callback(self, observer, name, obj, userInfo)
 
     def add_observer(self, observer, callback, name=None, obj=None,
             drop=False, coalesce=False, hold=False, immediate=False):
