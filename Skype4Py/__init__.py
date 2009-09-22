@@ -1,7 +1,8 @@
 """
 Skype4Py is a multiplatform Skype API wrapper for Python.
 
-1. Usage.
+Usage
+=====
 
    Everything that you should ever need is available as aliases in the ``Skype4Py`` package.
    Import it using the standard form of the ``import`` statement:
@@ -48,7 +49,8 @@ Skype4Py is a multiplatform Skype API wrapper for Python.
    needed is in the top package level because the documentation refers to all objects in the places
    they actually live.
 
-2. Quick example.
+Quick example
+=============
 
    This short example connects to Skype client and prints the user's full name and the names of all the
    contacts from the contacts list:
@@ -69,7 +71,8 @@ Skype4Py is a multiplatform Skype API wrapper for Python.
        for user in skype.Friends:
            print '    ', user.FullName
 
-3. Note on the naming convention.
+Note on the naming convention
+=============================
 
    Skype4Py uses two different naming conventions. The first one applies to interfaces derived from
    Skype4COM_, a COM library which was an inspiration for Skype4Py. This convention uses the ``CapCase``

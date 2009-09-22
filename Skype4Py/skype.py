@@ -196,7 +196,8 @@ class Skype(EventHandlingBase):
     """The main class which you have to instantiate to get access to the Skype client
     running currently in the background.
 
-    1. Usage.
+    Usage
+    =====
 
        You should access this class using the alias at the package level:
 
@@ -209,7 +210,8 @@ class Skype(EventHandlingBase):
        Read the constructor (`Skype.__init__`) documentation for a list of accepted
        arguments.
 
-    2. Events.
+    Events
+    ======
 
        This class provides events.
 

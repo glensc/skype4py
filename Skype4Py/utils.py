@@ -241,7 +241,8 @@ class EventHandlingBase(object):
 
     There are three ways of attaching an event handler to an event.
 
-    1. ``Events`` object.
+    ``Events`` object
+    =================
 
        Write your event handlers as methods of a class. The superclass of your class
        is not important for Skype4Py, it will just look for methods with appropriate names.
@@ -281,7 +282,8 @@ class EventHandlingBase(object):
        In both examples, the ``UserStatus`` method will be called when the status of the
        user currently logged into Skype is changed.
 
-    2. ``On...`` properties.
+    ``On...`` properties
+    ====================
 
        This method lets you use any callables as event handlers. Simply assign them to ``On...``
        properties (where "``...``" is the name of the event) of the object whose events you are
@@ -304,7 +306,8 @@ class EventHandlingBase(object):
        classes (see above). Note that there is no ``self`` argument (which can be seen in the events
        classes) simply because our event handler is a function, not a method.
 
-    3. ``RegisterEventHandler`` / ``UnregisterEventHandler`` methods.
+    ``RegisterEventHandler`` / ``UnregisterEventHandler`` methods
+    =============================================================
 
        This method, like the second one, also lets you use any callables as event handlers. However,
        it also lets you assign many event handlers to a single event. This may be useful if for
@@ -334,20 +337,22 @@ class EventHandlingBase(object):
        All handlers attached to a single event will be called serially in the order they were
        registered.
 
-    **Multithreading warning.**
+    Multithreading warning
+    ======================
 
-    All event handlers are called on separate threads, never on the main one. At any given time,
-    there is at most one thread per event calling your handlers. This means that when many events
-    of the same type occur at once, the handlers will be called one after another. Different events
-    will be handled simultaneously.
+       All event handlers are called on separate threads, never on the main one. At any given time,
+       there is at most one thread per event calling your handlers. This means that when many events
+       of the same type occur at once, the handlers will be called one after another. Different events
+       will be handled simultaneously.
     
-    **Cyclic references note.**
+    Cyclic references note
+    ======================
 
-    Until Skype4Py 1.0.31.1, the library used weak references to the handlers. This was removed
-    to avoid confusion and simplify/speed up the code. If cyclic references do occur, they are
-    expected to be removed by the Python's garbage collector which should always be present as
-    the library is expected to work in a relatively resource rich environment which is needed
-    by the Skype client anyway.
+       Prior to Skype4Py 1.0.32.0, the library used weak references to the handlers. This was removed
+       to avoid confusion and simplify/speed up the code. If cyclic references do occur, they are
+       expected to be removed by the Python's garbage collector which should always be present as
+       the library is expected to work in a relatively resource rich environment which is needed
+       by the Skype client anyway.
     """
     # Initialized by the _AddEvents() class method.
     _EventNames = []

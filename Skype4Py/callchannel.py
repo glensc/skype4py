@@ -15,7 +15,8 @@ class CallChannelManager(EventHandlingBase):
     """Instantiate this class to create a call channel manager. A call channel manager will
     automatically create a data channel (based on the APP2APP protocol) for voice calls.
 
-    1. Usage.
+    Usage
+    =====
 
        You should access this class using the alias at the package level:
        
@@ -31,7 +32,8 @@ class CallChannelManager(EventHandlingBase):
        Read the constructor (`CallChannelManager.__init__`) documentation for a list of
        accepted arguments.
 
-    2. Events.
+    Events
+    ======
 
        This class provides events.
 
