@@ -184,6 +184,7 @@ class CFDistributedNotificationCenter(CFType):
     def __init__(self):
         CFType.__init__(self, c_void_p(coref.CFNotificationCenterGetDistributedCenter()))
         # there is only one distributed notification center per application
+        self.owner = False
         self.callbacks = {}
         self._c_callback = self.CFNOTIFICATIONCALLBACK(self._callback)
 
@@ -240,7 +241,22 @@ class CFDistributedNotificationCenter(CFType):
         coref.CFNotificationCenterPostNotification(self, name, obj, userInfo, immediate)
 
 
-# create the Carbon and CoreFoundation objects
+class CFRunLoop(CFType):
+    def __init__(self, type='thread'):
+        if type == 'thread':
+            init = c_void_p(coref.CFRunLoopGetCurrent())
+        elif type == 'main':
+            init = c_void_p(coref.CFRunLoopGetMain())
+        else:
+            raise ValueError('unknown run loop type: %s' % type)
+        CFType.__init__(self, init)
+        self.owner = False
+
+    def stop(self):
+        coref.CFRunLoopStop(self)
+
+
+# load the Carbon and CoreFoundation frameworks
 # (only if not building the docs)
 if not getattr(sys, 'skype4py_setup', False):
 
@@ -274,13 +290,16 @@ class SkypeAPI(SkypeAPIBase):
 
     def run(self):
         self.logger.info('thread started')
-        self.loop = c_void_p(carbon.GetCurrentEventLoop())
-        carbon.RunCurrentEventLoop(-1) # -1 means forever
+        #self.loop = c_void_p(carbon.GetCurrentEventLoop())
+        #carbon.RunCurrentEventLoop(-1) # -1 means forever
+        self.loop = CFRunLoop()
+        coref.CFRunLoopRun()
         self.logger.info('thread finished')
 
     def close(self):
         if hasattr(self, 'loop'):
-            carbon.QuitEventLoop(self.loop)
+            #carbon.QuitEventLoop(self.loop)
+            self.loop.stop()
             self.client_id = -1
         SkypeAPIBase.close(self)
 
