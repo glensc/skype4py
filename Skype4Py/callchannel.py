@@ -151,12 +151,12 @@ class CallChannelManager(EventHandlingBase):
         self._Skype = None
 
     def _GetChannels(self):
-        return CallChannelCollection(self, self._Channels[:])
+        return tuple(self._Channels)
 
     Channels = property(_GetChannels,
     doc="""All call data channels.
 
-    :type: `CallChannelCollection`
+    :type: tuple of `CallChannel`
     """)
 
     def _GetChannelType(self):
@@ -236,7 +236,6 @@ CallChannelManager._AddEvents(CallChannelManagerEvents)
 class CallChannel(object):
     """Represents a call channel.
     """
-    _ValidateHandle = staticmethod(lambda x: x)
 
     def __repr__(self):
         return Cached.__repr__(self, 'Manager', 'Call', 'Stream')
@@ -293,10 +292,6 @@ class CallChannel(object):
 
     :type: `enums`.cct*
     """)
-
-
-class CallChannelCollection(CachedCollection):
-    _CachedType = CallChannel
 
 
 class CallChannelMessage(object):
