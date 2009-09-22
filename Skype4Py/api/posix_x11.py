@@ -28,6 +28,11 @@ from Skype4Py.errors import SkypeAPIError
 __all__ = ['SkypeAPI']
 
 
+# The Xlib Programming Manual:
+# ============================
+# http://tronche.com/gui/x/xlib/
+
+
 # some Xlib constants
 PropertyChangeMask = 0x400000
 PropertyNotify = 28
