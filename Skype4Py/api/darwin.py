@@ -248,7 +248,8 @@ class EventLoop(object):
     @staticmethod
     def run(timeout=-1):
         # timeout=-1 means forever
-        carbon.RunCurrentEventLoop(timeout)
+        # returns True if aborted (eventLoopQuitErr)
+        return (carbon.RunCurrentEventLoop(timeout) == -9876)
 
     def stop(self):
         carbon.QuitEventLoop(self.handle)
@@ -364,7 +365,10 @@ class SkypeAPI(SkypeAPIBase):
         self.notifier.sending_command(command)
         cmd = u'#%d %s' % (command.Id, command.Command)
         if command.Blocking:
-            command._event = event = threading.Event()
+            if self.run_main_loop:
+                command._event = event = threading.Event()
+            else:
+                command._loop = EventLoop()
         else:
             command._timer = timer = threading.Timer(command.timeout2float(), self.pop_command, (command.Id,))
 
@@ -376,12 +380,11 @@ class SkypeAPI(SkypeAPIBase):
         if command.Blocking:
             if self.run_main_loop:
                 event.wait(command.timeout2float())
+                if not event.isSet():
+                    raise SkypeAPIError('Skype command timeout')
             else:
-                start = time.time()
-                while start + command.timeout2float() > time.time() and not event.isSet():
-                    EventLoop.run(1.0)
-            if not event.isSet():
-                raise SkypeAPIError('Skype command timeout')
+                if not EventLoop.run(command.timeout2float()):
+                    raise SkypeAPIError('Skype command timeout')
         else:
             timer.start()
 
@@ -426,8 +429,12 @@ class SkypeAPI(SkypeAPIBase):
             if command is not None:
                 command.Reply = cmd[p + 1:]
                 if command.Blocking:
-                    command._event.set()
-                    del command._event
+                    if self.run_main_loop:
+                        command._event.set()
+                        del command._event
+                    else:
+                        command._loop.stop()
+                        del command._loop
                 else:
                     command._timer.cancel()
                     del command._timer
