@@ -201,6 +201,8 @@ class SkypeAPI(SkypeAPIBase):
             result = self.skype_out.Invoke(cmd)
         except dbus.DBusException, err:
             raise SkypeAPIError(str(err))
+        if not result:
+            raise SkypeAPIError('Empty Skype response')
         if result.startswith(u'#%d ' % command.Id):
             self.notify(result)
         if command.Blocking:
@@ -211,6 +213,7 @@ class SkypeAPI(SkypeAPIBase):
             timer.start()
 
     def notify(self, cmd):
+        cmd = unicode(cmd)
         self.logger.debug('received %s', repr(cmd))
         if cmd.startswith(u'#'):
             p = cmd.find(u' ')
