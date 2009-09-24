@@ -233,7 +233,7 @@ class SkypeAPI(SkypeAPIBase):
         self.loop_break = False
 
     def __del__(self):
-        if hasattr(self, 'x11'):
+        if x11:
             if hasattr(self, 'disp'):
                 if hasattr(self, 'win_self'):
                     x11.XDestroyWindow(self.disp, self.win_self)
@@ -251,7 +251,7 @@ class SkypeAPI(SkypeAPIBase):
         # main loop
         event = XEvent()
         data = ''
-        while not self.loop_break:
+        while not self.loop_break and x11:
             x11.XLockDisplay(self.disp)
             got_event = x11.XCheckIfEvent(self.disp, byref(event), PREDICATE(self.event_predicate), None)
             x11.XUnlockDisplay(self.disp)

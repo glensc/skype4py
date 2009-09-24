@@ -1,0 +1,484 @@
+Most important changes in Skype4Py 1.0.32.0 release
+===================================================
+
+*
+*
+*
+
+SVN commits made between Skype4Py 1.0.31.0 and 1.0.32.0 releases
+================================================================
+
+2009-09-22 23:59  awahlig
+
+	* /Skype4Py/api/__init__.py, /Skype4Py/api/posix.py,
+	  /Skype4Py/skype.py: Some docstrings improved.
+
+2009-09-22 23:46  awahlig
+
+	* /Skype4Py/__init__.py, /Skype4Py/callchannel.py,
+	  /Skype4Py/skype.py, /Skype4Py/utils.py: Slightly changed
+	  docstrings to fix issues with LaTeX.
+
+2009-09-22 22:43  awahlig
+
+	* /Skype4Py/callchannel.py: Removed CallChannelCollection type as
+	  CallChannels aren't Cached objects (and Collections are only for
+	  Cached objects).
+
+2009-09-22 16:10  awahlig
+
+	* /Skype4Py/api/posix_x11.py: Added link to the Xlib manual.
+
+2009-09-22 12:43  awahlig
+
+	* /Skype4Py/__init__.py, /Skype4Py/api/__init__.py,
+	  /Skype4Py/api/darwin.py, /Skype4Py/api/posix.py,
+	  /Skype4Py/api/posix_dbus.py, /Skype4Py/api/windows.py,
+	  /Skype4Py/client.py: Ported changes from Skype4COM 1.0.32.
+	  Bumped version to 1.0.32.0.
+	  Updated docstrings.
+
+2009-09-22 02:29  awahlig
+
+	* /Skype4Py/api/darwin.py: Revised darwin transport tested.
+
+2009-09-22 02:05  awahlig
+
+	* /Skype4Py/api/darwin.py: Darwin WIP.
+
+2009-09-22 01:45  awahlig
+
+	* /Skype4Py/api/darwin.py: Darwin WIP.
+
+2009-09-22 01:35  awahlig
+
+	* /Skype4Py/api/darwin.py: Darwin WIP.
+
+2009-09-22 01:14  awahlig
+
+	* /Skype4Py/api/darwin.py: Darwin WIP.
+
+2009-09-22 00:12  awahlig
+
+	* /Skype4Py/api/darwin.py: Darwin WIP.
+
+2009-09-21 23:03  awahlig
+
+	* /Skype4Py/api/darwin.py: Darwin WIP.
+
+2009-09-21 22:47  awahlig
+
+	* /Skype4Py/api/darwin.py: Darwin WIP.
+
+2009-09-21 22:40  awahlig
+
+	* /Skype4Py/api/darwin.py: Darwin WIP.
+
+2009-09-21 22:30  awahlig
+
+	* /Skype4Py/api/darwin.py: Darwin WIP.
+
+2009-09-18 14:22  awahlig
+
+	* /Skype4Py/api/posix_dbus.py: Revised dbus transport tested and
+	  fixed.
+
+2009-09-18 14:13  awahlig
+
+	* /Skype4Py/api/posix_dbus.py: Revised dbus transport, untested.
+	  Simplified options to "RunMainLoop" only. Similar change will be
+	  made to darwin api if I manage to implement it after catching
+	  Philipp and getting access to his Mac again.
+
+2009-09-17 21:42  awahlig
+
+	* /Skype4Py/__init__.py: Exposed Skype4Py.api.platform as
+	  Skype4Py.platform.
+
+2009-09-17 15:19  awahlig
+
+	* /Skype4Py/__init__.py, /Skype4Py/api/__init__.py,
+	  /Skype4Py/api/darwin.py, /Skype4Py/api/posix.py,
+	  /Skype4Py/api/posix_dbus.py, /Skype4Py/api/posix_x11.py,
+	  /Skype4Py/api/windows.py, /Skype4Py/application.py,
+	  /Skype4Py/call.py, /Skype4Py/callchannel.py, /Skype4Py/chat.py,
+	  /Skype4Py/client.py, /Skype4Py/conversion.py, /Skype4Py/enums.py,
+	  /Skype4Py/errors.py, /Skype4Py/filetransfer.py,
+	  /Skype4Py/lang/__init__.py, /Skype4Py/profile.py,
+	  /Skype4Py/settings.py, /Skype4Py/skype.py, /Skype4Py/sms.py,
+	  /Skype4Py/user.py, /Skype4Py/utils.py, /Skype4Py/voicemail.py,
+	  /examples/SkypeTunnel.py, /examples/SkypeUsers.py, /setup.py:
+	  Changed triple-single-quotes to triple-double-quotes, as Python
+	  style guidelines suggest.
+
+2009-09-17 15:01  awahlig
+
+	* /Skype4Py/api/posix_x11.py: Posix/X11 XGetAtomName() memory leak
+	  fixed.
+
+2009-09-17 14:53  awahlig
+
+	* /Skype4Py/api/posix_x11.py: Posix/X11 event loop WIP.
+
+2009-09-17 14:43  awahlig
+
+	* /Skype4Py/api/posix_x11.py: Posix/X11 event loop WIP.
+
+2009-09-17 14:30  awahlig
+
+	* /Skype4Py/api/posix_x11.py: Posix/X11 event loop WIP.
+
+2009-09-17 14:02  awahlig
+
+	* /Skype4Py/api/posix_x11.py: Typo fixed.
+
+2009-09-17 13:56  awahlig
+
+	* /Skype4Py/api/__init__.py, /Skype4Py/api/posix_x11.py:
+	  Skype4Py.api.platform variable added.
+	  Posix/X11 switch from XNextEvent to XIfEvent (untested).
+
+2009-09-09 13:24  awahlig
+
+	* /Skype4Py/utils.py: args2dict() didn't cut out the ", " from the
+	  input string.
+
+2009-09-09 12:41  awahlig
+
+	* /Skype4Py/api/darwin.py: Bugfixing in progress...
+
+2009-09-09 12:05  awahlig
+
+	* /Skype4Py/api/darwin.py: Bugfixing in progress...
+
+2009-09-09 02:31  awahlig
+
+	* /unittests/voicemailtest.py: Finished Skype4Py.voicemail module
+	  unittests.
+
+2009-09-09 02:20  awahlig
+
+	* /Skype4Py/user.py, /unittests/usertest.py: Finished Skype4Py.user
+	  module unittests.
+
+2009-09-09 01:52  awahlig
+
+	* /Skype4Py/chat.py, /Skype4Py/sms.py, /unittests/settingstest.py,
+	  /unittests/smstest.py: Finished Skype4Py.sms module unittests.
+
+2009-09-09 00:13  awahlig
+
+	* /Skype4Py/settings.py, /unittests/settingstest.py: Finished
+	  Skype4Py.settings module unittests.
+
+2009-09-08 23:52  awahlig
+
+	* /unittests/profiletest.py: Finished Skype4Py.profile module
+	  unittests.
+
+2009-09-08 18:12  awahlig
+
+	* /Skype4Py/filetransfer.py, /unittests/filetransfertest.py:
+	  Finished Skype4Py.filetransfer module unittests.
+
+2009-09-08 17:58  awahlig
+
+	* /Skype4Py/client.py, /unittests/clienttest.py: Finished
+	  Skype4Py.client module unittests.
+
+2009-09-08 17:02  awahlig
+
+	* /Skype4Py/chat.py, /unittests/chattest.py: Finished Skype4Py.chat
+	  module unittests.
+
+2009-09-08 15:36  awahlig
+
+	* /Skype4Py/call.py, /unittests/calltest.py,
+	  /unittests/skype4pytest.py: Finished Skype4Py.call module
+	  unittests.
+
+2009-07-27 23:05  awahlig
+
+	* /Skype4Py/api/darwin.py, /Skype4Py/api/posix_dbus.py,
+	  /Skype4Py/api/posix_x11.py, /Skype4Py/api/windows.py: Protocol
+	  set during attach is now reset to the actual value returned by
+	  the client.
+
+2009-07-27 22:51  awahlig
+
+	* /Skype4Py/enums.py: Fixed enums.clsRemoteHold value.
+
+2009-07-27 22:30  awahlig
+
+	* /Skype4Py/application.py, /Skype4Py/call.py,
+	  /Skype4Py/callchannel.py, /Skype4Py/utils.py,
+	  /Skype4Py/voicemail.py: Call and voicemail device methods support
+	  simultaneously set devices correctly.
+	  Minor bugs fixed.
+
+2009-07-06 23:42  awahlig
+
+	* /Skype4Py/application.py, /unittests/applicationtest.py:
+	  Skype4Py.application module unittest added. Detected bugs fixed.
+
+2009-07-06 14:22  awahlig
+
+	* /Skype4Py/api/__init__.py, /Skype4Py/chat.py, /Skype4Py/skype.py,
+	  /examples, /examples/SkypeBot.py, /examples/SkypeTunnel.py,
+	  /examples/SkypeUsers.py, /examples/app2app_client.py,
+	  /examples/app2app_server.py, /examples/callfriend.py,
+	  /examples/py2exe, /examples/py2exe/main.py,
+	  /examples/py2exe/setup.py, /examples/record.py,
+	  /examples/search.py, /examples/sms.py, /examples/smss.py,
+	  /examples/voicemail.py, /unittests, /unittests/skype4pytest.py,
+	  /unittests/skypetest.py: First part of the unittests suite
+	  (unittests directory) added.
+	  Small bugs fixed (detected by the unittests).
+	  Some old examples added to the repository.
+
+2009-06-15 10:38  awahlig
+
+	* /Skype4Py/api/darwin.py, /Skype4Py/api/posix_dbus.py,
+	  /Skype4Py/api/posix_x11.py, /Skype4Py/api/windows.py: self.cf ->
+	  core replace in api.darwin broken a piece of code in
+	  CoreFoundation class.
+
+2009-06-14 23:40  awahlig
+
+	* /Skype4Py/api/darwin.py: FriendlyName -> friendly_name in
+	  api.darwin, missed during the naming convention cleanup.
+
+2009-06-14 14:01  awahlig
+
+	* /Skype4Py/client.py: Client.IsRunning, Client.Start fixed.
+
+2009-06-14 01:19  awahlig
+
+	* /Skype4Py/api/__init__.py, /Skype4Py/api/darwin.py,
+	  /Skype4Py/api/posix_dbus.py, /Skype4Py/api/posix_x11.py,
+	  /Skype4Py/api/windows.py, /Skype4Py/call.py,
+	  /Skype4Py/callchannel.py, /Skype4Py/chat.py, /Skype4Py/skype.py,
+	  /Skype4Py/user.py, /Skype4Py/utils.py: Preparations for
+	  unittest's custom SkypeAPI object.
+	  Fixed SPY-21.
+
+2009-05-29 17:30  awahlig
+
+	* /Skype4Py/api/darwin.py, /Skype4Py/api/posix_dbus.py,
+	  /Skype4Py/api/posix_x11.py, /Skype4Py/api/windows.py: Fixed a
+	  multithreading lockup caused by sending of a blocking command
+	  while the API thread lock was acquired.
+
+2009-05-26 00:02  awahlig
+
+	* /Skype4Py/call.py, /Skype4Py/skype.py: GroupUsers event changed
+	  to only give the number of users in parameters. Obtaining the
+	  full users collection is tricky before the event is called and
+	  would cost some time even when not needed. The collection can
+	  still easily be accessed using the Group object property.
+	  Call object property TargetIdentity was misspelled as
+	  TargetIdentify and didn't work. This was found out by the
+	  unittests that are slowly being created (at least some of them
+	  should be commited shortly).
+
+2009-05-25 12:29  awahlig
+
+	* /Skype4Py/__init__.py, /Skype4Py/api/__init__.py,
+	  /Skype4Py/api/darwin.py, /Skype4Py/api/posix_dbus.py,
+	  /Skype4Py/api/posix_x11.py, /Skype4Py/api/windows.py,
+	  /Skype4Py/application.py, /Skype4Py/call.py,
+	  /Skype4Py/callchannel.py, /Skype4Py/chat.py,
+	  /Skype4Py/filetransfer.py, /Skype4Py/skype.py, /Skype4Py/sms.py,
+	  /Skype4Py/user.py, /Skype4Py/utils.py, /Skype4Py/voicemail.py:
+	  Scrap the last callchannel commit. CallChannel class uses Cached
+	  as base anyway. The state is kept in the owner - the
+	  CallChannelManager.
+	  Own debugging code replaced with logging module.
+	  Skype.ApiDebugLevel property removed.
+	  Other debug messages added, in EventHandlingBase for example.
+	  Address removed from Cached objects repr.
+	  GroupUsers event is not actually called.
+	  EventHandlingBase actually calls the events object (accidently
+	  removed lately).
+	  CachedCollection.sort tested and fixed.
+	  Skype.APINotifier protected against ReferenceError.
+
+2009-05-24 11:57  awahlig
+
+	* /Skype4Py/api/__init__.py, /Skype4Py/api/darwin.py,
+	  /Skype4Py/api/posix_dbus.py, /Skype4Py/api/posix_x11.py,
+	  /Skype4Py/api/windows.py, /Skype4Py/callchannel.py,
+	  /Skype4Py/client.py, /Skype4Py/skype.py, /Skype4Py/utils.py:
+	  Event handlers are stored using strong references.
+	  API callback mechanism improved, uses SkypeAPINotifier objects.
+	  CallChannelCollection added, it isn't based on CachedCollection
+	  since call channels
+	  aren't based on Cached. This is because Cached is meant for
+	  objects that store their
+	  state in the owner which ends up in Skype client. Call channels
+	  however are built
+	  on top of other functionalities like calls and application
+	  streams and keep their
+	  state directly in the CallChannel instances.
+	  CallChannelCollection is therefore
+	  a list with a collection interface.
+
+2009-05-23 07:32  awahlig
+
+	* /Skype4Py/__init__.py, /Skype4Py/application.py,
+	  /Skype4Py/call.py, /Skype4Py/callchannel.py, /Skype4Py/chat.py,
+	  /Skype4Py/client.py, /Skype4Py/filetransfer.py,
+	  /Skype4Py/profile.py, /Skype4Py/skype.py, /Skype4Py/sms.py,
+	  /Skype4Py/user.py, /Skype4Py/utils.py, /Skype4Py/voicemail.py:
+	  tuples of objects and lately introduced generators replaced by
+	  Collection objects.
+
+2009-05-22 09:08  awahlig
+
+	* /Skype4Py/utils.py: Improved error handing in Cached.__new__.
+
+2009-05-22 00:02  awahlig
+
+	* /Skype4Py/api/__init__.py, /Skype4Py/api/darwin.py,
+	  /Skype4Py/api/posix_dbus.py, /Skype4Py/api/posix_x11.py,
+	  /Skype4Py/api/windows.py, /Skype4Py/application.py,
+	  /Skype4Py/call.py, /Skype4Py/chat.py, /Skype4Py/client.py,
+	  /Skype4Py/filetransfer.py, /Skype4Py/skype.py, /Skype4Py/sms.py,
+	  /Skype4Py/user.py, /Skype4Py/utils.py, /Skype4Py/voicemail.py:
+	  The Id argument of Command.__init__ moved to back, it is almost
+	  never used in Skype4Py due to the automatic command ID assignment
+	  (when Id == -1).
+	  Classes based off of Cached were improved. Now they can have
+	  different owners with the root one being the Skype object
+	  instance. This protects from conflicts if more than one Skype
+	  object is used and allowed to remove the tuple handles of
+	  SmsTarget objects and such.
+
+2009-05-21 13:36  awahlig
+
+	* /Skype4Py/__init__.py, /Skype4Py/api/__init__.py,
+	  /Skype4Py/api/darwin.py, /Skype4Py/api/posix.py,
+	  /Skype4Py/api/posix_dbus.py, /Skype4Py/api/posix_x11.py,
+	  /Skype4Py/api/windows.py, /Skype4Py/application.py,
+	  /Skype4Py/call.py, /Skype4Py/callchannel.py, /Skype4Py/chat.py,
+	  /Skype4Py/client.py, /Skype4Py/conversion.py, /Skype4Py/enums.py,
+	  /Skype4Py/errors.py, /Skype4Py/filetransfer.py,
+	  /Skype4Py/profile.py, /Skype4Py/settings.py, /Skype4Py/skype.py,
+	  /Skype4Py/sms.py, /Skype4Py/user.py, /Skype4Py/utils.py,
+	  /Skype4Py/voicemail.py, /setup.py: Docstrings use
+	  reStructuredText instead of epytext format now (the documentation
+	  is still generated using epydoc, nothing changes here).
+	  Crosslinking between objects in documentation now always use the
+	  shortest possible form providing uniquity.
+	  Skype4Py.api.windows module is back in the doc index (seems it
+	  was gone after upgrading epydoc).
+
+2009-05-21 13:31  awahlig
+
+	* /doc/epydoc.conf: Enabled printing of trackbacks for epydoc.
+
+2009-05-19 17:29  awahlig
+
+	* /Skype4Py/api/posix_x11.py, /Skype4Py/skype.py, /setup.py:
+	  setup.py further fixed to support new submodules.
+	  skype and api.posix_x11 modules lately introduces typos fixed.
+
+2009-05-19 16:32  awahlig
+
+	* /LICENSE, /MANIFEST.in, /Skype4Py/LICENSE, /Skype4Py/__init__.py,
+	  /Skype4Py/skype.py, /Skype4Py/utils.py, /setup.py: MacOS added to
+	  supported platforms in setup.py.
+	  setup.py fixed to install new submodules instead of trying the
+	  old ones.
+	  Version reverted to 1.0.31.1 (I somehow thought .1 was out, a new
+	  release is *strongly* overdue).
+	  LICENSE file moved inside the package and added to package data
+	  so that it is installed with Skype4Py.
+
+2009-05-19 14:35  awahlig
+
+	* /LICENSE, /MANIFEST.in, /doc/epydoc.conf: Updated epydoc.conf to
+	  exclude the new lang subpackage.
+	  Updated MANIFEST.in to include the new lang subpackage.
+	  Updated LICENSE to year 2009.
+
+2009-05-19 14:29  awahlig
+
+	* /Skype4Py/__init__.py, /Skype4Py/api, /Skype4Py/api/__init__.py,
+	  /Skype4Py/api/darwin.py, /Skype4Py/api/posix.py,
+	  /Skype4Py/api/posix_dbus.py, /Skype4Py/api/posix_x11.py,
+	  /Skype4Py/api/windows.py, /Skype4Py/application.py,
+	  /Skype4Py/call.py, /Skype4Py/callchannel.py, /Skype4Py/chat.py,
+	  /Skype4Py/client.py, /Skype4Py/conversion.py, /Skype4Py/enums.py,
+	  /Skype4Py/filetransfer.py, /Skype4Py/lang,
+	  /Skype4Py/lang/__init__.py, /Skype4Py/lang/ar.py,
+	  /Skype4Py/lang/bg.py, /Skype4Py/lang/cs.py, /Skype4Py/lang/cz.py,
+	  /Skype4Py/lang/da.py, /Skype4Py/lang/de.py, /Skype4Py/lang/el.py,
+	  /Skype4Py/lang/en.py, /Skype4Py/lang/es.py, /Skype4Py/lang/et.py,
+	  /Skype4Py/lang/fi.py, /Skype4Py/lang/fr.py, /Skype4Py/lang/he.py,
+	  /Skype4Py/lang/hu.py, /Skype4Py/lang/it.py, /Skype4Py/lang/ja.py,
+	  /Skype4Py/lang/ko.py, /Skype4Py/lang/lt.py, /Skype4Py/lang/lv.py,
+	  /Skype4Py/lang/nl.py, /Skype4Py/lang/no.py, /Skype4Py/lang/pl.py,
+	  /Skype4Py/lang/pp.py, /Skype4Py/lang/pt.py, /Skype4Py/lang/ro.py,
+	  /Skype4Py/lang/ru.py, /Skype4Py/lang/sv.py, /Skype4Py/lang/tr.py,
+	  /Skype4Py/lang/x1.py, /Skype4Py/profile.py,
+	  /Skype4Py/settings.py, /Skype4Py/skype.py, /Skype4Py/sms.py,
+	  /Skype4Py/user.py, /Skype4Py/utils.py: Code cleanup.
+	  Naming conventions clarified (see comments in
+	  Skype4Py/__init__.py).
+	  An option to return generator objects instead of tuples added.
+	  Skype.FriendlyName is now readable.
+
+2009-05-19 13:58  awahlig
+
+	* /Skype4Py/API, /Skype4Py/Languages: Deleted renamed subpackages.
+
+2009-05-16 22:47  awahlig
+
+	* /Skype4Py/API/__init__.py, /Skype4Py/API/darwin.py,
+	  /Skype4Py/API/faked_dbus.py, /Skype4Py/API/posix.py,
+	  /Skype4Py/API/posix_dbus.py, /Skype4Py/API/posix_x11.py,
+	  /Skype4Py/API/windows.py, /Skype4Py/__init__.py,
+	  /Skype4Py/application.py, /Skype4Py/call.py,
+	  /Skype4Py/callchannel.py, /Skype4Py/chat.py, /Skype4Py/client.py,
+	  /Skype4Py/conversion.py, /Skype4Py/errors.py,
+	  /Skype4Py/filetransfer.py, /Skype4Py/profile.py,
+	  /Skype4Py/settings.py, /Skype4Py/skype.py, /Skype4Py/sms.py,
+	  /Skype4Py/user.py, /Skype4Py/utils.py, /Skype4Py/voicemail.py,
+	  /doc/epydoc.conf, /setup.py: Class naming convention changed:
+	  letter "I" was removed.
+	  SkypeAPIBase and SkypeAPI classes from the API package no longer
+	  have a leading underscore.
+	  Cython command removed from setup.py.
+	  epydoc building improved.
+
+2009-05-16 00:08  awahlig
+
+	* /Skype4Py/API/__init__.py, /Skype4Py/API/darwin.py,
+	  /Skype4Py/API/posix_dbus.py, /Skype4Py/API/posix_x11.py,
+	  /Skype4Py/Languages/__init__.py, /Skype4Py/__init__.py,
+	  /Skype4Py/application.py, /Skype4Py/call.py,
+	  /Skype4Py/callchannel.py, /Skype4Py/chat.py, /Skype4Py/client.py,
+	  /Skype4Py/conversion.py, /Skype4Py/filetransfer.py,
+	  /Skype4Py/profile.py, /Skype4Py/settings.py, /Skype4Py/skype.py,
+	  /Skype4Py/sms.py, /Skype4Py/user.py, /Skype4Py/utils.py,
+	  /Skype4Py/voicemail.py: String policy changed.
+	  1. Skype4Py now uses unicode only where it is needed. For
+	  example: Skypenames are plain strings, chat message bodies remain
+	  unicode.
+	  2. If Skype4Py expects unicode and a str is passed, it is decoded
+	  using utf8 codec.
+
+2009-04-30 19:49  awahlig
+
+	* /Skype4Py/API/posix.py, /Skype4Py/API/posix_x11.py,
+	  /Skype4Py/__init__.py: X11 library is now initialized while
+	  Skype4Py package is imported. This is needed to make Skype4Py
+	  work with GTK without SegFaults, however, Skype4Py *HAS* to be
+	  imported before GTK.
+	  The custom X11 error handler has been removed. This made the
+	  error reports more descriptive.
+
+2009-01-04 22:32  awahlig
+
+	* /Skype4Py/call.py: ICall.DTMF fixed (patch provided by Philipp).

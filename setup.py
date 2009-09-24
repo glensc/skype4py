@@ -26,7 +26,7 @@ if path:
 sys.skype4py_setup = True
 
 
-# Import Skype4Py version from the uninstalled package.
+# Import Skype4Py version from the distribution package.
 from Skype4Py import __version__
 
 
