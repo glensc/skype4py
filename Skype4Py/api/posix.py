@@ -7,17 +7,18 @@ The options include:
 - ``Transport`` (str) - Name of a channel used to communicate with the Skype client.
   Currently supported values:
   
-  - ``'x11'``
+  - ``'dbus'`` (default)
 
-    Uses *X11* messaging through *Xlib*. This is the default if no transport is specified.
-
-    Look into `Skype4Py.api.posix_x11` module for additional options.
-
-  - ``'dbus'``
-
-    Uses *DBus* thrugh *dbus-python* package (must be installed separately).
+    Uses *DBus* thrugh *dbus-python* package.
+    This is the default if no transport is specified.
 
     Look into `Skype4Py.api.posix_dbus` for additional options.
+
+  - ``'x11'``
+
+    Uses *X11* messaging through *Xlib*.
+
+    Look into `Skype4Py.api.posix_x11` module for additional options.
 """
 __docformat__ = 'restructuredtext en'
 
