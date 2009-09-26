@@ -1,5 +1,10 @@
 2009-09-26  awahlig
 
+	* [r280] /MANIFEST.in: ChangeLog is now included in the
+	  distribution.
+	* [r279] /ChangeLog, /README: Wrote README (what's new) for the
+	  1.0.32.0 release.
+	  ChangeLog file (simple SVN log dump) added.
 	* [r278] /Skype4Py/api/posix.py: Changed the docstring to reflect
 	  the default transport change.
 	* [r277] /README, /Skype4Py/api/darwin.py, /Skype4Py/api/posix.py,
@@ -370,3 +375,4 @@
 
 	* [r211] /Skype4Py/call.py: ICall.DTMF fixed (patch provided by
 	  Philipp).
+
