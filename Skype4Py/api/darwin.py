@@ -442,13 +442,10 @@ class SkypeAPI(SkypeAPIBase):
                 if command.Blocking:
                     if self.run_main_loop:
                         command._event.set()
-                        del command._event
                     else:
                         command._loop.stop()
-                        del command._loop
                 else:
                     command._timer.cancel()
-                    del command._timer
                 self.notifier.reply_received(command)
             else:
                 self.notifier.notification_received(cmd[p + 1:])

@@ -6,6 +6,28 @@ This module handles the options that you can pass to `Skype.__init__`
 for Linux machines when the transport is set to *X11*.
 
 No further options are currently supported.
+
+Warning PyGTK framework users
+=============================
+
+The multithreaded architecture of Skype4Py requires a special treatment
+if the Xlib transport is combined with PyGTK GUI framework.
+
+The following code has to be called at the top of your script, before
+PyGTK is even imported.
+
+.. python::
+
+    from Skype4Py.api.posix_x11 import threads_init
+    threads_init()
+
+This function enables multithreading support in Xlib and GDK. If not done
+here, this is enabled for Xlib library when the `Skype` object is instantiated.
+If your script imports the PyGTK module, doing this so late may lead to a
+segmentation fault when the GUI is shown on the screen.
+
+A remedy is to enable the multithreading support before PyGTK is imported
+by calling the ``threads_init`` function.
 """
 __docformat__ = 'restructuredtext en'
 
@@ -25,7 +47,7 @@ from Skype4Py.enums import *
 from Skype4Py.errors import SkypeAPIError
 
 
-__all__ = ['SkypeAPI']
+__all__ = ['SkypeAPI', 'threads_init']
 
 
 # The Xlib Programming Manual:
@@ -140,9 +162,6 @@ class XEvent(Union):
 
 XEventP = POINTER(XEvent)
 
-# predicate function prototype for XIfEvent()
-PREDICATE = CFUNCTYPE(Bool, DisplayP, XEventP, c_void_p)
-
 
 if getattr(sys, 'skype4py_setup', False):
     # we get here if we're building docs; to let the module import without
@@ -165,8 +184,6 @@ else:
 
 
 # setup Xlib function prototypes
-x11.XCheckIfEvent.argtype = (DisplayP, XEventP, POINTER(PREDICATE), c_void_p)
-x11.XCheckIfEvent.restype = Bool
 x11.XCloseDisplay.argtypes = (DisplayP,)
 x11.XCloseDisplay.restype = None
 x11.XCreateSimpleWindow.argtypes = (DisplayP, Window, c_int, c_int, c_uint,
@@ -191,6 +208,8 @@ x11.XInitThreads.argtypes = ()
 x11.XInitThreads.restype = Status
 x11.XInternAtom.argtypes = (DisplayP, c_char_p, Bool)
 x11.XInternAtom.restype = Atom
+x11.XNextEvent.argtypes = (DisplayP, XEventP)
+x11.XNextEvent.restype = None
 x11.XOpenDisplay.argtypes = (c_char_p,)
 x11.XOpenDisplay.restype = DisplayP
 x11.XPending.argtypes = (DisplayP,)
@@ -205,8 +224,19 @@ x11.XUnlockDisplay.argtypes = (DisplayP,)
 x11.XUnlockDisplay.restype = None
 
 
-# Enable X11 multithreading
-x11.XInitThreads()
+def threads_init(gtk=True):
+    """Enables multithreading support in Xlib and PyGTK.
+    See the module docstring for more info.
+    
+    :Parameters:
+      gtk : bool
+        May be set to False to skip the PyGTK module.
+    """
+    # enable X11 multithreading
+    x11.XInitThreads()
+    if gtk:
+        from gtk.gdk import threads_init
+        threads_init()
 
 
 class SkypeAPI(SkypeAPIBase):
@@ -214,6 +244,9 @@ class SkypeAPI(SkypeAPIBase):
         self.logger = logging.getLogger('Skype4Py.api.posix_x11.SkypeAPI')
         SkypeAPIBase.__init__(self)
         finalize_opts(opts)
+        
+        # initialize threads if not done already by the user
+        threads_init(gtk=False)
 
         # init Xlib display
         self.disp = x11.XOpenDisplay(None)
@@ -239,59 +272,52 @@ class SkypeAPI(SkypeAPIBase):
                     x11.XDestroyWindow(self.disp, self.win_self)
                 x11.XCloseDisplay(self.disp)
 
-    def event_predicate(self, display, eventp, arg):
-        event = eventp.contents
-        return ((event.type == ClientMessage and event.xclient.window == self.win_skype and
-                event.xclient.format == 8 and event.xclient.message_type in (self.atom_msg_begin,
-                self.atom_msg)) or (event.type == PropertyNotify and event.xproperty.window ==
-                self.win_root))
-
     def run(self):
         self.logger.info('thread started')
         # main loop
         event = XEvent()
         data = ''
         while not self.loop_break and x11:
-            x11.XLockDisplay(self.disp)
-            got_event = x11.XCheckIfEvent(self.disp, byref(event), PREDICATE(self.event_predicate), None)
-            x11.XUnlockDisplay(self.disp)
-            if not got_event:
-                self.loop_event.wait(self.loop_timeout)
-                if self.loop_event.isSet():
-                    self.loop_timeout = 0.0001
-                elif self.loop_timeout < 1.0:
-                    self.loop_timeout *= 2
-                self.loop_event.clear()
-                continue
-            self.loop_timeout = 0.0001
-            # events we get here are already prefiltered by the predicate function
-            if event.type == ClientMessage:
-                if event.xclient.message_type == self.atom_msg_begin:
-                    data = str(event.xclient.data)
-                else: # event.xclient.message_type == self.atom_msg
-                    if data != '':
-                        data += str(event.xclient.data)
-                    else:
-                        self.logger.warning('Middle of Skype X11 message received with no beginning!')
-                if len(event.xclient.data) != 20 and data:
-                    self.notify(data.decode('utf-8'))
-                    data = ''
-            else: # event.type == PropertyNotify
-                namep = x11.XGetAtomName(self.disp, event.xproperty.atom)
-                is_inst = (c_char_p(namep).value == '_SKYPE_INSTANCE')
-                x11.XFree(namep)
-                if is_inst:
-                    if event.xproperty.state == PropertyNewValue:
-                        self.win_skype = self.get_skype()
-                        # changing attachment status can cause an event handler to be fired, in
-                        # turn it could try to call Attach() and doing this immediately seems to
-                        # confuse Skype (command '#0 NAME xxx' returns '#0 CONNSTATUS OFFLINE' :D);
-                        # to fix this, we give Skype some time to initialize itself
-                        time.sleep(1.0)
-                        self.set_attachment_status(apiAttachAvailable)
-                    elif event.xproperty.state == PropertyDelete:
-                        self.win_skype = None
-                        self.set_attachment_status(apiAttachNotAvailable)
+            while x11.XPending(self.disp):
+                self.loop_timeout = 0.0001
+                x11.XNextEvent(self.disp, byref(event))
+                # events we get here are already prefiltered by the predicate function
+                if event.type == ClientMessage:
+                    if event.xclient.format == 8:
+                        if event.xclient.message_type == self.atom_msg_begin:
+                            data = str(event.xclient.data)
+                        elif event.xclient.message_type == self.atom_msg:
+                            if data != '':
+                                data += str(event.xclient.data)
+                            else:
+                                self.logger.warning('Middle of Skype X11 message received with no beginning!')
+                        else:
+                            continue
+                        if len(event.xclient.data) != 20 and data:
+                            self.notify(data.decode('utf-8'))
+                            data = ''
+                elif event.type == PropertyNotify:
+                    namep = x11.XGetAtomName(self.disp, event.xproperty.atom)
+                    is_inst = (c_char_p(namep).value == '_SKYPE_INSTANCE')
+                    x11.XFree(namep)
+                    if is_inst:
+                        if event.xproperty.state == PropertyNewValue:
+                            self.win_skype = self.get_skype()
+                            # changing attachment status can cause an event handler to be fired, in
+                            # turn it could try to call Attach() and doing this immediately seems to
+                            # confuse Skype (command '#0 NAME xxx' returns '#0 CONNSTATUS OFFLINE' :D);
+                            # to fix this, we give Skype some time to initialize itself
+                            time.sleep(1.0)
+                            self.set_attachment_status(apiAttachAvailable)
+                        elif event.xproperty.state == PropertyDelete:
+                            self.win_skype = None
+                            self.set_attachment_status(apiAttachNotAvailable)
+            self.loop_event.wait(self.loop_timeout)
+            if self.loop_event.isSet():
+                self.loop_timeout = 0.0001
+            elif self.loop_timeout < 1.0:
+                self.loop_timeout *= 2
+            self.loop_event.clear()
         self.logger.info('thread finished')
    
     def get_skype(self):
@@ -430,10 +456,8 @@ class SkypeAPI(SkypeAPIBase):
                 command.Reply = cmd[p + 1:]
                 if command.Blocking:
                     command._event.set()
-                    del command._event
                 else:
                     command._timer.cancel()
-                    del command._timer
                 self.notifier.reply_received(command)
             else:
                 self.notifier.notification_received(cmd[p + 1:])

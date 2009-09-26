@@ -291,10 +291,8 @@ class SkypeAPI(SkypeAPIBase):
                     command.Reply = cmd[p + 1:]
                     if command.Blocking:
                         command._event.set()
-                        del command._event
                     else:
                         command._timer.cancel()
-                        del command._timer
                     self.notifier.reply_received(command)
                 else:
                     self.notifier.notification_received(cmd[p + 1:])

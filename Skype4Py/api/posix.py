@@ -28,19 +28,8 @@ from Skype4Py.errors import SkypeAPIError
 __all__ = ['SkypeAPI']
 
 
-# the posix_x11 module has to be imported as soon as possible so it can initialize
-# the X11 library; without this extra import it would be loaded during first Skype
-# object instantiation; any possible exceptions are ignored because the module is
-# not really needed at this point and the errors will be reported anyway during
-# Skype object instantiation
-try:
-    import posix_x11
-except:
-    pass
-
-
 def SkypeAPI(opts):
-    trans = opts.pop('Transport', 'x11')
+    trans = opts.pop('Transport', 'dbus')
     if trans == 'dbus':
         from posix_dbus import SkypeAPI
     elif trans == 'x11':

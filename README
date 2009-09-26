@@ -1,9 +1,14 @@
 Most important changes in Skype4Py 1.0.32.0 release
 ===================================================
 
-*
-*
-*
+* RunMainLoop
+* X11 bug fixes
+* unittests
+* Call and voicemail device methods support simultaneously set devices correctly.
+* Collections
+* Code cleanup
+* Naming conventions (classes and modules)
+* String type policy
 
 SVN commits made between Skype4Py 1.0.31.0 and 1.0.32.0 releases
 ================================================================

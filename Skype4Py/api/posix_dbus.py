@@ -44,6 +44,7 @@ else:
     import dbus
     import dbus.service
     from dbus.mainloop.glib import DBusGMainLoop
+    import gobject
 
 
 class SkypeNotify(dbus.service.Object):
@@ -65,10 +66,13 @@ class SkypeAPI(SkypeAPIBase):
     def __init__(self, opts):
         self.logger = logging.getLogger('Skype4Py.api.posix_dbus.SkypeAPI')
         SkypeAPIBase.__init__(self)
-        run_main_loop = opts.pop('RunMainLoop', True)
+        self.run_main_loop = opts.pop('RunMainLoop', True)
         finalize_opts(opts)
         self.skype_in = self.skype_out = self.dbus_name_owner_watch = None
-        
+
+        # initialize glib multithreading support
+        gobject.threads_init()
+
         # dbus-python calls object.__init__() with arguments passed to SessionBus(),
         # this throws a warning on newer Python versions; here we suppress it
         warnings.simplefilter('ignore')
@@ -77,19 +81,17 @@ class SkypeAPI(SkypeAPIBase):
         finally:
             warnings.simplefilter('default')
         
-        if run_main_loop:
-            import gobject
-            gobject.threads_init()
+        if self.run_main_loop:
             self.mainloop = gobject.MainLoop()
 
     def run(self):
         self.logger.info('thread started')
-        if hasattr(self, 'mainloop'):
+        if self.run_main_loop:
             self.mainloop.run()
         self.logger.info('thread finished')
 
     def close(self):
-        if hasattr(self, 'mainloop'):
+        if self.run_main_loop:
             self.mainloop.quit()
         self.skype_in = self.skype_out = None
         if self.dbus_name_owner_watch is not None:
@@ -194,21 +196,29 @@ class SkypeAPI(SkypeAPIBase):
         cmd = u'#%d %s' % (command.Id, command.Command)
         self.logger.debug('sending %s', repr(cmd))
         if command.Blocking:
-            command._event = event = threading.Event()
+            if self.run_main_loop:
+                command._event = event = threading.Event()
+            else:
+                command._loop = loop = gobject.MainLoop()
+                command._set = False
         else:
             command._timer = timer = threading.Timer(command.timeout2float(), self.pop_command, (command.Id,))
         try:
             result = self.skype_out.Invoke(cmd)
         except dbus.DBusException, err:
             raise SkypeAPIError(str(err))
-        if not result:
-            raise SkypeAPIError('Empty Skype response')
         if result.startswith(u'#%d ' % command.Id):
             self.notify(result)
         if command.Blocking:
-            event.wait(command.timeout2float())
-            if not event.isSet():
-                raise SkypeAPIError('Skype command timeout')
+            if self.run_main_loop:
+                event.wait(command.timeout2float())
+                if not event.isSet():
+                    raise SkypeAPIError('Skype command timeout')
+            elif not command._set:
+                gobject.timeout_add_seconds(int(command.timeout2float()), loop.quit)
+                loop.run()
+                if not command._set:
+                    raise SkypeAPIError('Skype command timeout')
         else:
             timer.start()
 
@@ -221,11 +231,13 @@ class SkypeAPI(SkypeAPIBase):
             if command is not None:
                 command.Reply = cmd[p + 1:]
                 if command.Blocking:
-                    command._event.set()
-                    del command._event
+                    if self.run_main_loop:
+                        command._event.set()
+                    else:
+                        command._set = True
+                        command._loop.quit()
                 else:
                     command._timer.cancel()
-                    del command._timer
                 self.notifier.reply_received(command)
             else:
                 self.notifier.notification_received(cmd[p + 1:])
