@@ -403,6 +403,8 @@ class Chat(Cached):
 
 
 class ChatCollection(CachedCollection):
+    """Container for `Chat` objects.
+    """
     _CachedType = Chat
 
 
@@ -600,6 +602,8 @@ class ChatMessage(Cached):
 
 
 class ChatMessageCollection(CachedCollection):
+    """Container for `ChatMessage` objects.
+    """
     _CachedType = ChatMessage
 
 
@@ -682,4 +686,6 @@ class ChatMember(Cached):
 
 
 class ChatMemberCollection(CachedCollection):
+    """Container for `ChatMember` objects.
+    """
     _CachedType = ChatMember

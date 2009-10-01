@@ -173,4 +173,6 @@ class Voicemail(Cached, DeviceMixin):
 
 
 class VoicemailCollection(CachedCollection):
+    """Container for `Voicemail` objects.
+    """
     _CachedType = Voicemail

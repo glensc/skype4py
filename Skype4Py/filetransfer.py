@@ -161,4 +161,6 @@ class FileTransfer(Cached):
 
 
 class FileTransferCollection(CachedCollection):
+    """Container for `FileTransfer` objects.
+    """
     _CachedType = FileTransfer

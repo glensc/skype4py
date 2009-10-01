@@ -195,16 +195,17 @@ class PluginEventTest(skype4pytest.TestCase):
     # ==========
 
     def testId(self):
-        # Readable, Type: unicode
+        # Readable, Type: str
         t = self.obj.Id
-        self.assertInstance(t, unicode)
+        self.assertInstance(t, str)
         self.assertEqual(t, 'spam')
         self.failUnless(self.api.is_empty())
 
 
 class PluginMenuItemTest(skype4pytest.TestCase):
     def setUpObject(self):
-        self.obj = PluginMenuItem(self.skype, 'spam', 'eggs', 'sausage', True)
+        self.obj = PluginMenuItem(self.skype, 'spam')
+        self.obj._SetupProps('eggs', 'sausage', True)
 
     # Methods
     # =======
@@ -248,9 +249,9 @@ class PluginMenuItemTest(skype4pytest.TestCase):
         self.failUnless(self.api.is_empty())
 
     def testId(self):
-        # Readable, Type: unicode
+        # Readable, Type: str
         t = self.obj.Id
-        self.assertInstance(t, unicode)
+        self.assertInstance(t, str)
         self.assertEqual(t, 'spam')
 
 

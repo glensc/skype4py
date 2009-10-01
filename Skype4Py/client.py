@@ -335,7 +335,7 @@ class PluginEvent(Cached):
     Id = property(_GetId,
     doc="""Unique event Id.
 
-    :type: unicode
+    :type: str
     """)
 
 
@@ -407,5 +407,5 @@ class PluginMenuItem(Cached):
     Id = property(_GetId,
     doc="""Unique menu item Id.
 
-    :type: unicode
+    :type: str
     """)

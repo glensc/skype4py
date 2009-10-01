@@ -403,6 +403,8 @@ class User(Cached):
 
 
 class UserCollection(CachedCollection):
+    """Container for `User` objects.
+    """
     _CachedType = User
 
 
@@ -534,4 +536,6 @@ class Group(Cached):
 
 
 class GroupCollection(CachedCollection):
+    """Container for `Group` objects.
+    """
     _CachedType = Group

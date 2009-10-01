@@ -564,6 +564,8 @@ class Call(Cached, DeviceMixin):
 
 
 class CallCollection(CachedCollection):
+    """Container for `Call` objects.
+    """
     _CachedType = Call
 
 
@@ -645,6 +647,8 @@ class Participant(Cached):
 
 
 class ParticipantCollection(CachedCollection):
+    """Container for `Participant` objects.
+    """
     _CachedType = Participant
 
 
@@ -706,4 +710,6 @@ class Conference(Cached):
 
 
 class ConferenceCollection(CachedCollection):
+    """Container for `Conference` objects.
+    """
     _CachedType = Conference
