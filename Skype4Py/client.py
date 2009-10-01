@@ -45,7 +45,7 @@ class Client(object):
         """Creates a custom event displayed in Skype client's events pane.
 
         :Parameters:
-          EventId : unicode
+          EventId : str
             Unique identifier for the event.
           Caption : unicode
             Caption text.
@@ -55,7 +55,7 @@ class Client(object):
         :return: Event object.
         :rtype: `PluginEvent`
         """
-        self._Skype._DoCommand('CREATE EVENT %s CAPTION %s HINT %s' % (tounicode(EventId),
+        self._Skype._DoCommand('CREATE EVENT %s CAPTION %s HINT %s' % (str(EventId),
             quote(tounicode(Caption)), quote(tounicode(Hint))))
         return PluginEvent(self._Skype, EventId)
 
@@ -64,7 +64,7 @@ class Client(object):
         """Creates custom menu item in Skype client's "Do More" menus.
 
         :Parameters:
-          MenuItemId : unicode
+          MenuItemId : str
             Unique identifier for the menu item.
           PluginContext : `enums`.pluginContext*
             Menu item context. Allows to choose in which client windows will the menu item appear.
@@ -85,7 +85,7 @@ class Client(object):
         :return: Menu item object.
         :rtype: `PluginMenuItem`
         """
-        cmd = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s ENABLED %s' % (tounicode(MenuItemId), PluginContext,
+        cmd = 'CREATE MENU_ITEM %s CONTEXT %s CAPTION %s ENABLED %s' % (str(MenuItemId), PluginContext,
             quote(tounicode(CaptionText)), cndexp(Enabled, 'true', 'false'))
         if HintText:
             cmd += ' HINT %s' % quote(tounicode(HintText))
@@ -96,7 +96,9 @@ class Client(object):
         if PluginContext == pluginContextContact:
             cmd += ' CONTACT_TYPE_FILTER %s' % ContactType
         self._Skype._DoCommand(cmd)
-        return PluginMenuItem(self._Skype, MenuItemId, CaptionText, HintText, Enabled)
+        item = PluginMenuItem(self._Skype, MenuItemId)
+        item._SetupProps(CaptionText, HintText, Enabled)
+        return item
 
     def Focus(self):
         """Brings the client window into focus.
@@ -314,23 +316,21 @@ class Client(object):
     """)
 
 
-class PluginEvent(object):
+class PluginEvent(Cached):
     """Represents an event displayed in Skype client's events pane.
     """
-    def __init__(self, Skype, Id):
-        self._Skype = Skype
-        self._Id = tounicode(Id)
-
+    _ValidateHandle = str
+    
     def __repr__(self):
         return '<%s with Id=%s>' % (object.__repr__(self)[1:-1], repr(self.Id))
 
     def Delete(self):
         """Deletes the event from the events pane in the Skype client.
         """
-        self._Skype._DoCommand('DELETE EVENT %s' % self.Id)
+        self._Owner._DoCommand('DELETE EVENT %s' % self.Id, 'DELETE EVENT')
 
     def _GetId(self):
-        return self._Id
+        return self._Handle
 
     Id = property(_GetId,
     doc="""Unique event Id.
@@ -339,12 +339,12 @@ class PluginEvent(object):
     """)
 
 
-class PluginMenuItem(object):
+class PluginMenuItem(Cached):
     """Represents a menu item displayed in Skype client's "Do More" menus.
     """
-    def __init__(self, Skype, Id, Caption, Hint, Enabled):
-        self._Skype = Skype
-        self._Id = tounicode(Id)
+    _ValidateHandle = str
+
+    def _SetupProps(self, Caption, Hint, Enabled):
         self._CacheDict = {}
         self._CacheDict['CAPTION'] = tounicode(Caption)
         self._CacheDict['HINT'] = tounicode(Hint)
@@ -356,13 +356,13 @@ class PluginMenuItem(object):
     def _Property(self, PropName, Set=None):
         if Set is None:
             return self._CacheDict[PropName]
-        self._Skype._Property('MENU_ITEM', self.Id, PropName, Set)
+        self._Owner._Property('MENU_ITEM', self.Id, PropName, Set)
         self._CacheDict[PropName] = unicode(Set)
 
     def Delete(self):
         """Removes the menu item from the "Do More" menus.
         """
-        self._Skype._DoCommand('DELETE MENU_ITEM %s' % self.Id)
+        self._Owner._DoCommand('DELETE MENU_ITEM %s' % self.Id, 'DELETE MENU_ITEM')
 
     def _GetCaption(self):
         return self._Property('CAPTION')
@@ -402,7 +402,7 @@ class PluginMenuItem(object):
     """)
 
     def _GetId(self):
-        return self._Id
+        return self._Handle
 
     Id = property(_GetId,
     doc="""Unique menu item Id.
