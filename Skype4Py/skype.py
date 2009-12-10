@@ -240,7 +240,7 @@ class Skype(EventHandlingBase):
 
         EventHandlingBase.__init__(self)
         if Events:
-            self._SetEventHandlerObj(Events)
+            self._SetEventHandlerObject(Events)
 
         try:
             self._Api = Options.pop('Api')
